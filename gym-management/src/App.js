@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import ImageCarousel from './components/ImageCarousel';
 
 function Home() {
   return (
@@ -17,11 +18,16 @@ function Home() {
         </div>
       </nav>
 
-      <header className="hero-section">
-        <h1>Welcome to GymFlex</h1>
-        <p>Transform Your Life Through Fitness</p>
-        <button className="cta-button" onClick={() => window.location.href='/signup'}>Join Now</button>
-      </header>
+      <div className="hero-section">
+        <ImageCarousel />
+        <div className="hero-content">
+          <h1>Welcome to GymFlex</h1>
+          <p>Transform Your Life Through Fitness</p>
+          <button className="cta-button" onClick={() => window.location.href='/signup'}>
+            Join Now
+          </button>
+        </div>
+      </div>
 
       <section id="about" className="about-section">
         <h2>Why Choose Us?</h2>

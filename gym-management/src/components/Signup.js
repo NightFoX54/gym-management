@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import '../styles/Signup.css';
+import { useNavigate } from 'react-router-dom';
 
 function Signup() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [formData, setFormData] = useState({
@@ -70,6 +72,10 @@ function Signup() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setStep(3);
+  };
+
+  const handleBackClick = () => {
+    navigate('/');
   };
 
   const renderStep = () => {
@@ -234,6 +240,9 @@ function Signup() {
 
   return (
     <div className="signup-container">
+      <div className="back-arrow" onClick={handleBackClick}>
+        ← Back
+      </div>
       <div className="progress-bar">
         <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1. Select Plan</div>
         <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2. Personal Info</div>
