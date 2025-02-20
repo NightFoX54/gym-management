@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
 
 function Login() {
@@ -6,6 +7,8 @@ function Login() {
     email: '',
     password: ''
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,9 +24,16 @@ function Login() {
     console.log('Login attempt:', formData);
   };
 
+  const handleBackClick = () => {
+    navigate('/');
+  };
+
   return (
     <div className="login-container">
       <div className="login-box">
+        <div className="back-arrow" onClick={handleBackClick}>
+          ← Back
+        </div>
         <h2>Welcome Back</h2>
         <p className="login-subtitle">Please enter your details</p>
         

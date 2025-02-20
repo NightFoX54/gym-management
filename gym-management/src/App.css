@@ -160,3 +160,76 @@
   color: #666;
   line-height: 1.6;
 }
+
+.contact-section {
+  padding: 5rem 2rem;
+  background-color: #fff;
+  border-top: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.social-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #ff4757;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.social-icon i {
+  font-size: 24px;
+}
+
+.social-icon:hover {
+  transform: translateY(-5px);
+  background-color: #ff3747;
+}
+
+.contact-info {
+  margin-top: 2rem;
+}
+
+.phone-icon {
+  color: #666;
+  margin-right: 10px;
+}
+
+.phone-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.location-icon {
+  color: #666;
+  margin-right: 10px;
+}
+
+.address {
+  font-size: 1.1rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}

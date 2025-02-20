@@ -3,14 +3,22 @@ import './App.css';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import ImageCarousel from './components/ImageCarousel';
+import AdminPanel from './components/AdminPanel';
 
 function Home() {
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <div className="App">
       <nav className="navbar">
         <div className="logo">GymFlex</div>
         <div className="nav-links">
-          <a href="#home">Home</a>
+          <a href="#" onClick={scrollToTop}>Home</a>
           <a href="#about">About</a>
           <a href="#services">Services</a>
           <a href="#contact">Contact</a>
@@ -46,6 +54,30 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <section id="contact" className="contact-section">
+        <div className="social-icons">
+          <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" className="social-icon">
+            <i className="fab fa-youtube"></i>
+          </a>
+          <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="social-icon">
+            <i className="fab fa-instagram"></i>
+          </a>
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="social-icon">
+            <i className="fab fa-facebook"></i>
+          </a>
+        </div>
+        <div className="contact-info">
+          <p className="phone-number">
+            <i className="fas fa-phone phone-icon"></i>
+            +90 (0212) 527 00 27
+          </p>
+          <p className="address">
+            <i className="fas fa-map-marker-alt location-icon"></i>
+            Barbaros Mahallesi, Begonya Sokak No:15, Ataşehir, İstanbul, Türkiye
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
@@ -55,6 +87,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/admin/*" element={<AdminPanel />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
