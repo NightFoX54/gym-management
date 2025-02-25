@@ -227,4 +227,289 @@
   background-color: rgba(231, 76, 60, 0.15);
   color: #c0392b;
   border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+/* Financial Panel Styles */
+.timeframe-selector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+.timeframe-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.timeframe-btn.active {
+  background-color: #ff4757;
+  color: white;
+}
+
+.financial-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card h3 {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.summary-card p {
+  margin: 0.5rem 0 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.summary-card.income p {
+  color: #2ecc71;
+}
+
+.summary-card.expenses p {
+  color: #e74c3c;
+}
+
+.summary-card.revenue p {
+  color: #3498db;
+}
+
+.financial-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.income-sources,
+.expense-categories {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.income-sources h3,
+.expense-categories h3 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.print-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  height: 100%;
+}
+
+.print-btn:hover {
+  background-color: #27ae60;
+}
+
+.print-btn i {
+  font-size: 1rem;
+}
+
+/* Update existing timeframe-selector styles */
+.timeframe-selector {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Welcome Panel Styles */
+.welcome-panel {
+  text-align: center;
+  padding: 3rem !important;
+}
+
+.welcome-content h1 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.welcome-content p {
+  color: #666;
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
+}
+
+.feature-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.feature-item {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+}
+
+.feature-item i {
+  font-size: 2.5rem;
+  color: #ff4757;
+  margin-bottom: 1rem;
+}
+
+.feature-item h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.feature-item p {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Dark mode styles for welcome panel */
+.dark-mode .welcome-content h1 {
+  color: #ffffff;
+}
+
+.dark-mode .welcome-content > p {
+  color: #e0e0e0;
+}
+
+.dark-mode .feature-item {
+  background: #2c2c2c;
+}
+
+.dark-mode .feature-item h3 {
+  color: #ffffff;
+}
+
+.dark-mode .feature-item p {
+  color: #e0e0e0;
+}
+
+/* Coming Soon Panel Styles */
+.coming-soon-content {
+  text-align: center;
+  padding: 3rem;
+}
+
+.coming-soon-icon {
+  font-size: 4rem;
+  color: #ff4757;
+  margin-bottom: 1.5rem;
+}
+
+.coming-soon-content h2 {
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.coming-soon-content p {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.features-preview {
+  max-width: 400px;
+  margin: 0 auto;
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.features-preview h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.features-preview ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+.features-preview li {
+  color: #666;
+  margin: 0.8rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.features-preview li i {
+  color: #2ecc71;
+}
+
+/* Dark mode styles */
+.dark-mode .coming-soon-content h2 {
+  color: #ffffff;
+}
+
+.dark-mode .coming-soon-content p {
+  color: #e0e0e0;
+}
+
+.dark-mode .features-preview {
+  background: #2c2c2c;
+}
+
+.dark-mode .features-preview h3 {
+  color: #ffffff;
+}
+
+.dark-mode .features-preview li {
+  color: #e0e0e0;
+}
+
+.feature-item.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.feature-item.clickable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.feature-item.clickable:active {
+  transform: translateY(-2px);
 } 

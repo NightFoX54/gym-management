@@ -92,7 +92,7 @@ const EmployeesPanel = () => {
           <tr>
             <th>Name</th>
             <th>Surname</th>
-            <th>Salary ($)</th>
+            <th>Salary (₺)</th>
             <th>Hours/Week</th>
             <th>Actions</th>
             {isEditing && <th>Edit</th>}
@@ -172,7 +172,7 @@ const EmployeesPanel = () => {
                 <>
                   <td>{employee.name}</td>
                   <td>{employee.surname}</td>
-                  <td>${employee.salary.toLocaleString()}</td>
+                  <td>₺{employee.salary.toLocaleString()}</td>
                   <td>{employee.hoursPerWeek}h</td>
                   <td>
                     <button 

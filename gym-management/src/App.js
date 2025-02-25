@@ -4,8 +4,11 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import ImageCarousel from './components/ImageCarousel';
 import AdminPanel from './components/AdminPanel';
+import { useState } from 'react';
 
 function Home() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -13,8 +16,12 @@ function Home() {
     });
   };
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <div className="App">
+    <div className={`App ${isDarkMode ? 'dark-mode' : ''}`}>
       <nav className="navbar">
         <div className="logo">GymFlex</div>
         <div className="nav-links">
@@ -22,6 +29,14 @@ function Home() {
           <a href="#about">About</a>
           <a href="#services">Services</a>
           <a href="#contact">Contact</a>
+          <button 
+            className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
+            onClick={toggleDarkMode}
+          >
+            <i className="fas fa-sun toggle-icon" style={{ marginLeft: '2px' }}></i>
+            <div className="toggle-circle"></div>
+            <i className="fas fa-moon toggle-icon" style={{ marginRight: '2px' }}></i>
+          </button>
           <button className="login-btn" onClick={() => window.location.href='/login'}>Login</button>
         </div>
       </nav>
