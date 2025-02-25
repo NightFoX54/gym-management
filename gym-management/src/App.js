@@ -4,11 +4,16 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import ImageCarousel from './components/ImageCarousel';
 import AdminPanel from './components/AdminPanel';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Contact from './components/Contact';
+import Services from './components/Services';
+import PersonalTraining from './components/services/PersonalTraining';
+import GroupClasses from './components/services/GroupClasses';
+import StrengthTraining from './components/services/StrengthTraining';
+import CardioZone from './components/services/CardioZone';
+import Navbar from './components/Navbar';
 
-function Home() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
+function Home({ isDarkMode, setIsDarkMode }) {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -16,30 +21,9 @@ function Home() {
     });
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
   return (
     <div className={`App ${isDarkMode ? 'dark-mode' : ''}`}>
-      <nav className="navbar">
-        <div className="logo">GymFlex</div>
-        <div className="nav-links">
-          <a href="#" onClick={scrollToTop}>Home</a>
-          <a href="#about">About</a>
-          <a href="#services">Services</a>
-          <a href="#contact">Contact</a>
-          <button 
-            className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
-            onClick={toggleDarkMode}
-          >
-            <i className="fas fa-sun toggle-icon" style={{ marginLeft: '2px' }}></i>
-            <div className="toggle-circle"></div>
-            <i className="fas fa-moon toggle-icon" style={{ marginRight: '2px' }}></i>
-          </button>
-          <button className="login-btn" onClick={() => window.location.href='/login'}>Login</button>
-        </div>
-      </nav>
+      <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
       <div className="hero-section">
         <ImageCarousel />
@@ -98,13 +82,33 @@ function Home() {
 }
 
 function App() {
+  // Initialize state with the saved preference
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    document.body.classList.toggle('dark-mode', savedDarkMode);
+    return savedDarkMode;
+  });
+
+  // Only handle changes to dark mode
+  useEffect(() => {
+    localStorage.setItem('darkMode', isDarkMode);
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    console.log('Dark mode state:', isDarkMode);
+  }, [isDarkMode]);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin/*" element={<AdminPanel />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<Home isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/admin/*" element={<AdminPanel isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/signup" element={<Signup isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/contact" element={<Contact isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/services" element={<Services isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/services/personal-training" element={<PersonalTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/services/group-classes" element={<GroupClasses isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/services/strength-training" element={<StrengthTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/services/cardio-zone" element={<CardioZone isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
       </Routes>
     </Router>
   );
