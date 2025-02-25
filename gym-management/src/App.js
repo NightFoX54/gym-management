@@ -12,6 +12,7 @@ import GroupClasses from './components/services/GroupClasses';
 import StrengthTraining from './components/services/StrengthTraining';
 import CardioZone from './components/services/CardioZone';
 import Navbar from './components/Navbar';
+import TrainerPage from './components/trainer/TrainerPage';
 
 function Home({ isDarkMode, setIsDarkMode }) {
   const scrollToTop = () => {
@@ -109,6 +110,12 @@ function App() {
         <Route path="/services/group-classes" element={<GroupClasses isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/strength-training" element={<StrengthTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/cardio-zone" element={<CardioZone isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/trainer" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/trainer/clients" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/trainer/schedule" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/trainer/workouts" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/trainer/reports" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/trainer/settings" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
       </Routes>
     </Router>
   );
