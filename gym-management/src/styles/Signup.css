@@ -17,6 +17,7 @@
   background-color: #ddd;
   border-radius: 20px;
   position: relative;
+  color: #1a1a1a;
 }
 
 .progress-step.active {
@@ -235,5 +236,109 @@
 }
 
 .back-arrow:hover {
+  color: #ff4757;
+}
+
+/* Dark Mode Styles */
+.dark-mode .signup-container {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .plan-card {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  border-color: #444;
+}
+
+.dark-mode .plan-card:hover {
+  border-color: #ff4757;
+}
+
+.dark-mode .plan-card.selected {
+  border-color: #ff4757;
+  background-color: #3d3d3d;
+}
+
+.dark-mode .price .amount {
+  color: #ff4757;
+}
+
+.dark-mode .price .duration {
+  color: #dddddd;
+}
+
+.dark-mode .features-list li {
+  color: #dddddd;
+}
+
+.dark-mode .select-plan-btn,
+.dark-mode .next-btn,
+.dark-mode .submit-btn {
+  background-color: #ff4757;
+  color: #ffffff;
+}
+
+.dark-mode .select-plan-btn:hover,
+.dark-mode .next-btn:hover,
+.dark-mode .submit-btn:hover {
+  background-color: #ff3747;
+}
+
+.dark-mode .personal-info-container,
+.dark-mode .payment-container {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+.dark-mode .form-group label {
+  color: #ffffff;
+}
+
+.dark-mode .form-group input {
+  background-color: #1a1a1a;
+  border-color: #444;
+  color: #ffffff;
+}
+
+.dark-mode .form-group input:focus {
+  border-color: #ff4757;
+}
+
+.dark-mode .progress-bar {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .progress-step {
+  background-color: #444;
+  color: #dddddd;
+}
+
+.dark-mode .progress-step.active {
+  background-color: #ff4757;
+  color: white;
+}
+
+.dark-mode .progress-step:not(:last-child)::after {
+  background-color: #444;
+}
+
+.dark-mode .back-arrow {
+  color: #ffffff;
+}
+
+.dark-mode .order-summary {
+  background-color: #1a1a1a;
+  border-color: #444;
+}
+
+.dark-mode .plan-details {
+  color: #dddddd;
+}
+
+.dark-mode .plan-name {
+  color: #ffffff;
+}
+
+.dark-mode .plan-price {
   color: #ff4757;
 } 
