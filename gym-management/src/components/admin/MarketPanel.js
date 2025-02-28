@@ -23,7 +23,7 @@ const MarketPanel = () => {
         category: 'Supplement', 
         price: 599.99, 
         stock: 50,
-        imageUrl: '/protein.jpg'
+        imageUrl: '/protein.png'
       },
       { 
         id: 2, 
@@ -31,7 +31,7 @@ const MarketPanel = () => {
         category: 'Equipment', 
         price: 199.99, 
         stock: 30,
-        imageUrl: '/yoga-mati.jpg'
+        imageUrl: '/yoga-mat.png'
       },
       { 
         id: 3, 
@@ -39,7 +39,7 @@ const MarketPanel = () => {
         category: 'Clothing', 
         price: 149.99, 
         stock: 100,
-        imageUrl: '/tshirt.jpg'
+        imageUrl: '/tshirt.png'
       },
     ];
     setProducts(sampleProducts);

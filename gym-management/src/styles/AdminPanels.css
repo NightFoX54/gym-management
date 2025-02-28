@@ -72,6 +72,47 @@
   background-color: #f8f9fa;
 }
 
+/* Dark mode table styles */
+.dark-mode .data-table {
+  border-color: #404040;
+}
+
+.dark-mode .data-table th,
+.dark-mode .data-table td {
+  border-color: #404040;
+  color: #e0e0e0;
+}
+
+.dark-mode .data-table th {
+  background-color: #363636;
+  color: #e0e0e0;
+}
+
+.dark-mode .data-table tbody tr:hover {
+  background-color: #363636;
+}
+
+/* Dark mode empty table styles */
+.dark-mode .ant-empty {
+  color: #e0e0e0;
+}
+
+.dark-mode .ant-empty-image {
+  filter: invert(0.8);
+}
+
+.dark-mode .ant-empty-description {
+  color: #e0e0e0;
+}
+
+.dark-mode .ant-table-placeholder {
+  background-color: #2c2c2c !important;
+}
+
+.dark-mode .ant-table-placeholder:hover > td {
+  background-color: #2c2c2c !important;
+}
+
 /* Update modal styles */
 .modal-overlay {
   position: fixed;
@@ -92,6 +133,30 @@
   border-radius: 8px;
   width: 400px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode modal styles */
+.dark-mode .modal {
+  background: #2c2c2c;
+  color: #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .modal input,
+.dark-mode .modal select {
+  background-color: #363636;
+  border-color: #404040;
+  color: #e0e0e0;
+}
+
+.dark-mode .modal input:focus,
+.dark-mode .modal select:focus {
+  border-color: #ff4757;
+  outline: none;
+}
+
+.dark-mode .modal input::placeholder {
+  color: #888;
 }
 
 .modal form {
@@ -341,10 +406,64 @@
   font-size: 1rem;
 }
 
-/* Update existing timeframe-selector styles */
-.timeframe-selector {
-  display: flex;
-  gap: 1rem;
+/* Dark mode styles for Financial Panel */
+.dark-mode .timeframe-btn {
+  background-color: #363636;
+  color: #e0e0e0;
+}
+
+.dark-mode .timeframe-btn:hover {
+  background-color: #404040;
+}
+
+.dark-mode .timeframe-btn.active {
+  background-color: #ff4757;
+  color: white;
+}
+
+.dark-mode .summary-card {
+  background-color: #2c2c2c;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .summary-card h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .summary-card p {
+  color: #ffffff;
+}
+
+.dark-mode .summary-card.income p {
+  color: #2ecc71;
+}
+
+.dark-mode .summary-card.expenses p {
+  color: #e74c3c;
+}
+
+.dark-mode .summary-card.revenue p {
+  color: #3498db;
+}
+
+.dark-mode .income-sources,
+.dark-mode .expense-categories {
+  background-color: #2c2c2c;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .income-sources h3,
+.dark-mode .expense-categories h3 {
+  color: #ffffff;
+}
+
+.dark-mode .print-btn {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.dark-mode .print-btn:hover {
+  background-color: #27ae60;
 }
 
 /* Welcome Panel Styles */
@@ -367,9 +486,10 @@
 
 .feature-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
   margin-top: 3rem;
+  padding: 0 1rem;
 }
 
 .feature-item {
@@ -377,11 +497,15 @@
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  min-width: 200px;
 }
 
 .feature-item:hover {
   transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .feature-item i {
@@ -412,7 +536,7 @@
 }
 
 .dark-mode .feature-item {
-  background: #2c2c2c;
+  background: #3d3d3d;
 }
 
 .dark-mode .feature-item h3 {
@@ -423,83 +547,7 @@
   color: #e0e0e0;
 }
 
-/* Coming Soon Panel Styles */
-.coming-soon-content {
-  text-align: center;
-  padding: 3rem;
-}
-
-.coming-soon-icon {
-  font-size: 4rem;
-  color: #ff4757;
-  margin-bottom: 1.5rem;
-}
-
-.coming-soon-content h2 {
-  color: #2c3e50;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-.coming-soon-content p {
-  color: #666;
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-}
-
-.features-preview {
-  max-width: 400px;
-  margin: 0 auto;
-  background: #f8f9fa;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.features-preview h3 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
-}
-
-.features-preview ul {
-  list-style: none;
-  padding: 0;
-  text-align: left;
-}
-
-.features-preview li {
-  color: #666;
-  margin: 0.8rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.features-preview li i {
-  color: #2ecc71;
-}
-
-/* Dark mode styles */
-.dark-mode .coming-soon-content h2 {
-  color: #ffffff;
-}
-
-.dark-mode .coming-soon-content p {
-  color: #e0e0e0;
-}
-
-.dark-mode .features-preview {
-  background: #2c2c2c;
-}
-
-.dark-mode .features-preview h3 {
-  color: #ffffff;
-}
-
-.dark-mode .features-preview li {
-  color: #e0e0e0;
-}
-
+/* Feature Item Styles */
 .feature-item.clickable {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -512,4 +560,17 @@
 
 .feature-item.clickable:active {
   transform: translateY(-2px);
+}
+
+/* Responsive tasarım için medya sorguları */
+@media (max-width: 1200px) {
+  .feature-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .feature-list {
+    grid-template-columns: 1fr;
+  }
 } 
