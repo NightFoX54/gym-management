@@ -7,11 +7,15 @@ import Dashboard from './admin/dashboard';
 import FinancialPanel from './admin/FinancialPanel';
 import '../styles/AdminPanel.css';
 
-const AdminPanel = () => {
+const AdminPanel = ({ isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <div className="admin-container">
+    <div className={`admin-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <nav className="admin-nav">
         <NavLink to="/admin" end>
           <i className="fas fa-home"></i>
@@ -33,6 +37,16 @@ const AdminPanel = () => {
           <i className="fas fa-chart-line"></i>
           <span>Financial</span>
         </NavLink>
+        <div className="dark-mode-toggle-container">
+          <i className="fas fa-sun"></i>
+          <div 
+            className="dark-mode-toggle-switch"
+            onClick={toggleDarkMode}
+          >
+            <div className="dark-mode-toggle-slider"></div>
+          </div>
+          <i className="fas fa-moon"></i>
+        </div>
       </nav>
       <div className="admin-content">
         <Routes>
