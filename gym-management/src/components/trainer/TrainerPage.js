@@ -88,10 +88,10 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const stats = [
-    { title: 'Total Clients', value: '24', icon: <PeopleIcon />, color: '#ff4757' },
-    { title: 'Today\'s Sessions', value: '8', icon: <TodayIcon />, color: '#ff3747' },
-    { title: 'Active Programs', value: '12', icon: <FitnessIcon />, color: '#ff5767' },
-    { title: 'Hours This Week', value: '32', icon: <TimelineIcon />, color: '#ff6777' },
+    { title: 'Total Clients', value: '24', icon: <PeopleIcon />, color: '#f5f5f5' },
+    { title: 'Today\'s Sessions', value: '8', icon: <TodayIcon />, color: '#eeeeee' },
+    { title: 'Active Programs', value: '12', icon: <FitnessIcon />, color: '#e0e0e0' },
+    { title: 'Hours This Week', value: '32', icon: <TimelineIcon />, color: '#d5d5d5' },
   ];
 
   const upcomingSessions = [
@@ -128,8 +128,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       <Box>
         <DialogTitle 
           sx={{ 
-            color: '#ff4757',
-            borderBottom: '2px solid rgba(255,71,87,0.1)',
+            color: '#ff4757', // Changed from #007bff to #ff4757
+            borderBottom: '2px solid #ff4757',
             mb: 2,
             '& .MuiTypography-root': {
               display: 'flex',
@@ -138,7 +138,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
             }
           }}
         >
-          <PeopleIcon /> Add New Client
+          <PeopleIcon sx={{ color: '#ff4757' }} /> Add New Client
         </DialogTitle>
         <DialogContent>
           <motion.div
@@ -157,11 +157,11 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 10px rgba(255,71,87,0.1)',
+                    boxShadow: '0 4px 10px rgba(255, 71, 87, 0.1)',
                   },
                   '&.Mui-focused': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 15px rgba(255,71,87,0.2)',
+                    boxShadow: '0 4px 15px rgba(255, 71, 87, 0.2)',
                   }
                 }
               }
@@ -341,17 +341,22 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 className="action-card"
                 onClick={action.action}
                 sx={{
-                  background: 'rgba(255, 71, 87, 0.03)',
+                  background: '#f5f5f5',
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 71, 87, 0.1)',
-                  transition: 'all 0.3s ease',
+                  border: '1px solid #e0e0e0',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  '&:hover': {
+                    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)',
+                    borderColor: '#d5d5d5',
+                    background: '#fafafa'
+                  }
                 }}
               >
                 <Box sx={{ p: 2, textAlign: 'center' }}>
                   <Avatar
                     sx={{
-                      bgcolor: 'rgba(255, 71, 87, 0.1)',
-                      color: '#ff4757',
+                      bgcolor: '#eeeeee',
+                      color: '#757575',
                       width: 56,
                       height: 56,
                       margin: '0 auto 1rem',
@@ -380,31 +385,40 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
               <Card 
                 className="stat-card"
                 sx={{
-                  background: `linear-gradient(135deg, ${stat.color}, ${stat.color}dd)`,
+                  background: stat.color,
                   position: 'relative',
                   overflow: 'hidden',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'radial-gradient(circle at top right, rgba(255,255,255,0.2) 0%, transparent 60%)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                  border: '1px solid #e0e0e0',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 6px 25px rgba(0, 0, 0, 0.1)',
                   }
                 }}
               >
                 <CardContent>
                   <Box sx={{ position: 'relative', zIndex: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 48, height: 48 }}>
+                      <Avatar sx={{ 
+                        bgcolor: '#ff4757',
+                        color: 'white',
+                        width: 48, 
+                        height: 48 
+                      }}>
                         {stat.icon}
                       </Avatar>
-                      <Typography variant="h4" className="stat-value" sx={{ color: 'white' }}>
+                      <Typography variant="h4" sx={{ 
+                        color: '#666',
+                        fontWeight: 700
+                      }}>
                         {stat.value}
                       </Typography>
                     </Box>
-                    <Typography variant="subtitle1" sx={{ color: 'rgba(255,255,255,0.9)', mt: 2 }}>
+                    <Typography variant="subtitle1" sx={{ 
+                      color: '#757575',
+                      mt: 2,
+                      fontWeight: 500
+                    }}>
                       {stat.title}
                     </Typography>
                   </Box>
@@ -541,13 +555,13 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                       onClick={handleDialogClose}
                       variant="outlined"
                       sx={{
-                        borderColor: '#ff4757',
-                        color: '#ff4757',
-                        borderRadius: '10px',
+                        borderColor: '#bdbdbd',
+                        color: '#757575',
+                        borderRadius: '8px',
                         px: 3,
                         '&:hover': {
-                          borderColor: '#ff3747',
-                          bgcolor: 'rgba(255,71,87,0.1)',
+                          borderColor: '#9e9e9e',
+                          bgcolor: 'rgba(158, 158, 158, 0.1)',
                         }
                       }}
                     >
@@ -559,11 +573,11 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                       onClick={handleSubmit}
                       variant="contained"
                       sx={{
-                        bgcolor: '#ff4757',
-                        borderRadius: '10px',
+                        bgcolor: '#9e9e9e',
+                        borderRadius: '8px',
                         px: 3,
                         '&:hover': {
-                          bgcolor: '#ff3747',
+                          bgcolor: '#757575',
                         }
                       }}
                     >

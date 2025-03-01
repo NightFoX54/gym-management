@@ -1,14 +1,14 @@
 .trainer-page {
   min-height: 100vh;
   display: flex;
-  background: linear-gradient(135deg, rgba(255,71,87,0.05) 0%, transparent 100%);
-  padding: 0 20px; /* Added horizontal padding */
+  background: #f8f9fa;
+  padding: 0 20px;
   box-sizing: border-box;
   padding-bottom: 2rem;
 }
 
 .trainer-page.dark-mode {
-  background: linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(26,26,26,1) 100%);
+  background: #1a1a1a;
   color: #ffffff;
 }
 
@@ -18,12 +18,12 @@
 
 .trainer-content {
   flex-grow: 1;
-  padding: 24px 40px; /* Added horizontal padding */
-  margin-left: 360px; /* Increased margin to match new navbar width */
-  max-width: 1440px; /* Added max-width for better layout */
-  width: 100%;
-  margin: 0 auto;
-  margin-left: 360px;
+  padding: 24px 32px;
+  margin-left: 240px;
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  max-width: none;
 }
 
 .dashboard-title {
@@ -40,11 +40,12 @@
 }
 
 .stat-card {
-  transition: transform 0.3s ease-in-out !important;
+  transition: all 0.3s ease-in-out !important;
   border-radius: 12px !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(135deg, rgb(255, 71, 87), #d13b47) !important;
 }
 
 .stat-card:hover {
@@ -75,18 +76,17 @@
 .schedule-paper,
 .progress-paper {
   border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
   height: 100%;
   padding: 1.5rem !important;
-  background: rgba(255,255,255,0.6);
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #f5f5f5 !important;
+  border: 1px solid #e0e0e0;
 }
 
 .section-title {
-  color: #ff4757;
+  color: #757575;
   font-weight: 600 !important;
-  border-bottom: 2px solid #ff4757;
+  border-bottom: 2px solid #bdbdbd;
   padding-bottom: 0.5rem;
   margin-bottom: 1rem !important;
 }
@@ -102,7 +102,7 @@
 }
 
 .session-item:hover {
-  background-color: rgba(255, 71, 87, 0.1);
+  background-color: #eeeeee;
 }
 
 .session-avatar {
@@ -122,21 +122,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 71, 87, 0.05);
-  border-radius: 8px;
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
 }
 
 .welcome-banner {
-  background: linear-gradient(135deg, #ff4757, #ff3747);
+  background: linear-gradient(135deg, #ff4757, #d13b47) !important;
   color: white;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
-  padding: 2rem;
-  color: white;
-  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.2);
-  animation: gradientShift 10s ease infinite;
+  box-shadow: 0 4px 20px rgba(0, 123, 255, 0.2);
 }
 
 .quick-actions {
@@ -157,12 +153,13 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  border: 1px solid #e0e0e0;
 }
 
 .action-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border: 1px solid #ff4757;
+  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.15);
+  border-color: #ff4757;
 }
 
 .action-card::before {
@@ -184,13 +181,13 @@
 /* Dark mode overrides */
 .dark-mode .schedule-paper,
 .dark-mode .progress-paper {
-  background-color: #1e1e1e;
+  background-color: #2c2c2c !important;
   color: #ffffff;
-  background: rgba(30,30,30,0.6);
+  border: 1px solid #424242;
 }
 
 .dark-mode .section-title {
-  color: #ff4757;
+  color: #ffffff;
   border-bottom-color: #ff4757;
 }
 
@@ -200,6 +197,24 @@
 
 .dark-mode .progress-box {
   background-color: rgba(255, 71, 87, 0.05);
+}
+
+.dark-mode .action-card {
+  background: #2c2c2c;
+  border-color: #424242;
+}
+
+.dark-mode .stat-card {
+  background: #2c2c2c !important;
+  border-color: #424242 !important;
+}
+
+.dark-mode .stat-card .MuiTypography-h4 {
+  color: #ffffff !important;
+}
+
+.dark-mode .stat-card .MuiTypography-subtitle1 {
+  color: #aaaaaa !important;
 }
 
 /* Update media query */
@@ -214,6 +229,7 @@
 
   .trainer-content {
     margin-left: 0;
+    width: 100%;
     padding: 16px;
   }
   
@@ -336,28 +352,23 @@
   border-color: rgba(255, 255, 255, 0.23);
 }
 
-/* Add glass effect for the navbar */
+/* Remove glass effect for the navbar */
 .glass-nav {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: transparent;
 }
 
-/* Add curved edges effect */
+/* Update curved edges effect */
 .curved-nav {
   border-radius: 25px !important;
   position: relative;
   overflow: hidden;
+  background: transparent;
 }
 
 .curved-nav::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 15px;
-  background: linear-gradient(90deg, transparent, rgba(255,71,87,0.1));
-  border-radius: 0 25px 25px 0;
+  display: none; /* Removed gradient effect */
 }
 
 /* Dialog Animations */
@@ -408,4 +419,31 @@
 
 .dark-mode .MuiOutlinedInput-notchedOutline {
   border-color: rgba(255,255,255,0.2);
+}
+
+/* Button styles */
+.MuiButton-contained {
+  background-color: #ff4757 !important;
+}
+
+.MuiButton-contained:hover {
+  background-color: #d13b47 !important;
+}
+
+.MuiButton-outlined {
+  color: #ff4757 !important;
+  border-color: #ff4757 !important;
+}
+
+.MuiButton-outlined:hover {
+  background-color: rgba(255, 71, 87, 0.1) !important;
+}
+
+/* Dark mode text colors */
+.dark-mode .MuiTypography-root {
+  color: #ffffff;
+}
+
+.dark-mode .MuiTextField-root {
+  color: #ffffff;
 }

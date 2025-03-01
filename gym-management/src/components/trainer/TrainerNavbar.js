@@ -24,6 +24,46 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { styled } from '@mui/system';
+
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  '& .MuiDrawer-paper': {
+    backgroundColor: '#f5f5f5',
+    color: '#757575',
+    width: 240,
+    boxSizing: 'border-box',
+    borderRight: '1px solid #e0e0e0',
+    '& .MuiListItemIcon-root': {
+      color: '#757575',
+    },
+    '& .MuiListItemText-root': {
+      color: '#757575',
+    },
+    '& .MuiListItem-root': {
+      '&:hover': {
+        backgroundColor: '#eeeeee',
+      },
+    },
+  },
+}));
+
+const StyledListItem = styled(ListItem)(({ theme, selected }) => ({
+  margin: '4px 8px',
+  borderRadius: '8px',
+  backgroundColor: selected ? '#e0e0e0' : 'transparent',
+  '&:hover': {
+    backgroundColor: '#eeeeee',
+  },
+}));
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '16px',
+  backgroundColor: '#eeeeee',
+  color: '#757575',
+  borderBottom: '1px solid #e0e0e0',
+}));
 
 const TrainerNavbar = ({ isDarkMode }) => {
   const navigate = useNavigate();
@@ -48,25 +88,21 @@ const TrainerNavbar = ({ isDarkMode }) => {
     <Box sx={{ 
       height: '95vh',
       margin: '20px',
-      marginLeft: '40px', // Added margin to move navbar right
-      bgcolor: isDarkMode ? 'rgba(26, 26, 26, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      marginLeft: '10px',
+      bgcolor: isDarkMode ? '#1a1a1a' : '#ff4757',
       borderRadius: '25px',
       position: 'relative',
       overflow: 'hidden',
-      backdropFilter: 'blur(12px)',
-      border: `1px solid ${isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.15)'}`,
-      boxShadow: isDarkMode 
-        ? '0 8px 32px rgba(255,71,87,0.2), inset 0 2px 15px rgba(255,71,87,0.1)' 
-        : '0 8px 32px rgba(255,71,87,0.15), inset 0 2px 15px rgba(255,71,87,0.05)',
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '100%',
-        background: `linear-gradient(135deg, rgba(255,71,87,${isDarkMode ? '0.15' : '0.1'}) 0%, transparent 100%)`,
-        borderRadius: 'inherit',
+      border: 'none',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+      '& .MuiListItemIcon-root': {
+        color: '#ffffff',
+      },
+      '& .MuiListItemText-root': {
+        color: '#ffffff',
+      },
+      '& .MuiTypography-root': {
+        color: '#ffffff',
       }
     }}>
       <motion.div
@@ -115,10 +151,8 @@ const TrainerNavbar = ({ isDarkMode }) => {
             <Typography 
               variant="h6" 
               sx={{ 
-                background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
                 fontWeight: 'bold',
+                color: '#ffffff !important', // Force white color for name
               }}
             >
               John Trainer
@@ -126,8 +160,9 @@ const TrainerNavbar = ({ isDarkMode }) => {
             <Typography 
               variant="body2" 
               sx={{ 
-                color: isDarkMode ? '#aaa' : '#666',
-                fontSize: '0.9rem'
+                color: '#ffffff !important', // Force white color for title
+                fontSize: '0.9rem',
+                opacity: 0.8
               }}
             >
               Senior Trainer
@@ -141,15 +176,13 @@ const TrainerNavbar = ({ isDarkMode }) => {
         '& .MuiListItem-root': {
           mb: 1,
           borderRadius: '12px',
-          background: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(255,71,87,0.03)',
+          background: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(8px)',
-          border: '1px solid',
-          borderColor: 'transparent',
+          border: '1px solid transparent',
           transition: 'all 0.3s ease',
           '&:hover': {
-            borderColor: 'rgba(255,71,87,0.3)',
-            background: isDarkMode ? 'rgba(255,71,87,0.1)' : 'rgba(255,71,87,0.08)',
-            transform: 'translateX(8px)',
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderColor: '#ffffff',
           }
         }
       }}>
@@ -164,14 +197,23 @@ const TrainerNavbar = ({ isDarkMode }) => {
                 button
                 onClick={() => handleNavigation(item.path)}
                 sx={{
-                  background: isActive ? `rgba(255,71,87,${isDarkMode ? '0.15' : '0.1'})` : 'transparent',
-                  borderLeft: isActive ? '4px solid #ff4757' : '4px solid transparent',
+                  background: isActive 
+                    ? isDarkMode 
+                      ? 'rgba(220, 53, 69, 0.2)'
+                      : 'rgba(255, 255, 255, 0.2)'
+                    : 'transparent',
+                  borderLeft: isActive 
+                    ? `4px solid ${isDarkMode ? '#dc3545' : '#ffffff'}`
+                    : '4px solid transparent',
                   pl: isActive ? '12px' : '16px',
                 }}
               >
                 <ListItemIcon 
                   sx={{ 
-                    color: isActive ? '#ff4757' : isDarkMode ? '#fff' : '#666',
+                    color: isActive 
+                      ? isDarkMode ? '#dc3545' : '#ffffff'
+                      : isDarkMode ? '#999' : '#ffffff',
+                    opacity: isActive ? 1 : 0.8,
                     minWidth: '40px',
                     transition: 'transform 0.3s ease',
                     transform: isActive ? 'scale(1.2)' : 'scale(1)',
@@ -184,7 +226,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
                   sx={{
                     '& .MuiListItemText-primary': {
                       fontWeight: isActive ? 600 : 400,
-                      color: isActive ? '#ff4757' : 'inherit',
+                      color: '#ffffff !important', // Force white color
                       fontSize: '0.95rem',
                     }
                   }}
@@ -215,22 +257,21 @@ const TrainerNavbar = ({ isDarkMode }) => {
         left: 0, 
         right: 0, 
         p: 2,
-        borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        background: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-        backdropFilter: 'blur(10px)',
+        borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)'}`,
+        background: isDarkMode ? '#1a1a1a' : '#ff4757',
       }}>
         <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
           <ListItem
             button
             sx={{
               borderRadius: '12px',
-              color: '#ff4757',
+              color: '#ffffff',
               '&:hover': {
-                bgcolor: 'rgba(255,71,87,0.1)',
+                bgcolor: 'rgba(255,255,255,0.1)',
               }
             }}
           >
-            <ListItemIcon sx={{ color: '#ff4757', minWidth: '40px' }}>
+            <ListItemIcon sx={{ color: '#ffffff', minWidth: '40px' }}>
               <Logout />
             </ListItemIcon>
             <ListItemText 
@@ -238,6 +279,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
               sx={{
                 '& .MuiListItemText-primary': {
                   fontWeight: 500,
+                  color: '#ffffff !important', // Force white color for logout text
                 }
               }}
             />
@@ -273,20 +315,19 @@ const TrainerNavbar = ({ isDarkMode }) => {
       <Box
         component="nav"
         sx={{ 
-          width: { sm: 360 }, // Increased width for more margin
+          width: { sm: 260 }, // Increased from 240px
           flexShrink: { sm: 0 },
+          position: 'fixed',
+          height: '100%',
           '& .MuiDrawer-paper': {
-            width: 360,
+            width: 260, // Increased from 240px
             boxSizing: 'border-box',
             border: 'none',
             background: 'transparent',
-            '&::-webkit-scrollbar': {
-              display: 'none'
-            },
           }
         }}
       >
-        <Drawer
+        <StyledDrawer
           variant="temporary"
           open={mobileOpen}
           onClose={() => setMobileOpen(false)}
@@ -297,8 +338,8 @@ const TrainerNavbar = ({ isDarkMode }) => {
           }}
         >
           {drawer}
-        </Drawer>
-        <Drawer
+        </StyledDrawer>
+        <StyledDrawer
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
@@ -307,7 +348,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
           open
         >
           {drawer}
-        </Drawer>
+        </StyledDrawer>
       </Box>
     </>
   );
