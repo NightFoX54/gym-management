@@ -14,6 +14,7 @@ import CardioZone from './components/services/CardioZone';
 import Navbar from './components/Navbar';
 import TrainerPage from './components/trainer/TrainerPage';
 import Member from './components/member/Member';
+import MyProfile from './components/member/MyProfile';
 import ForgotPassword from './components/ForgotPassword';
 
 function Home({ isDarkMode, setIsDarkMode }) {
