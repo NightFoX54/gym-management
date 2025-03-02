@@ -1,15 +1,15 @@
 .trainer-page {
   min-height: 100vh;
   display: flex;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #f8f9fa;
   padding: 0 20px;
   box-sizing: border-box;
   padding-bottom: 2rem;
 }
 
-.dark-mode.trainer-page {
-  background: linear-gradient(135deg, #1a1a2e 0%, #1a1a1a 100%);
-  color: #fff;
+.trainer-page.dark-mode {
+  background: #1a1a1a;
+  color: #ffffff;
 }
 
 .trainer-container {
@@ -18,13 +18,12 @@
 
 .trainer-content {
   flex-grow: 1;
-  padding: 24px;
-  margin-left: 280px;
+  padding: 24px 32px;
+  margin-left: 240px;
   width: calc(100% - 240px);
   box-sizing: border-box;
   overflow-x: hidden;
   max-width: none;
-  transition: all 0.3s ease;
 }
 
 .dashboard-title {
@@ -447,89 +446,4 @@
 
 .dark-mode .MuiTextField-root {
   color: #ffffff;
-}
-
-/* Add smooth transitions */
-.trainer-page * {
-  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Dark Mode Styles */
-.dark-mode .MuiPaper-root {
-  background-color: #1a1a1a;
-  color: #ffffff;
-}
-
-.dark-mode .MuiDrawer-paper {
-  background-color: transparent;
-}
-
-.dark-mode .MuiListItemText-primary {
-  color: #ffffff;
-}
-
-.dark-mode .MuiListItemText-secondary {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.dark-mode .MuiIconButton-root {
-  color: #ffffff;
-}
-
-.dark-mode .MuiDivider-root {
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.dark-mode .MuiTextField-root {
-  color: #ffffff;
-}
-
-.dark-mode .MuiInputBase-root {
-  color: #ffffff;
-}
-
-.dark-mode .MuiInputLabel-root {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.dark-mode .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255, 255, 255, 0.23);
-}
-
-.dark-mode .MuiSelect-icon {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* Update the theme toggle button styles */
-.theme-toggle {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.theme-toggle::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, #ff4757, #ff6b81);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.theme-toggle:hover::before {
-  opacity: 0.1;
-}
-
-/* Animation for theme toggle */
-@keyframes rotateIcon {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.theme-icon {
-  animation: rotateIcon 0.5s ease;
 }

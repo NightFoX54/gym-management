@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Login.css';
 
-function Login() {
+function Login({ isDarkMode, setIsDarkMode }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -28,8 +28,12 @@ function Login() {
     navigate('/');
   };
 
+  const handleForgotPassword = () => {
+    navigate('/forgot-password');
+  };
+
   return (
-    <div className="login-container">
+    <div className={`login-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="login-box">
         <div className="back-arrow" onClick={handleBackClick}>
           ← Back
@@ -68,7 +72,13 @@ function Login() {
             <label className="remember-me">
               <input type="checkbox" /> Remember me
             </label>
-            <a href="#forgot-password" className="forgot-password">Forgot password?</a>
+            <span 
+              className="forgot-password" 
+              onClick={handleForgotPassword}
+              style={{ cursor: 'pointer' }}
+            >
+              Forgot Password?
+            </span>
           </div>
 
           <button type="submit" className="login-button">Sign In</button>

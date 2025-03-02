@@ -1,33 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 
 function Navbar({ isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
-  const [prevScrollPos, setPrevScrollPos] = useState(window.pageYOffset);
-  const [visible, setVisible] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollPos = window.pageYOffset;
-      const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
-      
-      setVisible(isVisible);
-      setPrevScrollPos(currentScrollPos);
-      setIsScrolled(currentScrollPos > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [prevScrollPos]);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
 
   return (
-    <nav className={`navbar ${!visible ? 'hidden' : ''} ${isScrolled ? 'scrolled' : ''}`}>
+    <nav className="navbar">
       <div className="logo">GymFlex</div>
       <div className="nav-links">
         <a href="/">Home</a>
@@ -48,4 +31,4 @@ function Navbar({ isDarkMode, setIsDarkMode }) {
   );
 }
 
-export default Navbar;
+export default Navbar; 
