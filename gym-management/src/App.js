@@ -86,18 +86,15 @@ function Home({ isDarkMode, setIsDarkMode }) {
 }
 
 function App() {
-  // Initialize state with the saved preference
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
     document.body.classList.toggle('dark-mode', savedDarkMode);
     return savedDarkMode;
   });
 
-  // Only handle changes to dark mode
   useEffect(() => {
     localStorage.setItem('darkMode', isDarkMode);
     document.body.classList.toggle('dark-mode', isDarkMode);
-    console.log('Dark mode state:', isDarkMode);
   }, [isDarkMode]);
 
   return (

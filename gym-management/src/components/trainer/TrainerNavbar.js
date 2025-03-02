@@ -21,6 +21,8 @@ import {
   Person,
   Menu as MenuIcon,
   Logout,
+  DarkMode,
+  LightMode,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,7 +67,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   borderBottom: '1px solid #e0e0e0',
 }));
 
-const TrainerNavbar = ({ isDarkMode }) => {
+const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -84,25 +86,35 @@ const TrainerNavbar = ({ isDarkMode }) => {
     setMobileOpen(false);
   };
 
+  const handleThemeToggle = () => {
+    setIsDarkMode(!isDarkMode);
+    localStorage.setItem('darkMode', (!isDarkMode).toString());
+  };
+
   const drawer = (
     <Box sx={{ 
       height: '95vh',
       margin: '20px',
       marginLeft: '10px',
-      bgcolor: isDarkMode ? '#1a1a1a' : '#ff4757',
+      bgcolor: isDarkMode ? '#1a1a1a' : 'rgba(255, 255, 255, 0.95)',
+      background: isDarkMode 
+        ? 'linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%)'
+        : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
       borderRadius: '25px',
       position: 'relative',
       overflow: 'hidden',
-      border: 'none',
+      border: '1px solid',
+      borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
       '& .MuiListItemIcon-root': {
-        color: '#ffffff',
+        color: isDarkMode ? '#e0e0e0' : '#2c3e50',
+        minWidth: '40px'
       },
       '& .MuiListItemText-root': {
-        color: '#ffffff',
+        color: isDarkMode ? '#e0e0e0' : '#2c3e50',
       },
       '& .MuiTypography-root': {
-        color: '#ffffff',
+        color: isDarkMode ? '#e0e0e0' : '#2c3e50',
       }
     }}>
       <motion.div
@@ -140,7 +152,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 border: '3px solid',
-                borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.2)',
               }}
               onClick={() => handleNavigation('/trainer')}
             >
@@ -152,7 +164,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
               variant="h6" 
               sx={{ 
                 fontWeight: 'bold',
-                color: '#ffffff !important', // Force white color for name
+                color: isDarkMode ? '#ffffff' : '#2c3e50',
               }}
             >
               John Trainer
@@ -160,7 +172,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
             <Typography 
               variant="body2" 
               sx={{ 
-                color: '#ffffff !important', // Force white color for title
+                color: isDarkMode ? 'rgba(255,255,255,0.8)' : '#666666',
                 fontSize: '0.9rem',
                 opacity: 0.8
               }}
@@ -176,13 +188,19 @@ const TrainerNavbar = ({ isDarkMode }) => {
         '& .MuiListItem-root': {
           mb: 1,
           borderRadius: '12px',
-          background: 'rgba(255, 255, 255, 0.1)',
+          background: isDarkMode 
+            ? 'rgba(255, 255, 255, 0.05)' 
+            : 'rgba(255, 71, 87, 0.05)',
           backdropFilter: 'blur(8px)',
-          border: '1px solid transparent',
+          border: '1px solid',
+          borderColor: isDarkMode 
+            ? 'rgba(255, 255, 255, 0.05)'
+            : 'rgba(255, 71, 87, 0.1)',
           transition: 'all 0.3s ease',
           '&:hover': {
-            background: 'rgba(255, 255, 255, 0.2)',
-            borderColor: '#ffffff',
+            background: isDarkMode 
+              ? 'rgba(255, 255, 255, 0.1)'
+              : 'rgba(255, 71, 87, 0.1)',
           }
         }
       }}>
@@ -198,21 +216,17 @@ const TrainerNavbar = ({ isDarkMode }) => {
                 onClick={() => handleNavigation(item.path)}
                 sx={{
                   background: isActive 
-                    ? isDarkMode 
-                      ? 'rgba(220, 53, 69, 0.2)'
-                      : 'rgba(255, 255, 255, 0.2)'
+                    ? 'rgba(255, 71, 87, 0.15)'
                     : 'transparent',
                   borderLeft: isActive 
-                    ? `4px solid ${isDarkMode ? '#dc3545' : '#ffffff'}`
+                    ? '4px solid #ff4757'
                     : '4px solid transparent',
                   pl: isActive ? '12px' : '16px',
                 }}
               >
                 <ListItemIcon 
                   sx={{ 
-                    color: isActive 
-                      ? isDarkMode ? '#dc3545' : '#ffffff'
-                      : isDarkMode ? '#999' : '#ffffff',
+                    color: isActive ? '#ff4757' : isDarkMode ? '#e0e0e0' : '#2c3e50',
                     opacity: isActive ? 1 : 0.8,
                     minWidth: '40px',
                     transition: 'transform 0.3s ease',
@@ -226,7 +240,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
                   sx={{
                     '& .MuiListItemText-primary': {
                       fontWeight: isActive ? 600 : 400,
-                      color: '#ffffff !important', // Force white color
+                      color: isActive ? '#ff4757' : isDarkMode ? '#e0e0e0' : '#2c3e50',
                       fontSize: '0.95rem',
                     }
                   }}
@@ -253,25 +267,64 @@ const TrainerNavbar = ({ isDarkMode }) => {
 
       <Box sx={{ 
         position: 'absolute', 
+        bottom: 70, // Position above logout button
+        left: 0, 
+        right: 0, 
+        p: 2,
+      }}>
+        <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
+          <ListItem
+            button
+            onClick={handleThemeToggle}
+            sx={{
+              borderRadius: '12px',
+              color: isDarkMode ? '#ffffff' : '#2c3e50',
+              '&:hover': {
+                bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.1)',
+              }
+            }}
+          >
+            <ListItemIcon sx={{ 
+              color: isDarkMode ? '#ffffff' : '#2c3e50',
+              minWidth: '40px'
+            }}>
+              {isDarkMode ? <LightMode /> : <DarkMode />}
+            </ListItemIcon>
+            <ListItemText 
+              primary={isDarkMode ? "Light Mode" : "Dark Mode"}
+              sx={{
+                '& .MuiListItemText-primary': {
+                  fontWeight: 500,
+                  color: isDarkMode ? '#ffffff' : '#2c3e50',
+                }
+              }}
+            />
+          </ListItem>
+        </motion.div>
+      </Box>
+
+      <Box sx={{ 
+        position: 'absolute', 
         bottom: 0, 
         left: 0, 
         right: 0, 
         p: 2,
-        borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)'}`,
-        background: isDarkMode ? '#1a1a1a' : '#ff4757',
+        borderTop: '1px solid',
+        borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        background: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,71,87,0.05)',
       }}>
         <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
           <ListItem
             button
             sx={{
               borderRadius: '12px',
-              color: '#ffffff',
+              color: '#ff4757',
               '&:hover': {
-                bgcolor: 'rgba(255,255,255,0.1)',
+                bgcolor: 'rgba(255,71,87,0.1)',
               }
             }}
           >
-            <ListItemIcon sx={{ color: '#ffffff', minWidth: '40px' }}>
+            <ListItemIcon sx={{ color: '#ff4757', minWidth: '40px' }}>
               <Logout />
             </ListItemIcon>
             <ListItemText 
@@ -279,7 +332,7 @@ const TrainerNavbar = ({ isDarkMode }) => {
               sx={{
                 '& .MuiListItemText-primary': {
                   fontWeight: 500,
-                  color: '#ffffff !important', // Force white color for logout text
+                  color: '#ff4757',
                 }
               }}
             />
