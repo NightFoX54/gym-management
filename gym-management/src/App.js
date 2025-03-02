@@ -13,6 +13,8 @@ import StrengthTraining from './components/services/StrengthTraining';
 import CardioZone from './components/services/CardioZone';
 import Navbar from './components/Navbar';
 import TrainerPage from './components/trainer/TrainerPage';
+import Member from './components/member/Member';
+import ForgotPassword from './components/ForgotPassword';
 
 function Home({ isDarkMode, setIsDarkMode }) {
   const scrollToTop = () => {
