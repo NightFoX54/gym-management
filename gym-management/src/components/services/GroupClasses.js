@@ -1,153 +1,118 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../Navbar';
-import { FaUsers, FaCalendarAlt, FaFireAlt, FaMedal, FaLaughBeam, FaBrain } from 'react-icons/fa';
 import '../../styles/ServiceDetail.css';
 
 function GroupClasses({ isDarkMode, setIsDarkMode }) {
+  const [isDarkModeState, setIsDarkModeState] = useState(false);
+
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkModeState(savedDarkMode);
+    document.body.classList.toggle('dark-mode', savedDarkMode);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('darkMode', isDarkModeState);
+    document.body.classList.toggle('dark-mode', isDarkModeState);
+  }, [isDarkModeState]);
+
   return (
-    <div className={`service-page ${isDarkMode ? 'dark-mode' : ''}`}>
-      <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-      
-      <div className="service-hero">
-        <div 
-          className="hero-background" 
-          style={{ backgroundImage: "url('/images/group-classes-bg.jpg')" }}
-        ></div>
-        <div className="hero-overlay"></div>
-        <div className="hero-content">
-          <h1>Group Fitness Classes</h1>
-          <p>Experience the energy and motivation of working out together in our diverse range of group classes</p>
-          <button className="hero-btn" onClick={() => document.querySelector('.overview-card').scrollIntoView({ behavior: 'smooth' })}>
-            Explore Classes
-          </button>
+    <div className={isDarkModeState ? 'dark-mode' : ''}>
+      <Navbar isDarkMode={isDarkModeState} setIsDarkMode={setIsDarkModeState} />
+
+      <div className="service-detail-page">
+        <div className="service-detail-header">
+          <h1>Group Classes</h1>
+          <p>Get fit together with our energetic group sessions</p>
         </div>
-      </div>
-      
-      <div className="service-content">
-        <div className="content-container">
-          <div className="overview-card">
-            <h2 className="section-title">Fitness is Better Together</h2>
-            <p className="overview-text">
-              Our group fitness classes blend expert instruction with the motivation and energy of a supportive community. 
-              With a diverse range of classes designed for all fitness levels, you'll find the perfect way to challenge yourself, 
-              have fun, and achieve results in a supportive atmosphere.
-            </p>
+
+        <div className="service-detail-content">
+          <div className="service-overview">
+            <h2>Experience the Energy of Group Fitness</h2>
+            <p>Join our dynamic group classes led by expert instructors. Whether you're a beginner or advanced fitness enthusiast, our varied class schedule has something for everyone.</p>
             
-            <div className="feature-grid">
-              <div className="feature-card">
-                <FaFireAlt className="feature-icon" />
-                <h3 className="feature-title">High-Intensity Classes</h3>
-                <p className="feature-text">
-                  Challenge yourself with our intense, calorie-burning workouts designed to push your limits.
-                </p>
-                <ul className="feature-list">
-                  <li>HIIT Training</li>
-                  <li>Bootcamp</li>
-                  <li>Tabata</li>
-                  <li>Circuit Training</li>
-                </ul>
-              </div>
-              
-              <div className="feature-card">
-                <FaBrain className="feature-icon" />
-                <h3 className="feature-title">Mind & Body Classes</h3>
-                <p className="feature-text">
-                  Find balance, flexibility and inner peace with our mindful movement classes.
-                </p>
-                <ul className="feature-list">
-                  <li>Yoga (various styles)</li>
-                  <li>Pilates</li>
-                  <li>Tai Chi</li>
-                  <li>Stretch & Recovery</li>
-                </ul>
-              </div>
-              
-              <div className="feature-card">
-                <FaUsers className="feature-icon" />
-                <h3 className="feature-title">Cardio & Dance</h3>
-                <p className="feature-text">
-                  Enjoy fun, energetic workouts set to music that will get your heart pumping.
-                </p>
-                <ul className="feature-list">
-                  <li>Zumba</li>
-                  <li>Cardio Dance</li>
-                  <li>Step Aerobics</li>
-                  <li>Spin Classes</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <div className="benefits-section">
-            <h2 className="benefits-title">Benefits of Group Fitness</h2>
-            <div className="benefits-grid">
-              <div className="benefit-item">
-                <FaUsers className="benefit-icon" />
-                <h3 className="benefit-title">Community Support</h3>
-                <p className="benefit-text">Connect with like-minded individuals who will motivate and inspire you.</p>
-              </div>
-              
-              <div className="benefit-item">
-                <FaCalendarAlt className="benefit-icon" />
-                <h3 className="benefit-title">Accountability</h3>
-                <p className="benefit-text">Scheduled classes help you maintain consistency in your fitness routine.</p>
-              </div>
-              
-              <div className="benefit-item">
-                <FaMedal className="benefit-icon" />
-                <h3 className="benefit-title">Expert Instruction</h3>
-                <p className="benefit-text">Learn proper form and technique from our certified class instructors.</p>
-              </div>
-              
-              <div className="benefit-item">
-                <FaLaughBeam className="benefit-icon" />
-                <h3 className="benefit-title">Fun Factor</h3>
-                <p className="benefit-text">Enjoy workouts that are engaging, varied, and make fitness feel like fun.</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="testimonials-section">
-            <h2 className="section-title">What Our Members Say</h2>
-            <div className="testimonial-grid">
-              <div className="testimonial-card">
-                <p className="testimonial-text">
-                  "The energy in the HIIT classes is incredible! I've never been so motivated to push myself, 
-                  and the results speak for themselves. Down 20 pounds and feeling stronger than ever!"
-                </p>
-                <div className="testimonial-author">
-                  <img src="/images/testimonial-3.jpg" alt="Jessica" className="author-image" />
-                  <div className="author-info">
-                    <h4>Jessica Taylor</h4>
-                    <p>HIIT Class Regular</p>
-                  </div>
+            <div className="class-schedule">
+              <h3>Weekly Class Schedule</h3>
+              <div className="schedule-grid">
+                <div className="schedule-card">
+                  <h4>Morning Classes</h4>
+                  <ul>
+                    <li>6:00 AM - Power Yoga</li>
+                    <li>7:30 AM - HIIT</li>
+                    <li>9:00 AM - Zumba</li>
+                    <li>10:30 AM - Spinning</li>
+                  </ul>
                 </div>
-              </div>
-              
-              <div className="testimonial-card">
-                <p className="testimonial-text">
-                  "As someone who always worked out alone, I was nervous to try group classes. Now I can't imagine 
-                  my fitness routine without them! The instructors are amazing and the community is so supportive."
-                </p>
-                <div className="testimonial-author">
-                  <img src="/images/testimonial-4.jpg" alt="Robert" className="author-image" />
-                  <div className="author-info">
-                    <h4>Robert Pierce</h4>
-                    <p>Attends 4 classes weekly</p>
-                  </div>
+                <div className="schedule-card">
+                  <h4>Evening Classes</h4>
+                  <ul>
+                    <li>4:00 PM - Body Pump</li>
+                    <li>5:30 PM - Boxing</li>
+                    <li>7:00 PM - Pilates</li>
+                    <li>8:30 PM - Yoga Flow</li>
+                  </ul>
                 </div>
               </div>
             </div>
+
+            <div className="class-types">
+              <h3>Our Classes</h3>
+              <div className="class-grid">
+                <div className="class-card">
+                  <h4>Yoga</h4>
+                  <p>Find your balance and flexibility through various yoga styles</p>
+                </div>
+                <div className="class-card">
+                  <h4>HIIT</h4>
+                  <p>High-intensity interval training for maximum calorie burn</p>
+                </div>
+                <div className="class-card">
+                  <h4>Zumba</h4>
+                  <p>Dance your way to fitness with Latin-inspired moves</p>
+                </div>
+                <div className="class-card">
+                  <h4>Spinning</h4>
+                  <p>Indoor cycling workouts set to energetic music</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="service-benefits">
+              <h3>Benefits of Group Classes</h3>
+              <ul>
+                <li>Motivating group environment</li>
+                <li>Professional instruction</li>
+                <li>Varied workout routines</li>
+                <li>Social interaction</li>
+                <li>Scheduled commitment</li>
+                <li>Safe and effective workouts</li>
+              </ul>
+            </div>
+
+            <div className="pricing-section">
+              <h3>Class Access</h3>
+              <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
+                <h4>Group Classes Experience</h4>
+                <p className="price">Starting from $20/class</p>
+                <ul>
+                  <li>Access to all group fitness classes</li>
+                  <li>Professional certified instructors</li>
+                  <li>State-of-the-art studio facilities</li>
+                  <li>All equipment provided</li>
+                  <li>Flexible class schedule</li>
+                  <li>Free unlimited classes with Premium & Elite memberships</li>
+                </ul>
+                <p className="package-note">* Unlimited group classes are included with Premium ($49.99/mo) and Elite ($79.99/mo) membership plans. Drop-in and class pack options available.</p>
+                <button className="book-now-btn">View Schedule</button>
+              </div>
+            </div>
           </div>
-          
-          <div className="cta-section">
-            <h2 className="cta-title">Join a Class Today</h2>
-            <p className="cta-text">
-              Experience the energy, motivation, and results that come with our group fitness classes. 
-              Check out our class schedule and find the perfect fit for your fitness goals and preferences.
-            </p>
-            <button className="cta-btn" onClick={() => window.location.href='/signup'}>
-              View Class Schedule
+
+          <div className="booking-section">
+            <h2>Ready to Join a Class?</h2>
+            <p>Experience our energetic group classes with a free trial class after becoming a member</p>
+            <button className="consultation-btn" onClick={() => window.location.href='/signup'}>
+              Join Now
             </button>
           </div>
         </div>

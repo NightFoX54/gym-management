@@ -1,463 +1,326 @@
-/* New Enhanced ServiceDetail.css */
-.service-page {
-  position: relative;
+.service-detail-page {
+  padding-top: 80px;
+  background-color: #f8f9fa;
   min-height: 100vh;
-  background-color: #f9f9f9;
 }
 
-.service-hero {
-  position: relative;
-  height: 80vh;
-  min-height: 600px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.hero-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.service-detail-header {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+              url('../../public/4.jpg');
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
-  z-index: 1;
-}
-
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%);
-  z-index: 2;
-}
-
-.hero-content {
-  position: relative;
-  z-index: 3;
-  text-align: center;
   color: white;
-  max-width: 800px;
-  padding: 0 2rem;
+  margin-bottom: 3rem;
 }
 
-.hero-content h1 {
-  font-size: 4rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  opacity: 0;
-  animation: fadeInUp 1s ease forwards;
+.service-detail-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
 }
 
-.hero-content p {
-  font-size: 1.5rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  opacity: 0;
-  animation: fadeInUp 1s 0.3s ease forwards;
-}
-
-.hero-btn {
-  background-color: #ff4757;
-  color: white;
-  border: none;
-  padding: 1rem 2.5rem;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255,71,87,0.3);
-  opacity: 0;
-  animation: fadeInUp 1s 0.6s ease forwards;
-}
-
-.hero-btn:hover {
-  background-color: #ff3747;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(255,71,87,0.4);
-}
-
-.service-content {
-  position: relative;
-  z-index: 5;
-  margin-top: -100px;
-  padding: 0 2rem 5rem;
-}
-
-.content-container {
+.service-detail-content {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
-.overview-card {
+.service-overview {
   background-color: white;
-  border-radius: 15px;
-  padding: 3rem;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-  margin-bottom: 4rem;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 3rem;
 }
 
-.section-title {
-  font-size: 2.5rem;
+.service-overview h2 {
+  color: #1a1a1a;
   margin-bottom: 1.5rem;
-  color: #333;
-  position: relative;
-  display: inline-block;
 }
 
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 0;
-  width: 60px;
-  height: 4px;
-  background-color: #ff4757;
-  border-radius: 2px;
-}
-
-.overview-text {
-  font-size: 1.1rem;
-  line-height: 1.8;
+.service-overview p {
   color: #666;
+  line-height: 1.6;
   margin-bottom: 2rem;
 }
 
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+.trainer-profiles {
   margin: 3rem 0;
 }
 
-.feature-card {
-  background-color: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
-  border-bottom: 4px solid #ff4757;
-  display: flex;
-  flex-direction: column;
-}
-
-.feature-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-}
-
-.feature-icon {
-  font-size: 2.5rem;
-  color: #ff4757;
-  margin-bottom: 1.5rem;
-}
-
-.feature-title {
-  font-size: 1.4rem;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.feature-text {
-  color: #666;
-  line-height: 1.6;
-  flex-grow: 1;
-}
-
-.feature-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0 0;
-}
-
-.feature-list li {
-  padding: 0.5rem 0;
-  padding-left: 1.8rem;
-  position: relative;
-  color: #666;
-}
-
-.feature-list li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: #ff4757;
-  font-weight: bold;
-}
-
-.benefits-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 5rem 0;
-  background-color: #f2f2f2;
-  border-radius: 15px;
-  margin-bottom: 4rem;
-}
-
-.benefits-title {
-  font-size: 2.5rem;
-  margin-bottom: 3rem;
-  color: #333;
-}
-
-.benefits-grid {
+.trainer-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
-  width: 100%;
-  max-width: 1000px;
-  padding: 0 2rem;
+  margin-top: 2rem;
 }
 
-.benefit-item {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
-}
-
-.benefit-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-}
-
-.benefit-icon {
-  font-size: 2rem;
-  color: #ff4757;
-  margin-bottom: 1rem;
-}
-
-.benefit-title {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  color: #333;
-}
-
-.benefit-text {
-  color: #666;
-  line-height: 1.6;
-}
-
-.cta-section {
-  background: linear-gradient(135deg, #ff4757 0%, #ff6b7a 100%);
-  border-radius: 15px;
-  padding: 5rem 3rem;
+.trainer-card {
   text-align: center;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+}
+
+.trainer-img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  object-fit: cover;
+}
+
+.trainer-card h4 {
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.service-benefits ul {
+  list-style: none;
+  padding: 0;
+}
+
+.service-benefits li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #666;
+}
+
+.service-benefits li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #ff4757;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.pricing-card {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.pricing-card.featured {
+  background-color: #ff4757;
   color: white;
-  box-shadow: 0 20px 40px rgba(255,71,87,0.2);
+  transform: scale(1.05);
 }
 
-.cta-title {
-  font-size: 2.5rem;
+.pricing-card:hover {
+  transform: translateY(-5px);
+}
+
+.pricing-card h4 {
+  margin-bottom: 1rem;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: bold;
   margin-bottom: 1.5rem;
-  font-weight: 700;
+  color: #ff4757;
 }
 
-.cta-text {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  opacity: 0.9;
+.featured .price {
+  color: white;
 }
 
-.cta-btn {
+.pricing-card ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.pricing-card li {
+  padding: 0.5rem 0;
+  color: #666;
+}
+
+.featured li {
+  color: white;
+}
+
+.book-now-btn {
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.featured .book-now-btn {
   background-color: white;
   color: #ff4757;
+}
+
+.book-now-btn:hover {
+  background-color: #ff3747;
+}
+
+.featured .book-now-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.booking-section {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #1a1a1a;
+  color: white;
+  border-radius: 10px;
+  margin-top: 3rem;
+}
+
+.consultation-btn {
+  background-color: #ff4757;
+  color: white;
   border: none;
-  padding: 1.2rem 3rem;
-  border-radius: 50px;
+  padding: 1rem 2rem;
+  border-radius: 5px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease;
+  margin-top: 2rem;
 }
 
-.cta-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-  background-color: #f9f9f9;
+.consultation-btn:hover {
+  background-color: #ff3747;
 }
 
-/* Testimonials section */
-.testimonials-section {
-  padding: 5rem 0;
-  margin-bottom: 4rem;
-}
-
-.testimonial-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.testimonial-card {
-  background-color: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  position: relative;
-}
-
-.testimonial-card::before {
-  content: "";
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  font-size: 5rem;
-  color: #ff475733;
-  font-family: Georgia, serif;
-  line-height: 0;
-}
-
-.testimonial-text {
-  color: #666;
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  font-style: italic;
-  position: relative;
-  z-index: 2;
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: center;
-}
-
-.author-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 1rem;
-}
-
-.author-info h4 {
-  margin: 0;
-  color: #333;
-}
-
-.author-info p {
-  margin: 0;
-  color: #999;
+.package-note {
   font-size: 0.9rem;
+  color: #666;
+  margin-top: 1rem;
+  font-style: italic;
 }
 
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Dark Mode Styles */
-.dark-mode .service-page {
-  background-color: #121212;
-}
-
-.dark-mode .overview-card,
-.dark-mode .feature-card,
-.dark-mode .benefit-item,
-.dark-mode .testimonial-card {
-  background-color: #1e1e1e;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.dark-mode .section-title,
-.dark-mode .feature-title,
-.dark-mode .benefit-title,
-.dark-mode .author-info h4 {
-  color: #e0e0e0;
-}
-
-.dark-mode .overview-text,
-.dark-mode .feature-text,
-.dark-mode .feature-list li,
-.dark-mode .benefit-text,
-.dark-mode .testimonial-text {
-  color: #b0b0b0;
-}
-
-.dark-mode .benefits-section {
-  background-color: #181818;
-}
-
-.dark-mode .cta-btn {
-  background-color: #2a2a2a;
-  color: #ff6b7a;
-}
-
-.dark-mode .cta-btn:hover {
-  background-color: #333;
-}
-
-.dark-mode .author-info p {
-  color: #777;
+.featured .package-note {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Responsive Design */
-@media (max-width: 992px) {
-  .hero-content h1 {
-    font-size: 3rem;
+@media (max-width: 768px) {
+  .service-detail-content {
+    padding: 1rem;
   }
-  
-  .hero-content p {
-    font-size: 1.3rem;
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
   }
-  
-  .section-title,
-  .benefits-title,
-  .cta-title {
-    font-size: 2rem;
+
+  .pricing-card.featured {
+    transform: none;
   }
 }
 
-@media (max-width: 768px) {
-  .service-hero {
-    height: 70vh;
-  }
-  
-  .hero-content h1 {
-    font-size: 2.5rem;
-  }
-  
-  .hero-content p {
-    font-size: 1.1rem;
-  }
-  
-  .overview-card {
-    padding: 2rem;
-  }
-  
-  .service-content {
-    margin-top: -50px;
-  }
-  
-  .benefits-grid,
-  .feature-grid,
-  .testimonial-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .cta-section {
-    padding: 3rem 1.5rem;
-  }
+.dark-mode {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.dark-mode .service-overview {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+.dark-mode .service-card,
+.dark-mode .pricing-card:not(.featured),
+.dark-mode .trainer-card,
+.dark-mode .equipment-card,
+.dark-mode .program-card {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+.dark-mode .service-card h3,
+.dark-mode .pricing-card h4,
+.dark-mode .trainer-card h4 {
+  color: #ffffff;
+}
+
+.dark-mode .service-description,
+.dark-mode .pricing-card li,
+.dark-mode .service-benefits li {
+  color: #dddddd;
+}
+
+.dark-mode .package-note {
+  color: #bbbbbb;
+}
+
+.dark-mode-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+/* Dark Mode Styles */
+.dark-mode .service-detail-page {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .service-detail-header {
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+              url('../../public/4.jpg');
+}
+
+.dark-mode h2,
+.dark-mode h3 {
+  color: #ffffff;
+}
+
+.dark-mode p {
+  color: #dddddd;
+}
+
+/* Hover effects in dark mode */
+.dark-mode .equipment-card:hover,
+.dark-mode .program-card:hover,
+.dark-mode .class-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.2);
+}
+
+/* Remove box styling from descriptions only */
+.service-overview p,
+.service-description p,
+.class-card p,
+.program-card p,
+.equipment-card p {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Dark mode adjustments */
+.dark-mode .service-overview p,
+.dark-mode .service-description p,
+.dark-mode .class-card p,
+.dark-mode .program-card p,
+.dark-mode .equipment-card p {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.dark-mode .booking-section {
+  background-color: #2d2d2d;
+  color: white;
+  border-radius: 10px;
 } 

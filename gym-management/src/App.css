@@ -129,6 +129,13 @@
   width: 100%;
   color: white;
   padding: 0 20px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  padding: 2rem;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .hero-content h1 {
@@ -153,6 +160,10 @@
   cursor: pointer;
   font-weight: bold;
   transition: transform 0.3s ease;
+  background: linear-gradient(145deg, #ff4757, #ff6b81);
+  border-radius: 25px;
+  padding: 1.2rem 3rem;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
 }
 
 .cta-button:hover {
@@ -162,6 +173,10 @@
 .about-section {
   padding: 5rem 2rem;
   background-color: #f8f9fa;
+  background: rgba(248, 249, 250, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  margin: 2rem;
 }
 
 .about-section h2 {
@@ -183,6 +198,16 @@
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .feature h3 {
@@ -200,6 +225,10 @@
   background-color: #fff;
   border-top: 1px solid #e0e0e0;
   text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  margin: 2rem;
 }
 
 .social-icons {
@@ -220,6 +249,8 @@
   color: white;
   text-decoration: none;
   transition: transform 0.3s ease, background-color 0.3s ease;
+  background: linear-gradient(145deg, #ff4757, #ff6b81);
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
 }
 
 .social-icon i {
@@ -323,6 +354,7 @@
 .dark-mode {
   background-color: #1a1a1a;
   color: #ffffff;
+  background: linear-gradient(145deg, #1a1a1a, #2c2c2c);
 }
 
 .dark-mode .navbar {
@@ -341,7 +373,6 @@
   background-color: #3e3e3e;
 }
 
-
 .dark-mode .toggle-circle {
   transform: translateX(30px);
 }
@@ -352,10 +383,13 @@
 
 .dark-mode .feature {
   background-color: #2c2c2c;
+  background: rgba(44, 44, 44, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .dark-mode .contact-section {
   background-color: #2c2c2c;
+  background: rgba(26, 26, 26, 0.95);
 }
 
 .dark-mode .social-icon {
@@ -379,6 +413,7 @@
 /* Additional dark mode styles for About section */
 .dark-mode .about-section {
   background-color: #1a1a1a;
+  background: rgba(26, 26, 26, 0.95);
 }
 
 .dark-mode .features {

@@ -25,6 +25,17 @@ import {
   InputLabel,
   Button,
   InputAdornment,
+  CircularProgress,
+  LinearProgress,
+  Tooltip,
+  Divider,
+  Chip, 
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -34,6 +45,12 @@ import {
   Person,
   Mail,
   Phone,
+  TrendingUp,
+  Stars,
+  EmojiEvents,
+  LocalFireDepartment,
+  Scale,
+  Speed as SpeedIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ClientsPage from './ClientsPage';
@@ -88,10 +105,10 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const stats = [
-    { title: 'Total Clients', value: '24', icon: <PeopleIcon />, color: '#f5f5f5' },
-    { title: 'Today\'s Sessions', value: '8', icon: <TodayIcon />, color: '#eeeeee' },
-    { title: 'Active Programs', value: '12', icon: <FitnessIcon />, color: '#e0e0e0' },
-    { title: 'Hours This Week', value: '32', icon: <TimelineIcon />, color: '#d5d5d5' },
+    { title: 'Total Clients', value: '24', icon: <PeopleIcon />, color: '#ff4757' },
+    { title: 'Today\'s Sessions', value: '8', icon: <TodayIcon />, color: '#ff4757' },
+    { title: 'Active Programs', value: '12', icon: <FitnessIcon />, color: '#ff4757' },
+    { title: 'Hours This Week', value: '32', icon: <TimelineIcon />, color: '#ff4757' },
   ];
 
   const upcomingSessions = [
@@ -294,43 +311,220 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     ),
   };
 
+  // Add mock data for progress charts
+  const clientProgress = {
+    weeklyStats: {
+      workoutsCompleted: 45,
+      totalClients: 52,
+      averageRating: 4.8,
+      totalHours: 86
+    },
+    topPerformers: [
+      { name: 'John Doe', progress: 92, achievement: 'Weight Goal Reached' },
+      { name: 'Jane Smith', progress: 88, achievement: 'Monthly Attendance' },
+      { name: 'Mike Johnson', progress: 85, achievement: 'Strength Milestone' }
+    ],
+    recentAchievements: [
+      { client: 'Sarah Wilson', type: 'Weight Loss', value: '-5kg' },
+      { client: 'Tom Brown', type: 'Strength Gain', value: '+15kg bench' },
+      { client: 'Emma Davis', type: 'Attendance', value: '15 days streak' }
+    ]
+  };
+
+  const renderProgressSection = () => (
+    <Grid item xs={12} md={6}>
+      <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.3 }}>
+        <Paper sx={{
+          borderRadius: '16px',
+          background: isDarkMode ? 'rgba(44,62,80,0.3)' : 'white',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.1)',
+          height: '100%'
+        }}>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ 
+              color: '#ff4757',
+              fontWeight: 600,
+              mb: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              <TrendingUp /> Client Progress Overview
+            </Typography>
+
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ 
+                      fontWeight: 600,
+                      color: isDarkMode ? '#fff' : '#333',
+                      borderBottom: '2px solid #ff4757'
+                    }}>
+                      Client
+                    </TableCell>
+                    <TableCell align="center" sx={{ 
+                      fontWeight: 600,
+                      color: isDarkMode ? '#fff' : '#333',
+                      borderBottom: '2px solid #ff4757'
+                    }}>
+                      Progress
+                    </TableCell>
+                    <TableCell align="right" sx={{ 
+                      fontWeight: 600,
+                      color: isDarkMode ? '#fff' : '#333',
+                      borderBottom: '2px solid #ff4757'
+                    }}>
+                      Achievement
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {clientProgress.topPerformers.map((performer, index) => (
+                    <TableRow key={index} sx={{
+                      '&:hover': {
+                        bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                      },
+                    }}>
+                      <TableCell sx={{ 
+                        color: isDarkMode ? '#fff' : 'inherit',
+                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Avatar sx={{ width: 32, height: 32, bgcolor: '#ff4757' }}>
+                            {performer.name[0]}
+                          </Avatar>
+                          {performer.name}
+                        </Box>
+                      </TableCell>
+                      <TableCell align="center" sx={{ 
+                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={performer.progress}
+                            sx={{
+                              width: '100%',
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: 'rgba(255,71,87,0.1)',
+                              '& .MuiLinearProgress-bar': {
+                                bgcolor: '#ff4757',
+                              }
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ 
+                            color: '#ff4757',
+                            minWidth: '45px'
+                          }}>
+                            {performer.progress}%
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right" sx={{ 
+                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      }}>
+                        <Chip
+                          size="small"
+                          label={performer.achievement}
+                          sx={{
+                            bgcolor: isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.1)',
+                            color: '#ff4757',
+                            fontWeight: 500
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle2" sx={{ mb: 2, color: isDarkMode ? '#fff' : '#666' }}>
+              Recent Achievements
+            </Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableBody>
+                  {clientProgress.recentAchievements.map((achievement, index) => (
+                    <TableRow key={index} sx={{
+                      '&:hover': {
+                        bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                      },
+                    }}>
+                      <TableCell sx={{ 
+                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      }}>
+                        {achievement.client}
+                      </TableCell>
+                      <TableCell sx={{ 
+                        color: '#ff4757',
+                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      }}>
+                        {achievement.type}
+                      </TableCell>
+                      <TableCell align="right" sx={{ 
+                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                      }}>
+                        <Chip
+                          size="small"
+                          label={achievement.value}
+                          sx={{
+                            bgcolor: isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.1)',
+                            color: '#ff4757'
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Paper>
+      </motion.div>
+    </Grid>
+  );
+
   const renderDashboard = () => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Box className="welcome-banner" sx={{
+      {/* Welcome Banner */}
+      <Box sx={{ 
+        background: 'linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%)',
         borderRadius: '20px',
+        p: 4,
+        mb: 4,
+        color: 'white',
         position: 'relative',
         overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url(/wave-pattern.svg) no-repeat',
-          backgroundSize: 'cover',
-          opacity: 0.1,
-        }
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
       }}>
         <motion.div
           initial={{ x: -50 }}
           animate={{ x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
             Welcome back, John!
           </Typography>
-          <Typography variant="subtitle1">
+          <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
             You have 3 sessions scheduled for today
           </Typography>
         </motion.div>
       </Box>
 
-      <Grid container spacing={3} sx={{ mt: 2, mb: 4 }}>
+      {/* Quick Actions */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
         {quickActions.map((action, index) => (
           <Grid item xs={6} sm={3} key={index}>
             <motion.div
@@ -338,33 +532,43 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
               whileTap={{ scale: 0.98 }}
             >
               <Card 
-                className="action-card"
                 onClick={action.action}
                 sx={{
-                  background: '#f5f5f5',
+                  background: isDarkMode 
+                    ? 'linear-gradient(135deg, rgba(44, 62, 80, 0.4) 0%, rgba(26, 26, 46, 0.4) 100%)'
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%)',
                   backdropFilter: 'blur(10px)',
-                  border: '1px solid #e0e0e0',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                  border: '1px solid rgba(255,71,87,0.1)',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
                   '&:hover': {
-                    boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)',
-                    borderColor: '#d5d5d5',
-                    background: '#fafafa'
+                    boxShadow: '0 6px 25px rgba(255,71,87,0.15)',
+                    borderColor: '#ff4757',
                   }
                 }}
               >
-                <Box sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ p: 3, textAlign: 'center' }}>
                   <Avatar
                     sx={{
-                      bgcolor: '#eeeeee',
-                      color: '#757575',
+                      bgcolor: 'rgba(255,71,87,0.1)',
                       width: 56,
                       height: 56,
                       margin: '0 auto 1rem',
+                      transition: 'all 0.3s ease',
+                      color: '#ff4757',
+                      '&:hover': {
+                        transform: 'rotate(10deg)',
+                      }
                     }}
                   >
                     {action.icon}
                   </Avatar>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  <Typography variant="subtitle1" sx={{ 
+                    fontWeight: 600,
+                    color: isDarkMode ? '#fff' : '#2c3e50'
+                  }}>
                     {action.title}
                   </Typography>
                 </Box>
@@ -374,110 +578,82 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
         ))}
       </Grid>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card 
-                className="stat-card"
-                sx={{
-                  background: stat.color,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-                  border: '1px solid #e0e0e0',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 6px 25px rgba(0, 0, 0, 0.1)',
-                  }
-                }}
-              >
-                <CardContent>
-                  <Box sx={{ position: 'relative', zIndex: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Avatar sx={{ 
-                        bgcolor: '#ff4757',
-                        color: 'white',
-                        width: 48, 
-                        height: 48 
-                      }}>
-                        {stat.icon}
-                      </Avatar>
-                      <Typography variant="h4" sx={{ 
-                        color: '#666',
-                        fontWeight: 700
-                      }}>
-                        {stat.value}
-                      </Typography>
-                    </Box>
-                    <Typography variant="subtitle1" sx={{ 
-                      color: '#757575',
-                      mt: 2,
-                      fontWeight: 500
-                    }}>
-                      {stat.title}
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-
+      {/* Schedule and Progress Section */}
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.3 }}>
-            <Paper className="schedule-paper" sx={{
+            <Paper sx={{
               borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-              overflow: 'hidden'
+              background: isDarkMode 
+                ? 'rgba(44,62,80,0.4)'
+                : 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              overflow: 'hidden',
+              border: '1px solid rgba(255,71,87,0.1)',
+              height: '100%',
             }}>
-              <Typography variant="h6" gutterBottom className="section-title">
-                Today's Schedule
-              </Typography>
-              <List className="session-list">
-                {upcomingSessions.map((session, index) => (
-                  <ListItem key={index} className="session-item">
-                    <ListItemAvatar>
-                      <Avatar className="session-avatar">
-                        <PeopleIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={session.client}
-                      secondary={`${session.time} - ${session.program}`}
-                      className="session-text"
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          </motion.div>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.3 }}>
-            <Paper className="progress-paper" sx={{
-              borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-              overflow: 'hidden'
-            }}>
-              <Typography variant="h6" gutterBottom className="section-title">
-                Client Progress
-              </Typography>
-              <Box className="progress-box">
-                <Typography variant="body1" color="text.secondary">
-                  Client progress charts and metrics will be displayed here
+              <Box sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ 
+                  color: '#ff4757',
+                  fontWeight: 600,
+                  mb: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}>
+                  <TodayIcon /> Today's Schedule
                 </Typography>
+                <List>
+                  {upcomingSessions.map((session, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <ListItem sx={{
+                        mb: 2,
+                        background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                        borderRadius: '12px',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateX(10px)',
+                          background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.1)',
+                        }
+                      }}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ 
+                            bgcolor: 'rgba(255,71,87,0.2)',
+                            color: '#ff4757'
+                          }}>
+                            <PeopleIcon />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={session.client}
+                          secondary={`${session.time} - ${session.program}`}
+                          primaryTypographyProps={{
+                            fontWeight: 600,
+                            color: isDarkMode ? '#fff' : '#2c3e50',
+                            fontSize: '1rem'
+                          }}
+                          secondaryTypographyProps={{
+                            color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#666',
+                            fontSize: '0.875rem'
+                          }}
+                        />
+                      </ListItem>
+                    </motion.div>
+                  ))}
+                </List>
               </Box>
             </Paper>
           </motion.div>
         </Grid>
+
+        {/* Progress Section */}
+        {renderProgressSection()}
       </Grid>
     </motion.div>
   );
@@ -507,12 +683,19 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
         display: 'flex', 
         minHeight: '100vh',
         width: '100%',
-        justifyContent: 'center' // Center the content horizontally
+        background: isDarkMode 
+          ? 'linear-gradient(135deg, #1a1a2e 0%, #1a1a1a 100%)'
+          : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
       }}>
         <TrainerNavbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-        <div className="trainer-content">
+        <Box sx={{ 
+          flexGrow: 1, 
+          p: 3, 
+          ml: { sm: '280px' },
+          mt: 2
+        }}>
           {renderContent()}
-        </div>
+        </Box>
         {/* Fix dialog position and styling */}
         <AnimatePresence>
           {openDialog && (
