@@ -436,3 +436,130 @@
 .dark-mode .about-section h2 {
   color: #ffffff;
 }
+
+/* Dark mode styles from gym-management2 that weren't in gym-management1 */
+.dark-mode {
+  background-color: #121212;
+  color: #f0f0f0;
+}
+
+.dark-mode .navbar {
+  background-color: #1a1a1a;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .logo {
+  color: #ffffff;
+}
+
+.dark-mode .nav-links a {
+  color: #e0e0e0;
+}
+
+.dark-mode .nav-links a::after {
+  background-color: #ff4757;
+}
+
+.dark-mode .hero-content {
+  background: rgba(26, 26, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .feature {
+  background: rgba(40, 40, 40, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .feature h3 {
+  color: #ff4757;
+}
+
+.dark-mode .feature p {
+  color: #e0e0e0;
+}
+
+.dark-mode .about-section {
+  background: rgba(30, 30, 30, 0.95);
+}
+
+.dark-mode .about-section h2 {
+  color: #ffffff;
+}
+
+.dark-mode .contact-section {
+  background: rgba(30, 30, 30, 0.95);
+  color: #e0e0e0;
+}
+
+.dark-mode .social-icon {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+
+.dark-mode .market-page {
+  background-color: #121212;
+}
+
+.dark-mode .market-header {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .product-card {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .product-title,
+.dark-mode .product-price,
+.dark-mode .category-title {
+  color: #f0f0f0;
+}
+
+.dark-mode .product-description {
+  color: #bbbbbb;
+}
+
+.dark-mode-toggle {
+  background: #1a1a1a;
+  width: 60px;
+  height: 30px;
+  border-radius: 15px;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 6px;
+  border: 1px solid #444;
+  transition: all 0.3s ease;
+}
+
+.toggle-icon {
+  color: #aaa;
+  font-size: 14px;
+  z-index: 1;
+}
+
+.toggle-circle {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background-color: #fff;
+  border-radius: 50%;
+  left: 3px;
+  transition: transform 0.3s ease;
+}
+
+.dark-mode-toggle.active .toggle-circle {
+  transform: translateX(30px);
+  background-color: #333;
+}
+
+.dark-mode-toggle.active .fa-moon {
+  color: #f0c420;
+}
+
+.dark-mode-toggle .fa-sun {
+  color: #f39c12;
+}

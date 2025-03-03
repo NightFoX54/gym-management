@@ -16,6 +16,7 @@ import TrainerPage from './components/trainer/TrainerPage';
 import Member from './components/member/Member';
 import MyProfile from './components/member/MyProfile';
 import ForgotPassword from './components/ForgotPassword';
+import Market from './components/Market';
 
 function Home({ isDarkMode, setIsDarkMode }) {
   const scrollToTop = () => {
@@ -95,6 +96,7 @@ function App() {
   useEffect(() => {
     localStorage.setItem('darkMode', isDarkMode);
     document.body.classList.toggle('dark-mode', isDarkMode);
+    console.log('Dark mode state:', isDarkMode);
   }, [isDarkMode]);
 
   return (
@@ -106,6 +108,7 @@ function App() {
         <Route path="/signup" element={<Signup isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/contact" element={<Contact isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services" element={<Services isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/market" element={<Market isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/personal-training" element={<PersonalTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/group-classes" element={<GroupClasses isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/strength-training" element={<StrengthTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
@@ -116,6 +119,7 @@ function App() {
         <Route path="/trainer/workouts" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/trainer/reports" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/trainer/settings" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/forgot-password" element={<ForgotPassword isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
       </Routes>
     </Router>
   );

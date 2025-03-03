@@ -24,6 +24,7 @@ function Navbar({ isDarkMode, setIsDarkMode }) {
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+    localStorage.setItem('darkMode', !isDarkMode);
   };
 
   return (
@@ -33,6 +34,7 @@ function Navbar({ isDarkMode, setIsDarkMode }) {
         <a href="/">Home</a>
         <a href="#about">About</a>
         <a href="/services">Services</a>
+        <a href="/market">Market</a>
         <a href="/contact">Contact</a>
         <button 
           className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
