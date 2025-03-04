@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaCalendar, FaEdit, FaSun, FaMoon } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaCalendar, FaEdit, FaSun, FaMoon, FaArrowLeft } from 'react-icons/fa';
 import '../../styles/MyProfile.css';
+import { useNavigate } from 'react-router-dom';
 
 const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [profile, setProfile] = useState({
@@ -15,6 +16,7 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState({...profile});
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Sayfa yüklendiğinde dark mode durumunu kontrol et
@@ -63,7 +65,11 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   return (
-    <div className="profile-container">
+    <div className={`profile-container ${isDarkMode ? 'dark-mode' : ''}`}>
+      <button className="back-button" onClick={() => navigate('/member')}>
+        <FaArrowLeft />
+        <span>Back to Dashboard</span>
+      </button>
       <div className="profile-top">
         <div className="profile-photo-container">
           <img src={profile.profileImage} alt="Profile" className="profile-photo" />
@@ -82,7 +88,10 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
                 <span className="toggle-icon moon"><FaMoon /></span>
               </button>
               {!isEditing && (
-                <button className="edit-button" onClick={handleEdit}>
+                <button 
+                  className="edit-button" 
+                  onClick={handleEdit}
+                >
                   <FaEdit /> Edit
                 </button>
               )}
