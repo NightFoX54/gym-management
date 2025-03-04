@@ -18,6 +18,7 @@
   border-radius: 20px;
   position: relative;
   color: #1a1a1a;
+  user-select: none;
 }
 
 .progress-step1.active {
@@ -33,6 +34,11 @@
   width: 1rem;
   height: 2px;
   background-color: #ddd;
+}
+
+/* Add a hover effect for the progress steps */
+.progress-step1:hover {
+  opacity: 0.9;
 }
 
 /* Plans Section */
@@ -56,6 +62,9 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;  /* ensure card takes full height */
 }
 
 .plan-card:hover {
@@ -90,6 +99,8 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  flex-grow: 1;  /* allow the features list to grow and take available space */
+  margin-bottom: 15px;
 }
 
 .features-list li {
@@ -104,6 +115,14 @@
   position: absolute;
   left: 0;
   color: #ff4757;
+}
+
+.plan-button-container {
+  margin-top: auto;  /* push the button container to the bottom */
+  padding-top: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .select-plan-btn {

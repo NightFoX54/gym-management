@@ -27,12 +27,20 @@ function Navbar({ isDarkMode, setIsDarkMode }) {
     localStorage.setItem('darkMode', !isDarkMode);
   };
 
+  const handleAboutClick = (e) => {
+    e.preventDefault();
+    navigate('/');
+    setTimeout(() => {
+      document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
   return (
     <nav className={`navbar ${!visible ? 'hidden' : ''} ${isScrolled ? 'scrolled' : ''}`}>
       <div className="logo">GymFlex</div>
       <div className="nav-links">
         <a href="/">Home</a>
-        <a href="#about">About</a>
+        <a href="/#about" onClick={handleAboutClick}>About</a>
         <a href="/services">Services</a>
         <a href="/market">Market</a>
         <a href="/contact">Contact</a>

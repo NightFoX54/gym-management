@@ -1,129 +1,124 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '../Navbar';
 import '../../styles/ServiceDetail.css';
+import { useNavigate } from 'react-router-dom';
 
 function CardioZone({ isDarkMode, setIsDarkMode }) {
-  const [isDarkModeState, setIsDarkModeState] = useState(false);
+  const navigate = useNavigate();
 
+  // Only scroll to top on initial load
   useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setIsDarkModeState(savedDarkMode);
-    document.body.classList.toggle('dark-mode', savedDarkMode);
+    window.scrollTo(0, 0);
   }, []);
 
+  // Handle dark mode class on body element
   useEffect(() => {
-    localStorage.setItem('darkMode', isDarkModeState);
-    document.body.classList.toggle('dark-mode', isDarkModeState);
-  }, [isDarkModeState]);
+    document.body.classList.toggle('dark-mode', isDarkMode);
+  }, [isDarkMode]);
+
+  const cardioOptions = [
+    {
+      name: "Treadmills",
+      description: "Premium treadmills with incline options, interactive displays, and workout tracking.",
+      icon: "fas fa-running"
+    },
+    {
+      name: "Ellipticals",
+      description: "Low-impact elliptical machines for full-body cardio with customizable resistance levels.",
+      icon: "fas fa-water"
+    },
+    {
+      name: "Stationary Bikes",
+      description: "Upright and recumbent bikes with digital displays and interactive workout programs.",
+      icon: "fas fa-bicycle"
+    },
+    {
+      name: "Stair Climbers",
+      description: "Step machines that simulate climbing stairs for intense lower-body conditioning.",
+      icon: "fas fa-sort-amount-up"
+    },
+    {
+      name: "Rowing Machines",
+      description: "Full-body workout machines that engage multiple muscle groups while improving cardiovascular fitness.",
+      icon: "fas fa-ship"
+    },
+    {
+      name: "Cardio Cinema",
+      description: "Dedicated cardio room with large-screen entertainment for an engaging workout experience.",
+      icon: "fas fa-film"
+    }
+  ];
 
   return (
-    <div className={isDarkModeState ? 'dark-mode' : ''}>
-      <Navbar isDarkMode={isDarkModeState} setIsDarkMode={setIsDarkModeState} />
-
+    <div className={isDarkMode ? 'dark-mode' : ''}>
+      <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+      
       <div className="service-detail-page">
         <div className="service-detail-header">
           <h1>Cardio Zone</h1>
-          <p>Elevate your heart rate and boost your endurance</p>
+          <p>State-of-the-art cardiovascular training equipment</p>
         </div>
 
         <div className="service-detail-content">
           <div className="service-overview">
-            <h2>Complete Cardio Fitness Center</h2>
-            <p>Our cardio zone features the latest equipment and technology to help you achieve your cardiovascular fitness goals.</p>
+            <h2>Elevate Your Heart Rate, Enhance Your Health</h2>
+            <p>
+              Our expansive cardio zone features the latest cardiovascular equipment to help you burn calories, 
+              improve endurance, and strengthen your heart. Whether you're a beginner looking to build stamina 
+              or an experienced athlete training for competition, our diverse range of cardio machines provides 
+              options for every fitness level and goal.
+            </p>
             
-            <div className="equipment-section">
-              <h3>Available Equipment</h3>
-              <div className="equipment-grid">
-                <div className="equipment-card">
-                  <h4>Treadmills</h4>
-                  <ul>
-                    <li>20 Premium treadmills</li>
-                    <li>HD entertainment screens</li>
-                    <li>Incline up to 15%</li>
-                    <li>Speed up to 14 mph</li>
-                  </ul>
-                </div>
-                <div className="equipment-card">
-                  <h4>Ellipticals</h4>
-                  <ul>
-                    <li>15 Cross trainers</li>
-                    <li>Adjustable resistance</li>
-                    <li>Heart rate monitoring</li>
-                    <li>Virtual trails</li>
-                  </ul>
-                </div>
-                <div className="equipment-card">
-                  <h4>Stationary Bikes</h4>
-                  <ul>
-                    <li>Upright bikes</li>
-                    <li>Recumbent bikes</li>
-                    <li>Spin bikes</li>
-                    <li>Virtual cycling</li>
-                  </ul>
-                </div>
-                <div className="equipment-card">
-                  <h4>Other Equipment</h4>
-                  <ul>
-                    <li>Stair climbers</li>
-                    <li>Rowing machines</li>
-                    <li>Air bikes</li>
-                    <li>Jacob's ladders</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
             <div className="service-benefits">
               <h3>Benefits of Cardio Training</h3>
               <ul>
-                <li>Improved heart health</li>
-                <li>Weight management</li>
-                <li>Increased stamina</li>
-                <li>Better mood and energy levels</li>
-                <li>Reduced stress</li>
-                <li>Enhanced sleep quality</li>
+                <li>Improves heart health and circulatory system</li>
+                <li>Burns calories and aids in weight management</li>
+                <li>Reduces stress and elevates mood</li>
+                <li>Increases lung capacity and oxygen utilization</li>
+                <li>Boosts energy levels and improves sleep quality</li>
+                <li>Enhances overall athletic performance</li>
               </ul>
             </div>
+          </div>
 
-            <div className="cardio-programs">
-              <h3>Cardio Programs</h3>
-              <div className="program-grid">
-                <div className="program-card">
-                  <h4>Beginner Cardio</h4>
-                  <p>Start your cardio journey safely and effectively</p>
-                  <ul>
-                    <li>Equipment orientation</li>
-                    <li>Heart rate zones training</li>
-                    <li>Basic interval training</li>
-                  </ul>
+          <div className="service-options">
+            <h2>Our Cardio Equipment</h2>
+            <div className="options-grid">
+              {cardioOptions.map((option, index) => (
+                <div className="option-card" key={index}>
+                  <div className="option-icon">
+                    <i className={option.icon}></i>
+                  </div>
+                  <h3>{option.name}</h3>
+                  <p>{option.description}</p>
                 </div>
-                <div className="program-card">
-                  <h4>HIIT Training</h4>
-                  <p>High-intensity interval training for maximum results</p>
-                  <ul>
-                    <li>Guided HIIT sessions</li>
-                    <li>Performance tracking</li>
-                    <li>Varied workouts</li>
-                  </ul>
-                </div>
-                <div className="program-card">
-                  <h4>Endurance Training</h4>
-                  <p>Build stamina and endurance</p>
-                  <ul>
-                    <li>Long-distance training</li>
-                    <li>Race preparation</li>
-                    <li>Recovery techniques</li>
-                  </ul>
-                </div>
-              </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pricing-section">
+            <h3>Cardio Zone Access</h3>
+            <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
+              <h4>Cardio Training Experience</h4>
+              <p className="price">Starting from ₺150/day pass</p>
+              <ul>
+                <li>Full access to all cardio equipment</li>
+                <li>High-tech performance tracking</li>
+                <li>Multiple workout options for all fitness levels</li>
+                <li>Entertainment systems on premium machines</li>
+                <li>Spacious, well-ventilated workout area</li>
+                <li>Instructor assistance upon request</li>
+              </ul>
+              <p className="package-note">* Unlimited access to the Cardio Zone included with all membership plans. Premium (₺1300/mo) and Elite (₺2000/mo) members get priority booking for popular machines during peak hours. Day passes and weekly passes available for non-members.</p>
+              <button className="book-now-btn">View Hours</button>
             </div>
           </div>
 
           <div className="booking-section">
-            <h2>Start Your Cardio Journey Today</h2>
-            <p>Join GymFlex and discover a new level of cardiovascular fitness. Get access to premium equipment, 
-            expert guidance, and a supportive community to help you achieve your fitness goals.</p>
-            <button className="consultation-btn" onClick={() => window.location.href='/signup'}>
+            <h2>Ready to Boost Your Cardiovascular Fitness?</h2>
+            <p>Join our gym today and get access to our comprehensive cardio facilities.</p>
+            <button className="consultation-btn" onClick={() => navigate('/signup')}>
               Join Now
             </button>
           </div>

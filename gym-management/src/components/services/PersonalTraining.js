@@ -1,86 +1,125 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '../Navbar';
 import '../../styles/ServiceDetail.css';
+import { useNavigate } from 'react-router-dom';
 
 function PersonalTraining({ isDarkMode, setIsDarkMode }) {
-  const [isDarkModeState, setIsDarkModeState] = useState(false);
+  const navigate = useNavigate();
 
+  // Only scroll to top on initial load
   useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setIsDarkModeState(savedDarkMode);
-    document.body.classList.toggle('dark-mode', savedDarkMode);
+    window.scrollTo(0, 0);
   }, []);
 
+  // Handle dark mode class on body element
   useEffect(() => {
-    localStorage.setItem('darkMode', isDarkModeState);
-    document.body.classList.toggle('dark-mode', isDarkModeState);
-  }, [isDarkModeState]);
+    document.body.classList.toggle('dark-mode', isDarkMode);
+  }, [isDarkMode]);
+
+  const trainingOptions = [
+    {
+      name: "One-on-One Training",
+      description: "Personalized workouts with dedicated attention from an expert trainer focused on your specific goals.",
+      icon: "fas fa-user-friends"
+    },
+    {
+      name: "Fitness Assessment",
+      description: "Comprehensive evaluation of your current fitness level, body composition, and performance metrics.",
+      icon: "fas fa-clipboard-check"
+    },
+    {
+      name: "Goal-Specific Programs",
+      description: "Customized training plans for weight loss, muscle gain, athletic performance, or specific events.",
+      icon: "fas fa-bullseye"
+    },
+    {
+      name: "Injury Rehabilitation",
+      description: "Specialized training to help recover from injuries and prevent future problems.",
+      icon: "fas fa-heartbeat"
+    },
+    {
+      name: "Nutrition Guidance",
+      description: "Expert advice on dietary habits to complement your training and maximize results.",
+      icon: "fas fa-apple-alt"
+    },
+    {
+      name: "Progress Tracking",
+      description: "Regular assessments and adjustments to ensure continuous improvement and goal achievement.",
+      icon: "fas fa-chart-line"
+    }
+  ];
 
   return (
-    <div className={isDarkModeState ? 'dark-mode' : ''}>
-      <Navbar isDarkMode={isDarkModeState} setIsDarkMode={setIsDarkModeState} />
-
+    <div className={isDarkMode ? 'dark-mode' : ''}>
+      <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+      
       <div className="service-detail-page">
         <div className="service-detail-header">
           <h1>Personal Training</h1>
-          <p>Transform your fitness journey with expert guidance</p>
+          <p>Expert guidance for accelerated fitness results</p>
         </div>
 
         <div className="service-detail-content">
           <div className="service-overview">
-            <h2>Why Choose Personal Training?</h2>
-            <p>Our certified personal trainers are dedicated to helping you achieve your fitness goals through customized workout plans and one-on-one attention.</p>
+            <h2>Achieve More with Expert Guidance</h2>
+            <p>
+              Our certified personal trainers are dedicated to helping you reach your fitness goals faster and more 
+              effectively than training alone. Whether you're new to exercise, looking to break through a plateau, 
+              or preparing for a specific event, our trainers will create a customized program tailored to your 
+              unique needs, preferences, and abilities.
+            </p>
             
-            <div className="trainer-profiles">
-              <h3>Meet Our Trainers</h3>
-              <div className="trainer-grid">
-                <div className="trainer-card">
-                  <img src="trainer1.jpg" alt="Trainer" className="trainer-img" />
-                  <h4>John Doe</h4>
-                  <p>Specializes in strength training and weight loss</p>
-                </div>
-                <div className="trainer-card">
-                  <img src="trainer2.jpg" alt="Trainer" className="trainer-img" />
-                  <h4>Jane Smith</h4>
-                  <p>Expert in functional fitness and rehabilitation</p>
-                </div>
-              </div>
-            </div>
-
             <div className="service-benefits">
-              <h3>Benefits</h3>
+              <h3>Benefits of Personal Training</h3>
               <ul>
-                <li>Personalized workout plans tailored to your goals</li>
-                <li>Expert guidance on proper form and technique</li>
-                <li>Regular progress tracking and adjustments</li>
-                <li>Nutritional advice and meal planning</li>
-                <li>Flexible scheduling to fit your lifestyle</li>
-                <li>Motivation and accountability</li>
+                <li>Custom workout programs designed specifically for your goals</li>
+                <li>Proper technique instruction to maximize results and prevent injury</li>
+                <li>Accountability and motivation to maintain consistency</li>
+                <li>Progressive programming that evolves as you improve</li>
+                <li>Efficient workouts that make the most of your available time</li>
+                <li>Expert guidance on nutrition and recovery strategies</li>
               </ul>
             </div>
+          </div>
 
-            <div className="pricing-section">
-              <h3>Training Packages</h3>
-              <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
-                <h4>Personalized Training Experience</h4>
-                <p className="price">Starting from $49/session</p>
-                <ul>
-                  <li>One-on-one personal training sessions</li>
-                  <li>Customized workout plans</li>
-                  <li>Nutritional guidance</li>
-                  <li>Progress tracking</li>
-                  <li>Flexible scheduling</li>
-                </ul>
-                <p className="package-note">* Package prices vary based on frequency, duration and trainer. Contact us for a personalized quote.</p>
-              </div>
+          <div className="service-options">
+            <h2>Our Training Services</h2>
+            <div className="options-grid">
+              {trainingOptions.map((option, index) => (
+                <div className="option-card" key={index}>
+                  <div className="option-icon">
+                    <i className={option.icon}></i>
+                  </div>
+                  <h3>{option.name}</h3>
+                  <p>{option.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pricing-section">
+            <h3>Personal Training Options</h3>
+            <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
+              <h4>Personal Training Experience</h4>
+              <p className="price">Starting from ₺300/session</p>
+              <ul>
+                <li>One-on-one sessions with certified trainers</li>
+                <li>Customized workout programming</li>
+                <li>Regular fitness assessments</li>
+                <li>Nutritional guidance and support</li>
+                <li>Flexible scheduling options</li>
+                <li>Access to exclusive training areas</li>
+              </ul>
+              <p className="package-note">* Discounted personal training packages available for all members. Premium members (₺1300/mo) receive personal trainer consultation. Elite members (₺2000/mo) receive 2 complimentary sessions per month. Training packages of 5, 10, or 20 sessions available with progressive discounts.</p>
+              <button className="book-now-btn">Meet Our Trainers</button>
             </div>
           </div>
 
           <div className="booking-section">
-            <h2>Ready to Get Started?</h2>
-            <p>Schedule your free consultation with one of our expert trainers after becoming a member</p>
-            <button className="consultation-btn" onClick={() => window.location.href='/signup'}>
-              Join Now
+            <h2>Ready to Take Your Fitness to the Next Level?</h2>
+            <p>Schedule a complimentary consultation with one of our expert trainers today.</p>
+            <button className="consultation-btn" onClick={() => navigate('/signup')}>
+              Book a Consultation
             </button>
           </div>
         </div>

@@ -19,7 +19,7 @@ function Signup() {
     {
       id: 1,
       name: 'Basic Plan',
-      price: 29.99,
+      price: 800,
       duration: 'Monthly',
       features: [
         'Access to gym equipment',
@@ -31,7 +31,7 @@ function Signup() {
     {
       id: 2,
       name: 'Premium Plan',
-      price: 49.99,
+      price: 1300,
       duration: 'Monthly',
       features: [
         'All Basic Plan features',
@@ -44,7 +44,7 @@ function Signup() {
     {
       id: 3,
       name: 'Elite Plan',
-      price: 79.99,
+      price: 2000,
       duration: 'Monthly',
       features: [
         'All Premium Plan features',
@@ -78,6 +78,12 @@ function Signup() {
     navigate('/');
   };
 
+  const handleProgressClick = (clickedStep) => {
+    if (clickedStep <= step) {
+      setStep(clickedStep);
+    }
+  };
+
   const renderStep = () => {
     switch(step) {
       case 1:
@@ -93,7 +99,7 @@ function Signup() {
                 >
                   <h3>{plan.name}</h3>
                   <div className="price">
-                    <span className="amount">${plan.price}</span>
+                    <span className="amount">₺{plan.price}</span>
                     <span className="duration">/{plan.duration}</span>
                   </div>
                   <ul className="features-list">
@@ -101,7 +107,9 @@ function Signup() {
                       <li key={index}>{feature}</li>
                     ))}
                   </ul>
-                  <button className="select-plan-btn">Select Plan</button>
+                  <div className="plan-button-container">
+                    <button className="select-plan-btn">Select Plan</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -244,9 +252,27 @@ function Signup() {
         ← Back
       </div>
       <div className="progress-bar1">
-        <div className={`progress-step1 ${step >= 1 ? 'active' : ''}`}>1. Select Plan</div>
-        <div className={`progress-step1 ${step >= 2 ? 'active' : ''}`}>2. Personal Info</div>
-        <div className={`progress-step1 ${step >= 3 ? 'active' : ''}`}>3. Payment</div>
+        <div 
+          className={`progress-step1 ${step >= 1 ? 'active' : ''}`}
+          onClick={() => handleProgressClick(1)}
+          style={{ cursor: 'pointer' }}
+        >
+          1. Select Plan
+        </div>
+        <div 
+          className={`progress-step1 ${step >= 2 ? 'active' : ''}`}
+          onClick={() => handleProgressClick(2)}
+          style={{ cursor: 'pointer' }}
+        >
+          2. Personal Info
+        </div>
+        <div 
+          className={`progress-step1 ${step >= 3 ? 'active' : ''}`}
+          onClick={() => handleProgressClick(3)}
+          style={{ cursor: 'pointer' }}
+        >
+          3. Payment
+        </div>
       </div>
       {renderStep()}
     </div>

@@ -19,6 +19,8 @@ import MembershipStatus from './components/member/MembershipStatus'
 import TrainingPlan from './components/member/TrainingPlan';
 import ForgotPassword from './components/ForgotPassword';
 import Market from './components/Market';
+import NutritionCounseling from './components/services/NutritionCounseling';
+import RecoveryWellness from './components/services/RecoveryWellness';
 
 function Home({ isDarkMode, setIsDarkMode }) {
   const scrollToTop = () => {
@@ -127,6 +129,8 @@ function App() {
         <Route path="/member/schedule" element={<Member isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/member/membership" element={<MembershipStatus isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/member/training" element={<TrainingPlan isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/services/nutrition" element={<NutritionCounseling isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/services/recovery" element={<RecoveryWellness isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
       </Routes>
     </Router>
   );
