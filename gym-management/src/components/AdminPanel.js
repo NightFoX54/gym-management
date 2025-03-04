@@ -37,13 +37,13 @@ const AdminPanel = ({ isDarkMode, setIsDarkMode }) => {
           <i className="fas fa-chart-line"></i>
           <span>Financial</span>
         </NavLink>
-        <div className="dark-mode-toggle-container">
+        <div className="dark-mode-toggle-container1">
           <i className="fas fa-sun"></i>
           <div 
-            className="dark-mode-toggle-switch"
+            className="dark-mode-toggle-switch1"
             onClick={toggleDarkMode}
           >
-            <div className="dark-mode-toggle-slider"></div>
+            <div className="dark-mode-toggle-slider1"></div>
           </div>
           <i className="fas fa-moon"></i>
         </div>

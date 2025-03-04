@@ -243,10 +243,10 @@ function Signup() {
       <div className="back-arrow" onClick={handleBackClick}>
         ← Back
       </div>
-      <div className="progress-bar">
-        <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1. Select Plan</div>
-        <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2. Personal Info</div>
-        <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3. Payment</div>
+      <div className="progress-bar1">
+        <div className={`progress-step1 ${step >= 1 ? 'active' : ''}`}>1. Select Plan</div>
+        <div className={`progress-step1 ${step >= 2 ? 'active' : ''}`}>2. Personal Info</div>
+        <div className={`progress-step1 ${step >= 3 ? 'active' : ''}`}>3. Payment</div>
       </div>
       {renderStep()}
     </div>

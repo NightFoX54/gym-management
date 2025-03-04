@@ -4,14 +4,14 @@
   background-color: #f8f9fa;
 }
 
-.progress-bar {
+.progress-bar1 {
   display: flex;
   justify-content: center;
   margin-bottom: 2rem;
   padding: 1rem;
 }
 
-.progress-step {
+.progress-step1 {
   padding: 0.5rem 1rem;
   margin: 0 1rem;
   background-color: #ddd;
@@ -20,12 +20,12 @@
   color: #1a1a1a;
 }
 
-.progress-step.active {
+.progress-step1.active {
   background-color: #ff4757;
   color: white;
 }
 
-.progress-step:not(:last-child)::after {
+.progress-step1:not(:last-child)::after {
   content: '';
   position: absolute;
   right: -2rem;
@@ -304,21 +304,21 @@
   border-color: #ff4757;
 }
 
-.dark-mode .progress-bar {
+.dark-mode .progress-bar1 {
   background-color: #1a1a1a;
 }
 
-.dark-mode .progress-step {
+.dark-mode .progress-step1 {
   background-color: #444;
   color: #dddddd;
 }
 
-.dark-mode .progress-step.active {
+.dark-mode .progress-step1.active {
   background-color: #ff4757;
   color: white;
 }
 
-.dark-mode .progress-step:not(:last-child)::after {
+.dark-mode .progress-step1:not(:last-child)::after {
   background-color: #444;
 }
 

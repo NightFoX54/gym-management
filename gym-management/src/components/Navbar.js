@@ -37,12 +37,12 @@ function Navbar({ isDarkMode, setIsDarkMode }) {
         <a href="/market">Market</a>
         <a href="/contact">Contact</a>
         <button 
-          className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
+          className={`dark-mode-toggle-main ${isDarkMode ? 'active' : ''}`} 
           onClick={toggleDarkMode}
         >
-          <i className="fas fa-sun toggle-icon" style={{ marginLeft: '2px' }}></i>
-          <div className="toggle-circle"></div>
-          <i className="fas fa-moon toggle-icon" style={{ marginRight: '2px' }}></i>
+          <i className="fas fa-sun toggle-icon-main" style={{ marginLeft: '2px' }}></i>
+          <div className="toggle-circle-main"></div>
+          <i className="fas fa-moon toggle-icon-main" style={{ marginRight: '2px' }}></i>
         </button>
         <button className="login-btn" onClick={() => navigate('/login')}>Login</button>
       </div>
