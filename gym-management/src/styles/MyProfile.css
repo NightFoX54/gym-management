@@ -150,14 +150,14 @@
   color: #ffffff;
 }
 
-.edit-button {
+.profile-header .header-actions .edit-button {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background-color: transparent;
-  color: #ffffff;
-  border: 2px solid #ff4757;
+  background-color: #ff4757 !important;
+  color: white !important;
+  border: none;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 500;
@@ -165,10 +165,25 @@
   transition: all 0.3s ease;
 }
 
-.edit-button:hover {
-  background-color: #ff4757;
-  color: white;
+.profile-header .header-actions .edit-button svg {
+  font-size: 16px;
+  color: white !important;
+}
+
+.profile-header .header-actions .edit-button:hover {
+  background-color: #ff6b81 !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.2);
+}
+
+.dark-mode .profile-header .header-actions .edit-button {
+  background-color: #ff4757 !important;
+  color: white !important;
+}
+
+.dark-mode .profile-header .header-actions .edit-button:hover {
+  background-color: #ff6b81 !important;
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
 }
 
 .profile-content {
@@ -369,6 +384,48 @@
 .save-button:hover {
   background-color: #ff6b81;
   transform: translateY(-2px);
+}
+
+.back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: transparent;
+  color: #ff4757;
+  border: 2px solid #ff4757;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.back-button:hover {
+  background-color: #ff4757;
+  color: white;
+  transform: translateX(-5px);
+}
+
+.back-button svg {
+  font-size: 16px;
+}
+
+.back-button span {
+  font-size: 14px;
+}
+
+.dark-mode .back-button {
+  background-color: #363636;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+.dark-mode .back-button:hover {
+  background-color: #404040;
 }
 
 @media (max-width: 768px) {
