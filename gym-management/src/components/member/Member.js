@@ -5,7 +5,7 @@ import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import '../../styles/Member.css';
 
-function Member() {
+const Member = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const imgRef = useRef(null);
@@ -23,9 +23,6 @@ function Member() {
   });
   const [completedCrop, setCompletedCrop] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem('darkMode') === 'true'
-  );
 
   const [userData, setUserData] = useState({
     name: 'John Doe',
@@ -154,7 +151,10 @@ function Member() {
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(prevMode => !prevMode);
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+    document.body.classList.toggle('dark-mode', newDarkMode);
   };
 
   const handleUpload = () => {
@@ -219,16 +219,14 @@ function Member() {
           </div>
         </div>
         <div className="header-actions">
-          <div className="dark-mode-toggle-container">
-            <button 
-              className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
-              onClick={toggleDarkMode}
-            >
-              <FaSun className="toggle-icon sun" />
-              <div className="toggle-circle"></div>
-              <FaMoon className="toggle-icon moon" />
-            </button>
-          </div>
+          <button 
+            className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
+            onClick={toggleDarkMode}
+          >
+            <FaSun className="toggle-icon sun" />
+            <div className="toggle-circle"></div>
+            <FaMoon className="toggle-icon moon" />
+          </button>
           <div className="notification-section">
             <button className="notification-button" onClick={toggleNotifications}>
               <FaBell />
@@ -299,10 +297,31 @@ function Member() {
           <div className="dashboard-card" onClick={() => handleCardClick('/member/training')}>
             <div className="card-icon"><FaDumbbell /></div>
             <h3>Training Programs</h3>
-            <p>View your active training programs</p>
+            <p>View and track your workout plans</p>
             <div className="card-details">
-              <span>Active programs: 1</span>
-              <span>Next session: Today</span>
+              <div className="training-program-info">
+                <div className="program-title">
+                  <FaDumbbell className="program-icon" />
+                  Advanced Strength Training
+                </div>
+                <div className="session-date">
+                  <FaCalendar className="date-icon" />
+                  <div className="date-info">
+                    <div className="date-day">
+                      Next Session
+                      <span className="time-badge">10:00 AM</span>
+                    </div>
+                    <div className="date-full">
+                      {new Date().toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
