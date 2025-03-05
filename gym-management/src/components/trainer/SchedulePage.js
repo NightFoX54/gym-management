@@ -30,6 +30,7 @@ import {
   AccessTime,
   Person,
   Event,
+  Delete, // Add this import
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
@@ -51,6 +52,8 @@ const SchedulePage = ({ isDarkMode }) => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'success' });
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, appointmentId: null });
+  const [selectedDayDetails, setSelectedDayDetails] = useState(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -100,7 +103,12 @@ const SchedulePage = ({ isDarkMode }) => {
     }
   };
 
-  const handleDeleteSession = async (appointmentId) => {
+  const handleDeleteSession = (appointmentId) => {
+    setDeleteConfirm({ open: true, appointmentId });
+  };
+
+  const confirmDelete = async () => {
+    const appointmentId = deleteConfirm.appointmentId;
     setActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -110,6 +118,7 @@ const SchedulePage = ({ isDarkMode }) => {
       showAlert('Failed to delete session', 'error');
     } finally {
       setActionLoading(false);
+      setDeleteConfirm({ open: false, appointmentId: null });
     }
   };
 
@@ -136,6 +145,15 @@ const SchedulePage = ({ isDarkMode }) => {
       duration: 60,
       notes: ''
     });
+  };
+
+  const handleDayClick = (day, appointments) => {
+    if (appointments.length > 0) {
+      setSelectedDayDetails({
+        date: day,
+        appointments
+      });
+    }
   };
 
   const monthStart = startOfMonth(currentDate);
@@ -166,10 +184,14 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const renderDayContent = (day, dayAppointments) => (
     <Paper
+      onClick={() => handleDayClick(day, dayAppointments)}
       sx={{
         p: 1,
-        height: 120,
-        cursor: 'pointer',
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: dayAppointments.length > 0 ? 'pointer' : 'default',
         position: 'relative',
         overflow: 'hidden',
         bgcolor: isSameDay(day, selectedDate) ? 'rgba(255,71,87,0.1)' : 'transparent',
@@ -194,8 +216,8 @@ const SchedulePage = ({ isDarkMode }) => {
       </Typography>
       
       <Box sx={{ 
-        maxHeight: '80px', 
-        overflowY: 'auto',
+        flex: 1,            // Take remaining space
+        overflowY: 'auto',  // Enable scroll if needed
         '&::-webkit-scrollbar': {
           width: '4px'
         },
@@ -342,6 +364,159 @@ const SchedulePage = ({ isDarkMode }) => {
     </Dialog>
   );
 
+  const renderDeleteConfirmDialog = () => (
+    <Dialog
+      open={deleteConfirm.open}
+      onClose={() => setDeleteConfirm({ open: false, appointmentId: null })}
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+        }
+      }}
+    >
+      <DialogTitle>Delete Confirmation</DialogTitle>
+      <DialogContent>
+        <Typography>
+          Are you sure you want to delete this training session?
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button 
+          onClick={() => setDeleteConfirm({ open: false, appointmentId: null })}
+          sx={{ color: '#666' }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={confirmDelete}
+          color="error"
+          variant="contained"
+          sx={{
+            bgcolor: '#ff4757',
+            '&:hover': { bgcolor: '#ff3747' }
+          }}
+        >
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderDayDetailsDialog = () => (
+    <Dialog
+      open={Boolean(selectedDayDetails)}
+      onClose={() => setSelectedDayDetails(null)}
+      maxWidth="sm"
+      fullWidth
+      TransitionComponent={motion.div}
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
+          backgroundImage: 'none',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          overflow: 'hidden'
+        }
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+      >
+        <DialogTitle sx={{
+          background: 'linear-gradient(135deg, #ff4757 0%, #ff6b81 100%)',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Event />
+            {selectedDayDetails && format(selectedDayDetails.date, 'MMMM d, yyyy')}
+          </Box>
+          <Chip
+            label={`${selectedDayDetails?.appointments.length} Sessions`}
+            size="small"
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.2)',
+              color: 'white'
+            }}
+          />
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <AnimatePresence>
+            {selectedDayDetails?.appointments.map((apt, index) => (
+              <motion.div
+                key={apt.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Paper
+                  sx={{
+                    p: 2,
+                    mb: 2,
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                    border: '1px solid',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.1)',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: apt.color }}>
+                    <Person />
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: apt.color }}>
+                      {apt.client}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {apt.time} - {apt.type}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDeleteSession(apt.id)}
+                    sx={{ color: 'error.main' }}
+                  >
+                    <Delete />
+                  </IconButton>
+                </Paper>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setSelectedDayDetails(null)}
+            sx={{ color: '#666' }}
+          >
+            Close
+          </Button>
+          <Button
+            onClick={() => {
+              setOpenDialog(true);
+              setSelectedDayDetails(null);
+            }}
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{
+              bgcolor: '#ff4757',
+              '&:hover': { bgcolor: '#ff3747' }
+            }}
+          >
+            Add Session
+          </Button>
+        </DialogActions>
+      </motion.div>
+    </Dialog>
+  );
+
   return (
     <Box sx={{ p: 3 }}>
       <motion.div
@@ -398,7 +573,15 @@ const SchedulePage = ({ isDarkMode }) => {
           }}>
             <Grid container spacing={1} sx={{ mb: 2 }}>
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <Grid item xs key={day}>
+                <Grid 
+                  item 
+                  key={day} 
+                  xs={12/7} 
+                  sx={{ 
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}
+                >
                   <Typography 
                     align="center" 
                     sx={{ 
@@ -412,18 +595,29 @@ const SchedulePage = ({ isDarkMode }) => {
               ))}
             </Grid>
 
-            <AnimatePresence>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               {weeks.map((week, weekIndex) => (
-                <Grid container spacing={1} key={weekIndex}>
+                <Grid 
+                  container 
+                  key={weekIndex} 
+                  spacing={1} 
+                  sx={{ width: '100%' }}
+                >
                   {week.map((day, dayIndex) => {
                     const dayAppointments = appointments.filter(apt => 
                       isSameDay(apt.date, day)
                     );
-                    const isCurrentMonth = isSameMonth(day, currentDate);
-                    const isSelected = isSameDay(day, selectedDate);
 
                     return (
-                      <Grid item xs key={dayIndex}>
+                      <Grid 
+                        item 
+                        xs={12/7} 
+                        key={dayIndex} 
+                        sx={{ 
+                          aspectRatio: '1',
+                          display: 'flex'
+                        }}
+                      >
                         <motion.div
                           variants={dayVariants}
                           initial="initial"
@@ -431,6 +625,7 @@ const SchedulePage = ({ isDarkMode }) => {
                           whileHover="hover"
                           whileTap="tap"
                           transition={{ duration: 0.2 }}
+                          style={{ width: '100%' }}
                         >
                           {renderDayContent(day, dayAppointments)}
                         </motion.div>
@@ -439,11 +634,13 @@ const SchedulePage = ({ isDarkMode }) => {
                   })}
                 </Grid>
               ))}
-            </AnimatePresence>
+            </Box>
           </Paper>
         )}
 
         {renderSessionDialog()}
+        {renderDeleteConfirmDialog()}
+        {renderDayDetailsDialog()}
 
         <Snackbar
           open={alert.open}

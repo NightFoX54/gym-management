@@ -320,7 +320,21 @@ const ProgressReportPage = ({ isDarkMode }) => {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <FormControl sx={{ minWidth: 150 }}>
+            <FormControl sx={{ 
+              minWidth: 150,
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(255, 255, 255, 0.7)',
+              },
+              '& .MuiSelect-root': {
+                color: isDarkMode ? '#fff' : '#000',
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: isDarkMode ? 'rgba(253, 253, 253, 0.93)' : 'rgba(255, 255, 255, 0.98)',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#ff4757',
+              },
+            }}>
               <InputLabel>Client</InputLabel>
               <Select
                 value={selectedClient}
@@ -332,7 +346,21 @@ const ProgressReportPage = ({ isDarkMode }) => {
                 <MenuItem value="jane">Jane Smith</MenuItem>
               </Select>
             </FormControl>
-            <FormControl sx={{ minWidth: 150 }}>
+            <FormControl sx={{ 
+              minWidth: 150,
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(255, 255, 255, 0.7)',
+              },
+              '& .MuiSelect-root': {
+                color: isDarkMode ? '#fff' : '#000',
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.95)' : 'rgba(248, 246, 246, 0.98)',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#ff4757',
+              },
+            }}>
               <InputLabel>Time Range</InputLabel>
               <Select
                 value={timeRange}

@@ -47,6 +47,9 @@ import {
   CalendarToday,
   AccessTime,
   PersonAdd,
+  Check,
+  Close,
+  AccessTimeFilled
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -68,6 +71,20 @@ const ClientsPage = ({ isDarkMode }) => {
     scheduleTime: '',
     status: 'Active'
   });
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, clientId: null });
+  const [clientRequests, setClientRequests] = useState([
+    {
+      id: 1,
+      name: 'Alex Johnson',
+      email: 'alex@example.com',
+      phone: '+90 555 123 4567',
+      program: 'Weight Training',
+      message: 'I want to focus on building muscle and strength.',
+      preferredTime: 'Evening',
+      status: 'pending',
+      requestDate: '2024-02-15'
+    },
+  ]);
 
   useEffect(() => {
     fetchClients();
@@ -126,7 +143,12 @@ const ClientsPage = ({ isDarkMode }) => {
     }
   };
 
-  const handleDeleteClient = async (clientId) => {
+  const handleDeleteClient = (clientId) => {
+    setDeleteConfirm({ open: true, clientId });
+  };
+
+  const confirmDelete = async () => {
+    const clientId = deleteConfirm.clientId;
     setActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -136,6 +158,7 @@ const ClientsPage = ({ isDarkMode }) => {
       showAlert('Failed to delete client', 'error');
     } finally {
       setActionLoading(false);
+      setDeleteConfirm({ open: false, clientId: null });
     }
   };
 
@@ -214,6 +237,37 @@ const ClientsPage = ({ isDarkMode }) => {
     }
   };
 
+  const handleRequestAction = async (requestId, action) => {
+    setActionLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (action === 'approve') {
+        const approvedRequest = clientRequests.find(req => req.id === requestId);
+        const newClient = {
+          id: clients.length + 1,
+          name: approvedRequest.name,
+          email: approvedRequest.email,
+          phone: approvedRequest.phone,
+          program: approvedRequest.program,
+          status: 'Active',
+          startDate: new Date().toISOString().split('T')[0],
+          avatar: null
+        };
+        setClients(prev => [...prev, newClient]);
+        showAlert('Client request approved successfully!', 'success');
+      } else {
+        showAlert('Client request rejected', 'info');
+      }
+      
+      setClientRequests(prev => prev.filter(req => req.id !== requestId));
+    } catch (error) {
+      showAlert('Failed to process request', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -233,7 +287,7 @@ const ClientsPage = ({ isDarkMode }) => {
       return (
         <TableRow>
           <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
-            <Typography color="textSecondary">
+            <Typography color={isDarkMode ? 'white' : 'textSecondary'}>
               No clients found
             </Typography>
           </TableCell>
@@ -246,8 +300,11 @@ const ClientsPage = ({ isDarkMode }) => {
         key={client.id}
         sx={{
           '&:hover': { 
-            bgcolor: 'rgba(255, 71, 87, 0.04)',
+            bgcolor: isDarkMode ? 'rgba(255, 71, 87, 0.1)' : 'rgba(255, 71, 87, 0.04)',
             transition: 'background-color 0.3s ease'
+          },
+          '& .MuiTableCell-root': {
+            color: isDarkMode ? '#fff' : 'inherit'
           }
         }}
       >
@@ -263,16 +320,34 @@ const ClientsPage = ({ isDarkMode }) => {
               >
                 {client.name[0]}
               </Avatar>
-              <Typography>{client.name}</Typography>
+              <Typography color={isDarkMode ? 'white' : 'inherit'}>{client.name}</Typography>
             </Box>
           </Fade>
         </TableCell>
         <TableCell>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton size="small" sx={{ color: '#25D366' }} onClick={() => handleContactAction('whatsapp', client.phone)}>
+            <IconButton 
+              size="small" 
+              sx={{ 
+                color: '#25D366 !important', // WhatsApp green with !important
+                '&:hover': {
+                  backgroundColor: 'rgba(37, 211, 102, 0.1)',
+                }
+              }} 
+              onClick={() => handleContactAction('whatsapp', client.phone)}
+            >
               <WhatsApp />
             </IconButton>
-            <IconButton size="small" sx={{ color: '#ff4757' }} onClick={() => handleContactAction('email', client.email)}>
+            <IconButton 
+              size="small" 
+              sx={{ 
+                color: '#EA4335 !important', // Gmail red with !important
+                '&:hover': {
+                  backgroundColor: 'rgba(234, 67, 53, 0.1)',
+                }
+              }} 
+              onClick={() => handleContactAction('email', client.email)}
+            >
               <Mail />
             </IconButton>
           </Box>
@@ -300,6 +375,201 @@ const ClientsPage = ({ isDarkMode }) => {
     ));
   };
 
+  const renderRequestsSection = () => (
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h6" sx={{ 
+        mb: 2, 
+        color: isDarkMode ? '#fff' : '#2c3e50',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1
+      }}>
+        <AccessTimeFilled sx={{ color: '#ff4757' }} />
+        Pending Client Requests
+      </Typography>
+
+      <AnimatePresence>
+        {clientRequests.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <Paper sx={{
+              p: 3,
+              textAlign: 'center',
+              bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
+              borderRadius: '16px',
+            }}>
+              <Typography color="textSecondary">
+                No pending requests at the moment
+              </Typography>
+            </Paper>
+          </motion.div>
+        ) : (
+          <Grid container spacing={2}>
+            {clientRequests.map((request) => (
+              <Grid item xs={12} md={6} key={request.id}>
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Paper sx={{
+                    p: 3,
+                    bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
+                    borderRadius: '16px',
+                    border: '1px solid',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '4px',
+                      height: '100%',
+                      background: 'linear-gradient(to bottom, #ff4757, #ff6b81)',
+                    }
+                  }}>
+                    <Box sx={{ pl: 2 }}>
+                      <Typography variant="h6" sx={{ color: '#ff4757', mb: 1 }}>
+                        {request.name}
+                      </Typography>
+                      
+                      <Grid container spacing={2} sx={{ mb: 2 }}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" color="textSecondary">
+                            Email: {request.email}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            Phone: {request.phone}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" color="textSecondary">
+                            Program: {request.program}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            Preferred Time: {request.preferredTime}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          mb: 2,
+                          p: 2,
+                          bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                          borderRadius: '8px',
+                          color: isDarkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
+                        }}
+                      >
+                        "{request.message}"
+                      </Typography>
+
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'flex-end',
+                        gap: 1 
+                      }}>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            variant="outlined"
+                            startIcon={<Close />}
+                            onClick={() => handleRequestAction(request.id, 'reject')}
+                            sx={{
+                              borderColor: '#ff4757',
+                              color: '#ff4757',
+                              '&:hover': {
+                                borderColor: '#ff3747',
+                                bgcolor: 'rgba(255,71,87,0.1)',
+                              }
+                            }}
+                          >
+                            Reject
+                          </Button>
+                        </motion.div>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            variant="contained"
+                            startIcon={<Check />}
+                            onClick={() => handleRequestAction(request.id, 'approve')}
+                            sx={{
+                              bgcolor: '#ff4757',
+                              '&:hover': {
+                                bgcolor: '#ff3747',
+                              }
+                            }}
+                          >
+                            Approve
+                          </Button>
+                        </motion.div>
+                      </Box>
+                    </Box>
+                  </Paper>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </AnimatePresence>
+    </Box>
+  );
+
+  const renderDeleteConfirmDialog = () => (
+    <Dialog
+      open={deleteConfirm.open}
+      onClose={() => setDeleteConfirm({ open: false, clientId: null })}
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+          backgroundImage: 'none',
+        }
+      }}
+    >
+      <DialogTitle>Delete Confirmation</DialogTitle>
+      <DialogContent>
+        <Typography>
+          Are you sure you want to delete this client? This action cannot be undone.
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={{ p: 2.5, gap: 1 }}>
+        <Button 
+          onClick={() => setDeleteConfirm({ open: false, clientId: null })}
+          variant="outlined"
+          sx={{
+            borderColor: '#bdbdbd',
+            color: '#757575',
+            '&:hover': {
+              borderColor: '#9e9e9e',
+              bgcolor: 'rgba(0, 0, 0, 0.04)',
+            }
+          }}
+        >
+          Cancel
+        </Button>
+        <LoadingButton
+          onClick={confirmDelete}
+          loading={actionLoading}
+          variant="contained"
+          color="error"
+          sx={{
+            bgcolor: '#ff4757',
+            '&:hover': { bgcolor: '#ff3747' }
+          }}
+        >
+          Delete
+        </LoadingButton>
+      </DialogActions>
+    </Dialog>
+  );
+
   return (
     <Box sx={{ p: 3 }}>
       <motion.div
@@ -307,6 +577,9 @@ const ClientsPage = ({ isDarkMode }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Add the requests section here, before the existing content */}
+        {renderRequestsSection()}
+        
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -360,6 +633,13 @@ const ClientsPage = ({ isDarkMode }) => {
             '& .MuiOutlinedInput-root': {
               borderRadius: '12px',
               backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.9)',
+              '& input': {
+                color: isDarkMode ? '#fff' : '#000',
+              },
+              '& input::placeholder': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)',
+                opacity: 1,
+              },
               '&:hover': {
                 '& fieldset': {
                   borderColor: '#ff4757',
@@ -383,6 +663,7 @@ const ClientsPage = ({ isDarkMode }) => {
             borderRadius: '16px',
             overflow: 'hidden',
             transition: 'all 0.3s ease',
+            bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
             '&:hover': {
               transform: 'translateY(-5px)',
               boxShadow: '0 6px 25px rgba(0,0,0,0.15)',
@@ -581,6 +862,8 @@ const ClientsPage = ({ isDarkMode }) => {
             </LoadingButton>
           </DialogActions>
         </Dialog>
+
+        {renderDeleteConfirmDialog()}
 
         <Snackbar
           open={alert.open}

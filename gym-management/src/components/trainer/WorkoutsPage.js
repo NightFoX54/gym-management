@@ -486,6 +486,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{
+                '& .MuiInputBase-root': {
+                  color: '#fff', // Changed to always white
+                  '& input': {
+                    color: '#fff', // Added to ensure input text is white
+                  },
+                  '& input::placeholder': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    opacity: 1,
+                  }
+                }
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -499,7 +511,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
                   },
                   '&:hover fieldset': {
                     borderColor: 'rgba(255,71,87,0.5) !important',
-                  },
+                  }
                 }
               }}
             />
@@ -694,7 +706,127 @@ const mockWorkouts = [
     calories: 450,
     exercises: 12,
     completion: 85,
+    description: 'Complete full body workout focusing on major muscle groups',
+    equipment: ['Dumbbells', 'Barbell', 'Resistance Bands'],
+    targetMuscles: ['Chest', 'Back', 'Legs', 'Shoulders']
   },
+  {
+    id: 2,
+    name: 'HIIT Cardio Blast',
+    type: 'cardio',
+    difficulty: 'advanced',
+    duration: 45,
+    calories: 600,
+    exercises: 8,
+    completion: 92,
+    description: 'High-intensity interval training for maximum calorie burn',
+    equipment: ['Kettlebell', 'Jump Rope', 'Yoga Mat'],
+    targetMuscles: ['Core', 'Legs', 'Shoulders']
+  },
+  {
+    id: 3,
+    name: 'Yoga Flow',
+    type: 'flexibility',
+    difficulty: 'beginner',
+    duration: 50,
+    calories: 200,
+    exercises: 15,
+    completion: 78,
+    description: 'Relaxing yoga session focusing on flexibility and mindfulness',
+    equipment: ['Yoga Mat', 'Resistance Bands'],
+    targetMuscles: ['Core', 'Back', 'Legs']
+  },
+  {
+    id: 4,
+    name: 'Power Lifting',
+    type: 'strength',
+    difficulty: 'advanced',
+    duration: 75,
+    calories: 500,
+    exercises: 6,
+    completion: 65,
+    description: 'Heavy lifting session focusing on compound movements',
+    equipment: ['Barbell', 'Power Rack', 'Weight Plates'],
+    targetMuscles: ['Chest', 'Back', 'Legs']
+  },
+  {
+    id: 5,
+    name: 'Core Crusher',
+    type: 'strength',
+    difficulty: 'intermediate',
+    duration: 30,
+    calories: 300,
+    exercises: 10,
+    completion: 95,
+    description: 'Intense core workout for strengthening abdominal muscles',
+    equipment: ['Yoga Mat', 'Medicine Ball'],
+    targetMuscles: ['Core', 'Back']
+  },
+  {
+    id: 6,
+    name: 'Sprint Intervals',
+    type: 'cardio',
+    difficulty: 'advanced',
+    duration: 40,
+    calories: 550,
+    exercises: 5,
+    completion: 88,
+    description: 'High-intensity sprint training for cardiovascular endurance',
+    equipment: ['Treadmill'],
+    targetMuscles: ['Legs', 'Core']
+  },
+  {
+    id: 7,
+    name: 'Upper Body Focus',
+    type: 'strength',
+    difficulty: 'intermediate',
+    duration: 55,
+    calories: 400,
+    exercises: 9,
+    completion: 72,
+    description: 'Complete upper body workout targeting all major muscle groups',
+    equipment: ['Dumbbells', 'Pull-up Bar', 'Resistance Bands'],
+    targetMuscles: ['Chest', 'Back', 'Shoulders', 'Arms']
+  },
+  {
+    id: 8,
+    name: 'Leg Day Challenge',
+    type: 'strength',
+    difficulty: 'advanced',
+    duration: 65,
+    calories: 480,
+    exercises: 8,
+    completion: 60,
+    description: 'Intense lower body workout focusing on strength and hypertrophy',
+    equipment: ['Barbell', 'Squat Rack', 'Leg Press'],
+    targetMuscles: ['Legs', 'Core']
+  },
+  {
+    id: 9,
+    name: 'Mobility Flow',
+    type: 'flexibility',
+    duration: 35,
+    difficulty: 'beginner',
+    calories: 150,
+    exercises: 12,
+    completion: 90,
+    description: 'Dynamic stretching and mobility exercises for better flexibility',
+    equipment: ['Foam Roller', 'Yoga Mat'],
+    targetMuscles: ['Full Body']
+  },
+  {
+    id: 10,
+    name: 'CrossFit WOD',
+    type: 'crossfit',
+    difficulty: 'advanced',
+    duration: 45,
+    calories: 580,
+    exercises: 6,
+    completion: 82,
+    description: 'High-intensity CrossFit workout of the day',
+    equipment: ['Kettlebell', 'Jump Rope', 'Barbell'],
+    targetMuscles: ['Full Body']
+  }
 ];
 
 export default WorkoutsPage;

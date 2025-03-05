@@ -129,11 +129,6 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       action: () => setOpenDialog('session'),
     },
     { 
-      title: 'Create Workout', 
-      icon: <FitnessIcon />, 
-      action: () => setOpenDialog('workout'),
-    },
-    { 
       title: 'View Reports', 
       icon: <TimelineIcon />, 
       action: () => navigate('/trainer/reports'),
@@ -460,11 +455,12 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                     }}>
                       <TableCell sx={{ 
                         borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                        color: isDarkMode ? '#fff' : 'inherit',  // Added color for dark mode
                       }}>
                         {achievement.client}
                       </TableCell>
                       <TableCell sx={{ 
-                        color: '#ff4757',
+                        color: isDarkMode ? '#fff' : '#ff4757',  // Updated color for dark mode
                         borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
                       }}>
                         {achievement.type}
@@ -524,12 +520,34 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       </Box>
 
       {/* Quick Actions */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid 
+        container 
+        spacing={3} 
+        sx={{ 
+          mb: 4,
+          justifyContent: 'center', // Center the grid items
+          alignItems: 'center',
+          '& .MuiGrid-item': {
+            display: 'flex',
+            justifyContent: 'center'
+          }
+        }}
+      >
         {quickActions.map((action, index) => (
-          <Grid item xs={6} sm={3} key={index}>
+          <Grid item xs={12} sm={4} md={3} key={index}>
             <motion.div
               whileHover={{ y: -5, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 0.3,
+                delay: index * 0.1, // Stagger the animations
+                type: "spring",
+                stiffness: 300,
+                damping: 15
+              }}
+              style={{ width: '100%', maxWidth: '280px' }} // Control card width
             >
               <Card 
                 onClick={action.action}
@@ -543,28 +561,56 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                   boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                   cursor: 'pointer',
+                  overflow: 'hidden',
+                  position: 'relative',
                   '&:hover': {
                     boxShadow: '0 6px 25px rgba(255,71,87,0.15)',
                     borderColor: '#ff4757',
+                    '& .action-icon': {
+                      transform: 'rotate(10deg) scale(1.1)',
+                    },
+                    '&::after': {
+                      transform: 'scale(1.5)',
+                    }
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: '-50%',
+                    right: '-50%',
+                    width: '100%',
+                    height: '100%',
+                    background: 'radial-gradient(circle, rgba(255,71,87,0.1) 0%, transparent 70%)',
+                    transition: 'transform 0.5s ease',
+                    transform: 'scale(1)',
+                    zIndex: 0,
                   }
                 }}
               >
-                <Box sx={{ p: 3, textAlign: 'center' }}>
-                  <Avatar
-                    sx={{
-                      bgcolor: 'rgba(255,71,87,0.1)',
-                      width: 56,
-                      height: 56,
-                      margin: '0 auto 1rem',
-                      transition: 'all 0.3s ease',
-                      color: '#ff4757',
-                      '&:hover': {
-                        transform: 'rotate(10deg)',
-                      }
-                    }}
+                <Box sx={{ 
+                  p: 3, 
+                  textAlign: 'center',
+                  position: 'relative',
+                  zIndex: 1
+                }}>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
-                    {action.icon}
-                  </Avatar>
+                    <Avatar
+                      className="action-icon"
+                      sx={{
+                        bgcolor: 'rgba(255,71,87,0.1)',
+                        width: 56,
+                        height: 56,
+                        margin: '0 auto 1rem',
+                        transition: 'all 0.3s ease',
+                        color: '#ff4757',
+                      }}
+                    >
+                      {action.icon}
+                    </Avatar>
+                  </motion.div>
                   <Typography variant="subtitle1" sx={{ 
                     fontWeight: 600,
                     color: isDarkMode ? '#fff' : '#2c3e50'

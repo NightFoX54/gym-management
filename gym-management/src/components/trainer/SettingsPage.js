@@ -40,10 +40,10 @@ const SettingsPage = ({ isDarkMode }) => {
     bio: 'Professional trainer with 5 years of experience...',
     notifyEmails: true,
     notifyMessages: true,
-    notifyUpdates: false,
-    language: 'English',
-    timezone: 'UTC+3',
-    availability: '09:00 - 18:00',
+    notifySessionReminders: true,
+    notifyClientProgress: true,
+    notifyMobile: true,
+    notifyDesktop: true,
   });
   const [loading, setLoading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -339,20 +339,80 @@ const SettingsPage = ({ isDarkMode }) => {
             <Paper sx={{ p: 3, borderRadius: '16px' }}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>Email Notifications</Typography>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.notifyEmails}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          notifyEmails: e.target.checked
-                        }))}
-                        color="primary"
+                  <Typography variant="h6" gutterBottom sx={{ color: '#ff4757', mb: 2 }}>
+                    Email Notifications
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={formData.notifyEmails}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              notifyEmails: e.target.checked
+                            }))}
+                            color="primary"
+                          />
+                        }
+                        label="New Client Registrations"
                       />
-                    }
-                    label="Receive email notifications for new client registrations"
-                  />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={formData.notifyClientProgress}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              notifyClientProgress: e.target.checked
+                            }))}
+                            color="primary"
+                          />
+                        }
+                        label="Client Progress Updates"
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom sx={{ color: '#ff4757', mb: 2 }}>
+                    App Notifications
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={formData.notifyMobile}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              notifyMobile: e.target.checked
+                            }))}
+                            color="primary"
+                          />
+                        }
+                        label="Mobile Notifications"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={formData.notifyDesktop}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              notifyDesktop: e.target.checked
+                            }))}
+                            color="primary"
+                          />
+                        }
+                        label="Desktop Notifications"
+                      />
+                    </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
             </Paper>

@@ -107,14 +107,16 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
       borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
       '& .MuiListItemIcon-root': {
-        color: isDarkMode ? '#e0e0e0' : '#2c3e50',
+        color: isDarkMode ? '#fff' : '#2c3e50',
         minWidth: '40px'
       },
       '& .MuiListItemText-root': {
-        color: isDarkMode ? '#e0e0e0' : '#2c3e50',
+        '& .MuiTypography-root': {
+          color: isDarkMode ? '#fff' : '#2c3e50',
+        }
       },
       '& .MuiTypography-root': {
-        color: isDarkMode ? '#e0e0e0' : '#2c3e50',
+        color: isDarkMode ? '#fff' : '#2c3e50',
       }
     }}>
       <motion.div
@@ -199,8 +201,14 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
           transition: 'all 0.3s ease',
           '&:hover': {
             background: isDarkMode 
-              ? 'rgba(255, 255, 255, 0.1)'
+              ? 'rgba(255, 71, 87, 0.15)'
               : 'rgba(255, 71, 87, 0.1)',
+            '& .MuiListItemText-primary': {
+              color: '#ff4757 !important',
+            },
+            '& .MuiListItemIcon-root': {
+              color: '#ff4757 !important',
+            }
           }
         }
       }}>
@@ -222,6 +230,12 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
                     ? '4px solid #ff4757'
                     : '4px solid transparent',
                   pl: isActive ? '12px' : '16px',
+                  '& .MuiListItemText-primary': {
+                    color: isActive 
+                      ? '#ff4757 !important'
+                      : isDarkMode ? '#fff' : '#2c3e50',
+                    transition: 'color 0.3s ease',
+                  }
                 }}
               >
                 <ListItemIcon 
@@ -256,7 +270,19 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
                       backgroundColor: '#ff4757',
                       borderRadius: '4px',
                     }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ 
+                      type: "spring",
+                      stiffness: 380,
+                      damping: 30,
+                      mass: 2,
+                      duration: 0.7
+                    }}
+                    whileHover={{
+                      scale: 1.2,
+                      transition: { duration: 0.2 }
+                    }}
                   />
                 )}
               </ListItem>
