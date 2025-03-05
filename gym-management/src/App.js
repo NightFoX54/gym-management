@@ -17,6 +17,7 @@ import Member from './components/member/Member';
 import MyProfile from './components/member/MyProfile';
 import MembershipStatus from './components/member/MembershipStatus'
 import TrainingPlan from './components/member/TrainingPlan';
+import WeeklySchedule from './components/member/WeeklySchedule';
 import ForgotPassword from './components/ForgotPassword';
 import Market from './components/Market';
 import NutritionCounseling from './components/services/NutritionCounseling';
@@ -129,6 +130,7 @@ function App() {
         <Route path="/member/schedule" element={<Member isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/member/membership" element={<MembershipStatus isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/member/training" element={<TrainingPlan isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/member/weekly-schedule" element={<WeeklySchedule isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/nutrition" element={<NutritionCounseling isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/recovery" element={<RecoveryWellness isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
       </Routes>
