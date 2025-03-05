@@ -2,6 +2,7 @@ import React from 'react';
 import { FaArrowLeft, FaDumbbell, FaCalendar, FaClock, FaUser, FaCheckCircle, FaMoon, FaSun } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/TrainingPlan.css';
+import '../../styles/PageTransitions.css';
 
 const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -47,116 +48,118 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
     ]
   };
 
-  const toggleDarkMode = () => {
+  const toggleDarkModeMember = () => {
     setIsDarkMode(!isDarkMode);
   };
 
   return (
-    <div className={`training-plan-container ${isDarkMode ? 'dark-mode' : ''}`}>
-      <button className="back-button" onClick={() => navigate('/member')}>
-        <FaArrowLeft />
-        <span>Back to Dashboard</span>
-      </button>
+    <div className={`training-plan-container-trainingplan container-animate ${isDarkMode ? 'dark-mode' : ''}`}>
+      <div className="training-content-trainingplan">
+        <div className="training-header-trainingplan">
+          <button className="back-button-trainingplan" onClick={() => navigate('/member')}>
+            <FaArrowLeft />
+            <span>Back to Dashboard</span>
+          </button>
 
-      <div className="dark-mode-toggle-container">
-        <button 
-          className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
-          onClick={toggleDarkMode}
-        >
-          <FaSun className="toggle-icon sun" />
-          <div className="toggle-circle"></div>
-          <FaMoon className="toggle-icon moon" />
-        </button>
-      </div>
-
-      <div className="training-plan-content">
-        <h2>Training Plan</h2>
-
-        <div className="program-overview">
-          <div className="program-header">
-            <div className="program-title">
-              <FaDumbbell />
-              <h3>{workoutProgram.name}</h3>
-            </div>
-            <div className="progress-indicator">
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill"
-                  style={{ width: `${workoutProgram.progress}%` }}
-                />
-              </div>
-              <div className="progress-text">
-                <span className="completed">{workoutProgram.progress}% completed</span>
-                <span className="remaining">{100 - workoutProgram.progress}% left</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="program-details">
-            <div className="detail-item">
-              <FaUser />
-              <div>
-                <label>Trainer</label>
-                <p>{workoutProgram.trainer}</p>
-              </div>
-            </div>
-            <div className="detail-item">
-              <FaCalendar />
-              <div>
-                <label>Start Date</label>
-                <p>{new Date(workoutProgram.startDate).toLocaleDateString()}</p>
-              </div>
-            </div>
-            <div className="detail-item">
-              <FaClock />
-              <div>
-                <label>Duration</label>
-                <p>{workoutProgram.duration}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="next-session">
-            <h4>Next Training Session</h4>
-            <p>{new Date(workoutProgram.nextSession).toLocaleString()}</p>
-          </div>
+          <button 
+            className={`dark-mode-toggle-trainingplan ${isDarkMode ? 'active' : ''}`} 
+            onClick={toggleDarkModeMember}
+          >
+            <FaSun className="toggle-icon-trainingplan sun-trainingplan" />
+            <div className="toggle-circle-trainingplan"></div>
+            <FaMoon className="toggle-icon-trainingplan moon-trainingplan" />
+          </button>
         </div>
 
-        <div className="workout-schedule">
-          <h3>Weekly Schedule</h3>
-          <div className="schedule-grid">
-            {workoutProgram.schedule.map((day, index) => (
-              <div key={index} className="workout-day">
-                <h4>{day.day}</h4>
-                <div className="exercises-list">
-                  {day.exercises.map((exercise, exIndex) => (
-                    <div key={exIndex} className="exercise-item">
-                      <div className="exercise-header">
-                        <h5>{exercise.name}</h5>
-                      </div>
-                      <div className="exercise-details">
-                        <span>{exercise.sets} sets</span>
-                        <span>{exercise.reps} reps</span>
-                        <span>{exercise.weight}</span>
-                      </div>
-                    </div>
-                  ))}
+        <div className="training-content-trainingplan">
+          <h2 className="card-animate stagger-3">Training Plan</h2>
+
+          <div className="program-overview-trainingplan card-animate stagger-4">
+            <div className="program-header-trainingplan">
+              <div className="program-title-trainingplan">
+                <FaDumbbell />
+                <h3>{workoutProgram.name}</h3>
+              </div>
+              <div className="progress-indicator-trainingplan">
+                <div className="progress-bar-trainingplan">
+                  <div 
+                    className="progress-fill-trainingplan"
+                    style={{ width: `${workoutProgram.progress}%` }}
+                  />
+                </div>
+                <div className="progress-text-trainingplan">
+                  <span className="completed">{workoutProgram.progress}% completed</span>
+                  <span className="remaining">{100 - workoutProgram.progress}% left</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <div className="program-goals">
-          <h3>Program Goals</h3>
-          <ul className="goals-list">
-            {workoutProgram.goals.map((goal, index) => (
-              <li key={index}>
-                <FaCheckCircle />
-                <span>{goal}</span>
-              </li>
-            ))}
-          </ul>
+            <div className="program-details-trainingplan">
+              <div className="detail-item-trainingplan">
+                <FaUser />
+                <div>
+                  <label>Trainer</label>
+                  <p>{workoutProgram.trainer}</p>
+                </div>
+              </div>
+              <div className="detail-item-trainingplan">
+                <FaCalendar />
+                <div>
+                  <label>Start Date</label>
+                  <p>{new Date(workoutProgram.startDate).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <div className="detail-item-trainingplan">
+                <FaClock />
+                <div>
+                  <label>Duration</label>
+                  <p>{workoutProgram.duration}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="next-session-trainingplan">
+              <h4>Next Training Session</h4>
+              <p>{new Date(workoutProgram.nextSession).toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div className="workout-schedule-trainingplan">
+            <h3>Weekly Schedule</h3>
+            <div className="schedule-grid-trainingplan">
+              {workoutProgram.schedule.map((day, index) => (
+                <div key={day.day} className={`workout-day-trainingplan card-animate stagger-${index + 1}`}>
+                  <h4>{day.day}</h4>
+                  <div className="exercises-list-trainingplan">
+                    {day.exercises.map((exercise, exIndex) => (
+                      <div key={exIndex} className="exercise-item-trainingplan">
+                        <div className="exercise-header-trainingplan">
+                          <h5>{exercise.name}</h5>
+                        </div>
+                        <div className="exercise-details-trainingplan">
+                          <span>{exercise.sets} sets</span>
+                          <span>{exercise.reps} reps</span>
+                          <span>{exercise.weight}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="program-goals-trainingplan card-animate stagger-5">
+            <h3>Program Goals</h3>
+            <ul className="goals-list-trainingplan">
+              {workoutProgram.goals.map((goal, index) => (
+                <li key={index}>
+                  <FaCheckCircle />
+                  <span>{goal}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
