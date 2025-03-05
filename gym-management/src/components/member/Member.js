@@ -4,8 +4,40 @@ import { FaBell, FaUserCircle, FaCalendar, FaCreditCard, FaDumbbell, FaCamera, F
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import '../../styles/Member.css';
+import '../../styles/PageTransitions.css';
 
 const Member = ({ isDarkMode, setIsDarkMode }) => {
+  const [member, setMember] = useState({
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    phone: '+1 234 567 8900',
+    membershipType: 'Premium',
+    membershipStatus: 'Active',
+    membershipEndDate: '2024-12-31',
+    profilePhoto: 'https://via.placeholder.com/150',
+    attendance: {
+      total: 45,
+      thisMonth: 12,
+      lastMonth: 15
+    },
+    upcomingSessions: [
+      {
+        id: 1,
+        type: 'Personal Training',
+        trainer: 'Mike Johnson',
+        date: '2024-03-15',
+        time: '10:00 AM'
+      },
+      {
+        id: 2,
+        type: 'Group Class',
+        trainer: 'Sarah Wilson',
+        date: '2024-03-16',
+        time: '2:00 PM'
+      }
+    ]
+  });
+
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const imgRef = useRef(null);
@@ -24,14 +56,6 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   const [completedCrop, setCompletedCrop] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
 
-  const [userData, setUserData] = useState({
-    name: 'John Doe',
-    email: 'john@example.com',
-    membershipType: 'Premium',
-    joinDate: '2024-01-01',
-    profileImage: 'https://via.placeholder.com/150'
-  });
-
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -49,20 +73,20 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogoutMember = () => {
     // TODO: Add proper logout logic here
     navigate('/login');
   };
 
-  const handleCardClick = (route) => {
+  const handleCardClickMember = (route) => {
     navigate(route);
   };
 
-  const toggleNotifications = () => {
+  const toggleNotificationsMember = () => {
     setShowNotifications(!showNotifications);
   };
 
-  const markNotificationAsRead = (id) => {
+  const markNotificationAsReadMember = (id) => {
     setNotifications(notifications.map(notif => 
       notif.id === id ? { ...notif, isRead: true } : notif
     ));
@@ -70,7 +94,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
   const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
 
-  const handleImageClick = () => {
+  const handleImageClickMember = () => {
     fileInputRef.current.click();
   };
 
@@ -78,11 +102,11 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
     imgRef.current = img;
   }, []);
 
-  const handleImageChange = (event) => {
+  const handleImageChangeMember = (event) => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('Dosya boyutu 5MB\'dan küçük olmalıdır.');
+        alert('File size must be less than 5MB.');
         return;
       }
 
@@ -146,18 +170,27 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   }, [completedCrop, generateCrop]);
 
   useEffect(() => {
-    document.body.classList.toggle('dark-mode', isDarkMode);
-    localStorage.setItem('darkMode', isDarkMode);
-  }, [isDarkMode]);
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [setIsDarkMode]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
     localStorage.setItem('darkMode', newDarkMode);
-    document.body.classList.toggle('dark-mode', newDarkMode);
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   };
 
-  const handleUpload = () => {
+  const handleUploadMember = () => {
     setIsUploading(true);
     setUploadProgress(0);
 
@@ -168,9 +201,9 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
           clearInterval(interval);
           setIsUploading(false);
           setShowImageModal(false);
-          setUserData(prev => ({
+          setMember(prev => ({
             ...prev,
-            profileImage: croppedImage
+            profilePhoto: croppedImage
           }));
           return 100;
         }
@@ -179,7 +212,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
     }, 200);
   };
 
-  const handleCancel = () => {
+  const handleCancelMember = () => {
     setShowImageModal(false);
     setTempImage(null);
     setCroppedImage(null);
@@ -187,200 +220,144 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   return (
-    <div className={`member-container ${isDarkMode ? 'dark-mode' : ''}`}>
-      <header className="member-header">
-        <div className="profile-section">
-          <div className="profile-image-container" onClick={handleImageClick}>
-            <img src={userData.profileImage} alt="Profile" className="profile-image" />
-            <div className={`profile-image-overlay ${isUploading ? 'uploading' : ''}`}>
-              {isUploading ? (
-                <>
-                  <FaSpinner className="spinner-icon" />
-                  <span>Uploading...</span>
-                </>
-              ) : (
-                <>
-                  <FaCamera className="camera-icon" />
-                  <span>Change Photo</span>
-                </>
-              )}
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              style={{ display: 'none' }}
-            />
-          </div>
-          <div className="profile-info">
-            <h1>Welcome, {userData.name}</h1>
-            <p className="membership-status">{userData.membershipType} Member</p>
-          </div>
-        </div>
-        <div className="header-actions">
+    <div className={`member-container-member ${isDarkMode ? 'dark-mode' : ''}`}>
+      <div className="member-content-member">
+        <div className="member-header-member">
+          <h1>Member Dashboard</h1>
           <button 
-            className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
+            className={`dark-mode-toggle-member ${isDarkMode ? 'active' : ''}`} 
             onClick={toggleDarkMode}
           >
-            <FaSun className="toggle-icon sun" />
-            <div className="toggle-circle"></div>
-            <FaMoon className="toggle-icon moon" />
-          </button>
-          <div className="notification-section">
-            <button className="notification-button" onClick={toggleNotifications}>
-              <FaBell />
-              {unreadNotificationsCount > 0 && (
-                <span className="notification-badge">{unreadNotificationsCount}</span>
-              )}
-            </button>
-            {showNotifications && (
-              <div className="notification-dropdown">
-                <h3>Notifications</h3>
-                {notifications.length > 0 ? (
-                  <div className="notification-list">
-                    {notifications.map(notification => (
-                      <div 
-                        key={notification.id} 
-                        className={`notification-item ${notification.isRead ? 'read' : 'unread'}`}
-                        onClick={() => markNotificationAsRead(notification.id)}
-                      >
-                        <p>{notification.message}</p>
-                        {!notification.isRead && <span className="unread-dot" />}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="no-notifications">No new notifications</p>
-                )}
-              </div>
-            )}
-          </div>
-          <button onClick={handleLogout} className="logout-button">
-            Logout
+            <FaSun className="toggle-icon-member sun-member" />
+            <div className="toggle-circle-member"></div>
+            <FaMoon className="toggle-icon-member moon-member" />
           </button>
         </div>
-      </header>
-      
-      <div className="member-content">
-        <div className="dashboard-grid">
-          <div className="dashboard-card" onClick={() => handleCardClick('/member/profile')}>
-            <div className="card-icon"><FaUserCircle /></div>
+
+        <div className="member-profile-member">
+          <div className="profile-photo-member">
+            <img src={member.profilePhoto} alt="Profile" />
+          </div>
+          <div className="profile-info-member">
+            <h2>{member.name}</h2>
+            <p>{member.email}</p>
+            <p>{member.phone}</p>
+          </div>
+        </div>
+
+        <div className="dashboard-grid-member">
+          <div className="dashboard-card-member card-animate stagger-1" onClick={() => handleCardClickMember('/member/profile')}>
+            <FaUserCircle className="card-icon-member" />
             <h3>My Profile</h3>
-            <p>View and edit your personal information</p>
-            <div className="card-details">
-              <span>Email: {userData.email}</span>
-              <span>Member since: {new Date(userData.joinDate).toLocaleDateString()}</span>
-            </div>
+            <p>View and edit your profile information</p>
           </div>
           
-          <div className="dashboard-card" onClick={() => handleCardClick('/member/schedule')}>
-            <div className="card-icon"><FaCalendar /></div>
-            <h3>Class Schedule</h3>
-            <p>Browse and book fitness classes</p>
-            <div className="card-details">
-              <span>Upcoming classes: 2</span>
-              <span>Available slots: 15</span>
-            </div>
-          </div>
-          
-          <div className="dashboard-card" onClick={() => handleCardClick('/member/membership')}>
-            <div className="card-icon"><FaCreditCard /></div>
+          <div className="dashboard-card-member card-animate stagger-2" onClick={() => handleCardClickMember('/member/membership')}>
+            <FaCreditCard className="card-icon-member" />
             <h3>Membership Status</h3>
-            <p>Check your membership details</p>
-            <div className="card-details">
-              <span>Status: Active</span>
-              <span>Type: {userData.membershipType}</span>
-            </div>
+            <p>Check your membership details and renewal options</p>
           </div>
           
-          <div className="dashboard-card" onClick={() => handleCardClick('/member/training')}>
-            <div className="card-icon"><FaDumbbell /></div>
-            <h3>Training Programs</h3>
-            <p>View and track your workout plans</p>
-            <div className="card-details">
-              <div className="training-program-info">
-                <div className="program-title">
-                  <FaDumbbell className="program-icon" />
-                  Advanced Strength Training
-                </div>
-                <div className="session-date">
-                  <FaCalendar className="date-icon" />
-                  <div className="date-info">
-                    <div className="date-day">
-                      Next Session
-                      <span className="time-badge">10:00 AM</span>
-                    </div>
-                    <div className="date-full">
-                      {new Date().toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="dashboard-card-member card-animate stagger-3" onClick={() => handleCardClickMember('/member/training')}>
+            <FaDumbbell className="card-icon-member" />
+            <h3>Training Plan</h3>
+            <p>View your personalized training program</p>
+          </div>
+          
+          <div className="dashboard-card-member card-animate stagger-4" onClick={() => handleCardClickMember('/member/weekly-schedule')}>
+            <FaCalendar className="card-icon-member" />
+            <h3>Weekly Schedule</h3>
+            <p>Check your upcoming training sessions</p>
           </div>
         </div>
+
+        <div className="notification-section-member">
+          <button className="notification-button-member" onClick={toggleNotificationsMember}>
+            <FaBell />
+            {unreadNotificationsCount > 0 && (
+              <span className="notification-badge-member">{unreadNotificationsCount}</span>
+            )}
+          </button>
+          {showNotifications && (
+            <div className="notification-dropdown-member">
+              <h3>Notifications</h3>
+              {notifications.length > 0 ? (
+                <div className="notification-list-member">
+                  {notifications.map(notification => (
+                    <div 
+                      key={notification.id} 
+                      className={`notification-item-member ${notification.isRead ? 'read' : 'unread'}`}
+                      onClick={() => markNotificationAsReadMember(notification.id)}
+                    >
+                      <p>{notification.message}</p>
+                      {!notification.isRead && <span className="unread-dot-member" />}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="no-notifications-member">No notifications</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <button className="logout-button-member" onClick={handleLogoutMember}>
+          Logout
+        </button>
       </div>
 
       {showImageModal && (
-        <div className="image-modal-overlay">
-          <div className="image-modal">
-            <div className="modal-header">
-              <h3>Edit Profile Photo</h3>
-              <button className="close-button" onClick={handleCancel}>
+        <div className="image-modal-overlay-member">
+          <div className="image-modal-member">
+            <div className="modal-header-member">
+              <h3>Crop Profile Image</h3>
+              <button className="close-button-member" onClick={handleCancelMember}>
                 <FaTimes />
               </button>
             </div>
-            <div className="modal-content">
-              <div className="crop-container">
-                {tempImage && (
-                  <ReactCrop
-                    crop={crop}
-                    onChange={(_, percentCrop) => setCrop(percentCrop)}
-                    onComplete={(c) => setCompletedCrop(c)}
-                    aspect={1}
-                    circularCrop
-                  >
-                    <img
-                      ref={imgRef}
-                      alt="Crop me"
-                      src={tempImage}
-                      onLoad={(e) => onImageLoad(e.currentTarget)}
-                    />
-                  </ReactCrop>
+            <div className="modal-content-member">
+              <div className="crop-container-member">
+                <ReactCrop
+                  crop={crop}
+                  onChange={c => setCrop(c)}
+                  onComplete={c => setCompletedCrop(c)}
+                  aspect={1}
+                >
+                  <img
+                    src={tempImage}
+                    alt="Crop me"
+                    onLoad={onImageLoad}
+                  />
+                </ReactCrop>
+              </div>
+              <div className="preview-container-member">
+                <h4>Preview</h4>
+                {croppedImage && (
+                  <img
+                    src={croppedImage}
+                    alt="Preview"
+                    className="preview-image-member"
+                  />
                 )}
               </div>
-              {croppedImage && (
-                <div className="preview-container">
-                  <h4>Preview</h4>
-                  <img src={croppedImage} alt="Preview" className="preview-image" />
-                </div>
-              )}
-              {isUploading && (
-                <div className="progress-bar-container">
-                  <div 
-                    className="progress-bar" 
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                  <span className="progress-text">{uploadProgress}%</span>
-                </div>
-              )}
+              <div className="progress-bar-container-member">
+                <div 
+                  className="progress-bar-member"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <p className="progress-text-member">{uploadProgress}%</p>
             </div>
-            <div className="modal-footer">
-              <button className="cancel-button" onClick={handleCancel}>
+            <div className="modal-footer-member">
+              <button className="cancel-button-member" onClick={handleCancelMember}>
                 Cancel
               </button>
               <button 
-                className="save-button" 
-                onClick={handleUpload}
-                disabled={isUploading || !croppedImage}
+                className="save-button-member" 
+                onClick={handleUploadMember}
+                disabled={isUploading}
               >
-                {isUploading ? 'Uploading...' : 'Save Changes'}
+                Save
               </button>
             </div>
           </div>
