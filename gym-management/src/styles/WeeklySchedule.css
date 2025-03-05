@@ -1,0 +1,344 @@
+.weekly-schedule-container-weeklyschedule {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+  position: relative;
+  margin-top: 60px;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.dark-mode .weekly-schedule-container-weeklyschedule {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.schedule-content-weeklyschedule {
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.dark-mode .schedule-content-weeklyschedule {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.schedule-header-weeklyschedule {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.dark-mode .schedule-header-weeklyschedule {
+  background-color: #2d2d2d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.schedule-card-weekly-schedule {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-top: 2rem;
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.dark-mode .schedule-card-weekly-schedule {
+  background-color: #2d2d2d;
+  border-color: #404040;
+}
+
+.schedule-card-weekly-schedule:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.back-button-weeklyschedule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: white;
+  color: #ff4757;
+  border: 2px solid #ff4757;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.dark-mode .back-button-weeklyschedule {
+  background-color: #2d2d2d;
+  border-color: #ff4757;
+  color: #ff4757;
+}
+
+.back-button-weeklyschedule:hover {
+  background-color: #ff4757;
+  color: white;
+  transform: translateX(-5px);
+}
+
+.dark-mode .back-button-weeklyschedule:hover {
+  background-color: #ff4757;
+  color: white;
+  border-color: #ff4757;
+}
+
+.back-button-weeklyschedule svg {
+  font-size: 16px;
+}
+
+.back-button-weeklyschedule span {
+  font-size: 14px;
+}
+
+.dark-mode-toggle-container-weeklyschedule {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.dark-mode-toggle-weeklyschedule {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  border-radius: 15px;
+  background-color: #2d3436;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.dark-mode .dark-mode-toggle-weeklyschedule {
+  background-color: #4a5568;
+}
+
+.toggle-icon-weeklyschedule {
+  font-size: 14px;
+  z-index: 1;
+}
+
+.sun-weeklyschedule {
+  color: #f6e05e;
+}
+
+.moon-weeklyschedule {
+  color: #a0aec0;
+}
+
+.toggle-circle-weeklyschedule {
+  position: absolute;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+.dark-mode-toggle-weeklyschedule.active .toggle-circle-weeklyschedule {
+  transform: translateX(30px);
+  background-color: #2d3436;
+}
+
+.calendar-header-weeklyschedule {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.calendar-header-weeklyschedule h2 {
+  margin: 0;
+  color: #2d3436;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.dark-mode .calendar-header-weeklyschedule h2 {
+  color: #ffffff;
+}
+
+.calendar-nav-button {
+  background: none;
+  border: none;
+  color: #ff4757;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.1);
+  line-height: 1;
+  position: relative;
+}
+
+.calendar-nav-button span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.calendar-nav-button:hover {
+  background-color: #fff5f6;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.2);
+}
+
+.dark-mode .calendar-nav-button {
+  color: #ff6b81;
+}
+
+.dark-mode .calendar-nav-button:hover {
+  background-color: #363636;
+  box-shadow: 0 4px 12px rgba(255, 107, 129, 0.2);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.weekday {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.dark-mode .weekday {
+  color: #999;
+}
+
+.calendar-grid-weeklyschedule {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark-mode .calendar-day {
+  background-color: #363636;
+}
+
+.calendar-day:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .calendar-day:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.calendar-day.selected {
+  background-color: #ff4757;
+  color: white;
+}
+
+.dark-mode .calendar-day.selected {
+  background-color: #ff6b81;
+}
+
+.calendar-day.empty {
+  background-color: transparent;
+  cursor: default;
+}
+
+.calendar-day.empty:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.day-number {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.day-content {
+  font-size: 12px;
+  color: #666;
+}
+
+.dark-mode .day-content {
+  color: #999;
+}
+
+.selected-date-details-weeklyschedule {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .selected-date-details-weeklyschedule {
+  background-color: #363636;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .weekly-schedule-container-weeklyschedule {
+    padding: 20px;
+    margin-top: 40px;
+  }
+
+  .schedule-content-weeklyschedule {
+    padding: 20px;
+  }
+
+  .calendar-day {
+    padding: 5px;
+  }
+
+  .day-number {
+    font-size: 14px;
+  }
+
+  .day-content {
+    font-size: 10px;
+  }
+} 
