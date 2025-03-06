@@ -18,10 +18,13 @@ import MyProfile from './components/member/MyProfile';
 import MembershipStatus from './components/member/MembershipStatus'
 import TrainingPlan from './components/member/TrainingPlan';
 import WeeklySchedule from './components/member/WeeklySchedule';
+import PersonalStatistics from './components/member/PersonalStatistics';
 import ForgotPassword from './components/ForgotPassword';
 import Market from './components/Market';
 import NutritionCounseling from './components/services/NutritionCounseling';
 import RecoveryWellness from './components/services/RecoveryWellness';
+import Settings from './components/member/Settings';
+import TrainingPrograms from './components/member/TrainingPrograms';
 
 function Home({ isDarkMode, setIsDarkMode }) {
   const scrollToTop = () => {
@@ -131,8 +134,12 @@ function App() {
         <Route path="/member/membership" element={<MembershipStatus isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/member/training" element={<TrainingPlan isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/member/weekly-schedule" element={<WeeklySchedule isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/member/personal-statistics" element={<PersonalStatistics isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/member/training-programs" element={<TrainingPrograms isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/member/settings" element={<Settings isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/nutrition" element={<NutritionCounseling isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/recovery" element={<RecoveryWellness isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        
       </Routes>
     </Router>
   );
