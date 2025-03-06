@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaCalendar, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner, FaTimes } from 'react-icons/fa';
-import ReactCrop from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import React, { useState, useEffect, useRef } from 'react';
+import { FaUser, FaEnvelope, FaPhone, FaCalendar, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner } from 'react-icons/fa';
 import '../../styles/MyProfile.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
@@ -21,23 +19,11 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [tempImage, setTempImage] = useState(null);
-  const [crop, setCrop] = useState({
-    unit: '%',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
-    aspect: 1
-  });
-  const [completedCrop, setCompletedCrop] = useState(null);
-  const [croppedImage, setCroppedImage] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
-  const imgRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check dark mode status when page loads
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
     setIsDarkMode(savedDarkMode);
     if (savedDarkMode) {
@@ -52,7 +38,6 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const handleSaveMember = () => {
-    // TODO: API call to update profile
     setProfile(prev => ({
       ...prev,
       fullName: prev.fullName,
@@ -92,88 +77,44 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
     fileInputRef.current.click();
   };
 
-  const onImageLoad = useCallback((img) => {
-    imgRef.current = img;
-  }, []);
-
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Dosya boyutu 5MB\'dan küçük olmalıdır.');
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempImage(reader.result);
-        setShowImageModal(true);
-        setCrop({
-          unit: '%',
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 100,
-          aspect: 1
-        });
-        setCompletedCrop(null);
-        setCroppedImage(null);
-      };
-      reader.readAsDataURL(file);
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      alert('Please select a valid image file (JPG, PNG or GIF)');
+      return;
     }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setTempImage(reader.result);
+      setShowImageModal(true);
+    };
+    reader.onerror = () => {
+      alert('Error reading file. Please try again.');
+    };
+    reader.readAsDataURL(file);
   };
 
-  const generateCrop = useCallback(() => {
-    if (!completedCrop || !imgRef.current) return;
-
-    const image = imgRef.current;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    if (!ctx) {
-      throw new Error('No 2d context');
-    }
-
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    // Profil fotoğrafı için sabit boyutlar
-    const targetSize = 300;
-    canvas.width = targetSize;
-    canvas.height = targetSize;
-
-    ctx.imageSmoothingQuality = 'high';
-
-    ctx.drawImage(
-      image,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
-      0,
-      0,
-      targetSize,
-      targetSize
-    );
-
-    const base64Image = canvas.toDataURL('image/jpeg', 0.9);
-    setCroppedImage(base64Image);
-  }, [completedCrop]);
-
-  useEffect(() => {
-    generateCrop();
-  }, [completedCrop, generateCrop]);
-
   const handleUpload = () => {
-    if (!croppedImage) {
-      alert('Lütfen önce fotoğrafı kırpın.');
+    if (!tempImage) {
+      alert('Please select an image first.');
       return;
     }
 
     setIsUploading(true);
     setUploadProgress(0);
 
-    // Simüle edilmiş yükleme işlemi
+    // Simulated upload process
     const interval = setInterval(() => {
       setUploadProgress(prev => {
         if (prev >= 100) {
@@ -182,8 +123,9 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
           setShowImageModal(false);
           setProfile(prev => ({
             ...prev,
-            profileImage: croppedImage
+            profileImage: tempImage
           }));
+          setTempImage(null);
           return 100;
         }
         return prev + 10;
@@ -194,7 +136,6 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const handleCancel = () => {
     setShowImageModal(false);
     setTempImage(null);
-    setCroppedImage(null);
     setUploadProgress(0);
   };
 
@@ -355,60 +296,35 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
       </div>
 
       {showImageModal && (
-        <div className="image-modal-overlay-myprofile">
-          <div className="image-modal-myprofile">
-            <div className="modal-header-myprofile">
-              <h3>Profil Fotoğrafını Kırp</h3>
-              <button className="close-button-myprofile" onClick={handleCancel}>
-                <FaTimes />
-              </button>
-            </div>
-            <div className="modal-content-myprofile">
-              <div className="crop-container-myprofile">
-                <ReactCrop
-                  crop={crop}
-                  onChange={c => setCrop(c)}
-                  onComplete={c => setCompletedCrop(c)}
-                  aspect={1}
-                  circularCrop
-                  className="react-crop"
-                >
-                  <img
-                    src={tempImage}
-                    alt="Kırpılacak fotoğraf"
-                    onLoad={onImageLoad}
-                    style={{ maxHeight: '400px', width: 'auto' }}
-                  />
-                </ReactCrop>
+        <div className="photo-modal-overlay">
+          <div className="photo-modal">
+            <h3>Preview Profile Photo</h3>
+            {tempImage && (
+              <div className="preview-container">
+                <img src={tempImage} alt="Preview" className="preview-image" />
               </div>
-              <div className="preview-container-myprofile">
-                <h4>Önizleme</h4>
-                {croppedImage && (
-                  <img
-                    src={croppedImage}
-                    alt="Önizleme"
-                    className="preview-image-myprofile"
-                  />
-                )}
-              </div>
-              <div className="progress-bar-container-myprofile">
-                <div 
-                  className="progress-bar-myprofile"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="progress-text-myprofile">{uploadProgress}%</p>
-            </div>
-            <div className="modal-footer-myprofile">
-              <button className="cancel-button-myprofile" onClick={handleCancel}>
-                İptal
+            )}
+            <div className="modal-buttons">
+              <button 
+                className="cancel-button" 
+                onClick={handleCancel}
+                disabled={isUploading}
+              >
+                Cancel
               </button>
               <button 
-                className="save-button-myprofile" 
+                className="upload-button" 
                 onClick={handleUpload}
                 disabled={isUploading}
               >
-                Kaydet
+                {isUploading ? (
+                  <>
+                    <FaSpinner className="spinner" />
+                    Uploading... {uploadProgress}%
+                  </>
+                ) : (
+                  'Upload'
+                )}
               </button>
             </div>
           </div>
