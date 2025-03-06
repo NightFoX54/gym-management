@@ -1,41 +1,57 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaBell, FaUserCircle, FaCalendar, FaCreditCard, FaDumbbell, FaCamera, FaSpinner, FaTimes, FaMoon, FaSun } from 'react-icons/fa';
-import ReactCrop from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
-import '../../styles/Member.css';
-import '../../styles/PageTransitions.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  FaBell,
+  FaUserCircle,
+  FaCalendar,
+  FaCreditCard,
+  FaDumbbell,
+  FaCog,
+  FaCamera,
+  FaSpinner,
+  FaTimes,
+  FaMoon,
+  FaSun,
+  FaChartLine,
+  FaCalendarCheck,
+  FaMoneyBillWave,
+  FaCheck,
+} from "react-icons/fa";
+import ReactCrop from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import "../../styles/Member.css";
+import "../../styles/PageTransitions.css";
 
 const Member = ({ isDarkMode, setIsDarkMode }) => {
   const [member, setMember] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 8900',
-    membershipType: 'Premium',
-    membershipStatus: 'Active',
-    membershipEndDate: '2024-12-31',
-    profilePhoto: 'https://via.placeholder.com/150',
+    name: "Meriç Ütkü",
+    email: "mericutku@gmail.com",
+    phone: "+90 539 654 7890",
+    membershipType: "Premium",
+    membershipStatus: "Active",
+    membershipEndDate: "2024-12-31",
+    profilePhoto: "https://via.placeholder.com/150",
     attendance: {
       total: 45,
       thisMonth: 12,
-      lastMonth: 15
+      lastMonth: 15,
     },
     upcomingSessions: [
       {
         id: 1,
-        type: 'Personal Training',
-        trainer: 'Mike Johnson',
-        date: '2024-03-15',
-        time: '10:00 AM'
+        type: "Personal Training",
+        trainer: "Berkay Mustafa Arıkan",
+        date: "2024-03-15",
+        time: "10:00 AM",
       },
       {
         id: 2,
-        type: 'Group Class',
-        trainer: 'Sarah Wilson',
-        date: '2024-03-16',
-        time: '2:00 PM'
-      }
-    ]
+        type: "Group Class",
+        trainer: "Nurettin Enes Karakulak",
+        date: "2024-03-16",
+        time: "2:00 PM",
+      },
+    ],
   });
 
   const navigate = useNavigate();
@@ -46,12 +62,12 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [tempImage, setTempImage] = useState(null);
   const [crop, setCrop] = useState({
-    unit: '%',
+    unit: "%",
     x: 25,
     y: 25,
     width: 50,
     height: 50,
-    aspect: 1
+    aspect: 1,
   });
   const [completedCrop, setCompletedCrop] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
@@ -59,23 +75,26 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   const [notifications, setNotifications] = useState([
     {
       id: 1,
-      message: 'Your next training session is tomorrow at 10:00 AM',
-      type: 'reminder',
-      isRead: false
+      message: "Your next training session is tomorrow at 10:00 AM",
+      type: "reminder",
+      isRead: false,
     },
     {
       id: 2,
-      message: 'New class schedule available for next week',
-      type: 'info',
-      isRead: false
-    }
+      message: "New class schedule available for next week",
+      type: "info",
+      isRead: false,
+    },
   ]);
 
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedSession, setSelectedSession] = useState(null);
+
   const handleLogoutMember = () => {
     // TODO: Add proper logout logic here
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleCardClickMember = (route) => {
@@ -87,55 +106,124 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const markNotificationAsReadMember = (id) => {
-    setNotifications(notifications.map(notif => 
-      notif.id === id ? { ...notif, isRead: true } : notif
-    ));
+    setNotifications(
+      notifications.map((notif) =>
+        notif.id === id ? { ...notif, isRead: true } : notif,
+      ),
+    );
   };
 
-  const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
+  const unreadNotificationsCount = notifications.filter(
+    (n) => !n.isRead,
+  ).length;
 
   const handleImageClickMember = () => {
-    fileInputRef.current.click();
+    // Trigger file input click when profile image is clicked
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   const onImageLoad = useCallback((img) => {
-    imgRef.current = img;
+    // Store image reference for cropping
+    if (img) {
+      imgRef.current = img;
+    }
   }, []);
 
   const handleImageChangeMember = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB.');
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setTempImage(reader.result);
-        setShowImageModal(true);
-        setCrop({
-          unit: '%',
-          x: 25,
-          y: 25,
-          width: 50,
-          height: 50,
-          aspect: 1
-        });
-      };
-      reader.readAsDataURL(file);
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/gif"];
+    if (!validTypes.includes(file.type)) {
+      alert("Please select a valid image file (JPG, PNG or GIF)");
+      return;
     }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size must be less than 5MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      try {
+        const img = new Image();
+        img.onload = () => {
+          // Calculate aspect ratio
+          const aspectRatio = img.width / img.height;
+
+          // Set default crop area
+          const cropWidth = Math.min(img.width, 400);
+          const cropHeight = cropWidth / aspectRatio;
+
+          // Center the crop area
+          const cropX = (img.width - cropWidth) / 2;
+          const cropY = (img.height - cropHeight) / 2;
+
+          // Create canvas for preview
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          // Set canvas size to crop size
+          canvas.width = cropWidth;
+          canvas.height = cropHeight;
+
+          // Draw cropped image
+          ctx.drawImage(
+            img,
+            cropX,
+            cropY,
+            cropWidth,
+            cropHeight,
+            0,
+            0,
+            cropWidth,
+            cropHeight,
+          );
+
+          // Convert to blob and update preview
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const previewUrl = URL.createObjectURL(blob);
+                setMember((prev) => ({
+                  ...prev,
+                  profilePhoto: previewUrl,
+                }));
+              }
+            },
+            file.type,
+            0.8,
+          ); // 0.8 quality for better performance
+        };
+        img.onerror = () => {
+          alert("Error loading image. Please try again.");
+        };
+        img.src = reader.result;
+      } catch (error) {
+        console.error("Error processing image:", error);
+        alert("Error processing image. Please try again.");
+      }
+    };
+    reader.onerror = () => {
+      alert("Error reading file. Please try again.");
+    };
+    reader.readAsDataURL(file);
   };
 
   const generateCrop = useCallback(() => {
     if (!completedCrop || !imgRef.current) return;
 
     const image = imgRef.current;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
     if (!ctx) {
-      throw new Error('No 2d context');
+      throw new Error("No 2d context");
     }
 
     const scaleX = image.naturalWidth / image.width;
@@ -147,7 +235,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
     canvas.height = completedCrop.height * pixelRatio;
 
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingQuality = "high";
 
     ctx.drawImage(
       image,
@@ -158,10 +246,10 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
       0,
       0,
       completedCrop.width,
-      completedCrop.height
+      completedCrop.height,
     );
 
-    const base64Image = canvas.toDataURL('image/jpeg');
+    const base64Image = canvas.toDataURL("image/jpeg");
     setCroppedImage(base64Image);
   }, [completedCrop]);
 
@@ -170,23 +258,23 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   }, [completedCrop, generateCrop]);
 
   useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    const savedDarkMode = localStorage.getItem("darkMode") === "true";
     setIsDarkMode(savedDarkMode);
     if (savedDarkMode) {
-      document.body.classList.add('dark-mode');
+      document.body.classList.add("dark-mode");
     } else {
-      document.body.classList.remove('dark-mode');
+      document.body.classList.remove("dark-mode");
     }
   }, [setIsDarkMode]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode);
+    localStorage.setItem("darkMode", newDarkMode);
     if (newDarkMode) {
-      document.body.classList.add('dark-mode');
+      document.body.classList.add("dark-mode");
     } else {
-      document.body.classList.remove('dark-mode');
+      document.body.classList.remove("dark-mode");
     }
   };
 
@@ -196,14 +284,14 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
     // Simüle edilmiş yükleme işlemi
     const interval = setInterval(() => {
-      setUploadProgress(prev => {
+      setUploadProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsUploading(false);
           setShowImageModal(false);
-          setMember(prev => ({
+          setMember((prev) => ({
             ...prev,
-            profilePhoto: croppedImage
+            profilePhoto: croppedImage,
           }));
           return 100;
         }
@@ -219,152 +307,289 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
     setUploadProgress(0);
   };
 
+  const handleRescheduleClick = (session) => {
+    setSelectedSession(session);
+    setShowRescheduleModal(true);
+  };
+
+  const handleCloseRescheduleModal = () => {
+    setShowRescheduleModal(false);
+    setSelectedSession(null);
+  };
+
   return (
-    <div className={`member-container-member ${isDarkMode ? 'dark-mode' : ''}`}>
-      <div className="member-content-member">
-        <div className="member-header-member">
-          <h1>Member Dashboard</h1>
-          <button 
-            className={`dark-mode-toggle-member ${isDarkMode ? 'active' : ''}`} 
-            onClick={toggleDarkMode}
-          >
-            <FaSun className="toggle-icon-member sun-member" />
-            <div className="toggle-circle-member"></div>
-            <FaMoon className="toggle-icon-member moon-member" />
-          </button>
-        </div>
+    <>
+      <button
+        className="notification-button-member card-animate stagger-8"
+        onClick={toggleNotificationsMember}
+      >
+        <FaBell />
+        {unreadNotificationsCount > 0 && (
+          <span className="notification-badge-member">
+            {unreadNotificationsCount}
+          </span>
+        )}
+      </button>
 
-        <div className="member-profile-member">
-          <div className="profile-photo-member">
-            <img src={member.profilePhoto} alt="Profile" />
-          </div>
-          <div className="profile-info-member">
-            <h2>{member.name}</h2>
-            <p>{member.email}</p>
-            <p>{member.phone}</p>
-          </div>
-        </div>
-
-        <div className="dashboard-grid-member">
-          <div className="dashboard-card-member card-animate stagger-1" onClick={() => handleCardClickMember('/member/profile')}>
-            <FaUserCircle className="card-icon-member" />
-            <h3>My Profile</h3>
-            <p>View and edit your profile information</p>
-          </div>
-          
-          <div className="dashboard-card-member card-animate stagger-2" onClick={() => handleCardClickMember('/member/membership')}>
-            <FaCreditCard className="card-icon-member" />
-            <h3>Membership Status</h3>
-            <p>Check your membership details and renewal options</p>
-          </div>
-          
-          <div className="dashboard-card-member card-animate stagger-3" onClick={() => handleCardClickMember('/member/training')}>
-            <FaDumbbell className="card-icon-member" />
-            <h3>Training Plan</h3>
-            <p>View your personalized training program</p>
-          </div>
-          
-          <div className="dashboard-card-member card-animate stagger-4" onClick={() => handleCardClickMember('/member/weekly-schedule')}>
-            <FaCalendar className="card-icon-member" />
-            <h3>Weekly Schedule</h3>
-            <p>Check your upcoming training sessions</p>
-          </div>
-        </div>
-
-        <div className="notification-section-member">
-          <button className="notification-button-member" onClick={toggleNotificationsMember}>
-            <FaBell />
-            {unreadNotificationsCount > 0 && (
-              <span className="notification-badge-member">{unreadNotificationsCount}</span>
+      <div className="notification-section-member">
+        {showNotifications && (
+          <div className="notification-dropdown-member card-animate stagger-9">
+            {notifications.length > 0 ? (
+              <div className="notification-list-member">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`notification-item-member ${notification.isRead ? "read" : "unread"}`}
+                    onClick={() =>
+                      markNotificationAsReadMember(notification.id)
+                    }
+                  >
+                    <p>{notification.message}</p>
+                    {!notification.isRead && (
+                      <span className="unread-dot-member" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-notifications-member">No notifications</p>
             )}
-          </button>
-          {showNotifications && (
-            <div className="notification-dropdown-member">
-              <h3>Notifications</h3>
-              {notifications.length > 0 ? (
-                <div className="notification-list-member">
-                  {notifications.map(notification => (
-                    <div 
-                      key={notification.id} 
-                      className={`notification-item-member ${notification.isRead ? 'read' : 'unread'}`}
-                      onClick={() => markNotificationAsReadMember(notification.id)}
-                    >
-                      <p>{notification.message}</p>
-                      {!notification.isRead && <span className="unread-dot-member" />}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="no-notifications-member">No notifications</p>
-              )}
+          </div>
+        )}
+      </div>
+      <div
+        className={`member-container-member container-animate ${isDarkMode ? "dark-mode" : ""}`}
+      >
+        <div className="member-content-member">
+          <div className="member-header-member card-animate stagger-1">
+            <h1>Member Dashboard</h1>
+            <button
+              className={`dark-mode-toggle-member ${isDarkMode ? "active" : ""}`}
+              onClick={toggleDarkMode}
+            >
+              <FaSun className="toggle-icon-member sun-member" />
+              <div className="toggle-circle-member"></div>
+              <FaMoon className="toggle-icon-member moon-member" />
+            </button>
+          </div>
+
+          <div className="member-profile-member card-animate stagger-2">
+            <div className="profile-photo-member">
+              <img src={member.profilePhoto} alt="Profile" />
             </div>
-          )}
+            <div className="profile-info-member">
+              <h2>{member.name}</h2>
+              <p>{member.email}</p>
+              <p>{member.phone}</p>
+            </div>
+          </div>
+
+          <div className="dashboard-grid-member">
+            <div
+              className="dashboard-card-member stagger-1"
+              onClick={() => navigate("/member/profile")}
+            >
+              <FaUserCircle className="card-icon-member" />
+              <h3>My Profile</h3>
+              <p>View and edit your profile information</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-2"
+              onClick={() => navigate("/member/membership")}
+            >
+              <FaCreditCard className="card-icon-member" />
+              <h3>Membership Status</h3>
+              <p>Check your membership details and renewal options</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-3"
+              onClick={() => navigate("/member/training")}
+            >
+              <FaDumbbell className="card-icon-member" />
+              <h3>Training Plan</h3>
+              <p>View your personalized training program</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-4"
+              onClick={() => navigate("/member/weekly-schedule")}
+            >
+              <FaCalendar className="card-icon-member" />
+              <h3>Weekly Schedule</h3>
+              <p>Check your upcoming training sessions</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-5"
+              onClick={() => navigate("/member/personal-statistics")}
+            >
+              <FaChartLine className="card-icon-member" />
+              <h3>Personal Statistics</h3>
+              <p>View your fitness progress and achievements</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-6"
+              onClick={() => navigate("/member/training-programs")}
+            >
+              <FaDumbbell className="card-icon-member" />
+              <h3>Training Programs</h3>
+              <p>Choose the suitable program among our already prepared programs by our trainers</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-7"
+              onClick={() => navigate("/member/settings")}
+            >
+              <FaCog className="card-icon-member" />
+              <h3>Settings</h3>
+              <p>Manage your account preferences</p>
+            </div>
+          </div>
+
+          <div className="upcoming-sessions-member card-animate stagger-9">
+            <h3>Upcoming Sessions</h3>
+            <div className="sessions-list-member">
+              {member.upcomingSessions.map((session) => (
+                <div key={session.id} className="session-item-member">
+                  <div className="session-info-member">
+                    <h4>{session.type}</h4>
+                    <p>Trainer: {session.trainer}</p>
+                    <p>Date: {session.date}</p>
+                    <p>Time: {session.time}</p>
+                  </div>
+                  <button 
+                    className="reschedule-button-member"
+                    onClick={() => handleRescheduleClick(session)}
+                  >
+                    Reschedule
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="attendance-summary-member card-animate stagger-10">
+            <h3>Attendance Summary</h3>
+            <div className="attendance-stats-member">
+              <div className="stat-item-member">
+                <span className="stat-value-member">
+                  {member.attendance.total}
+                </span>
+                <span className="stat-label-member">Total Visits</span>
+              </div>
+              <div className="stat-item-member">
+                <span className="stat-value-member">
+                  {member.attendance.thisMonth}
+                </span>
+                <span className="stat-label-member">This Month</span>
+              </div>
+              <div className="stat-item-member">
+                <span className="stat-value-member">
+                  {member.attendance.lastMonth}
+                </span>
+                <span className="stat-label-member">Last Month</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            className="logout-button-member card-animate stagger-11"
+            onClick={handleLogoutMember}
+          >
+            Logout
+          </button>
         </div>
 
-        <button className="logout-button-member" onClick={handleLogoutMember}>
-          Logout
-        </button>
-      </div>
+        {showImageModal && (
+          <div className="image-modal-overlay-member">
+            <div className="image-modal-member">
+              <div className="modal-header-member">
+                <h3>Crop Profile Image</h3>
+                <button
+                  className="close-button-member"
+                  onClick={handleCancelMember}
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              <div className="modal-content-member">
+                <div className="crop-container-member">
+                  <ReactCrop
+                    crop={crop}
+                    onChange={(c) => setCrop(c)}
+                    onComplete={(c) => setCompletedCrop(c)}
+                    aspect={1}
+                  >
+                    <img src={tempImage} alt="Crop me" onLoad={onImageLoad} />
+                  </ReactCrop>
+                </div>
+                <div className="preview-container-member">
+                  <h4>Preview</h4>
+                  {croppedImage && (
+                    <img
+                      src={croppedImage}
+                      alt="Preview"
+                      className="preview-image-member"
+                    />
+                  )}
+                </div>
+                <div className="progress-bar-container-member">
+                  <div
+                    className="progress-bar-member"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="progress-text-member">{uploadProgress}%</p>
+              </div>
+              <div className="modal-footer-member">
+                <button
+                  className="cancel-button-member"
+                  onClick={handleCancelMember}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="save-button-member"
+                  onClick={handleUploadMember}
+                  disabled={isUploading}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-      {showImageModal && (
-        <div className="image-modal-overlay-member">
-          <div className="image-modal-member">
-            <div className="modal-header-member">
-              <h3>Crop Profile Image</h3>
-              <button className="close-button-member" onClick={handleCancelMember}>
+        {showRescheduleModal && selectedSession && (
+          <div className="reschedule-modal-overlay-member">
+            <div className="reschedule-modal-member">
+              <button className="close-modal-member" onClick={handleCloseRescheduleModal}>
                 <FaTimes />
               </button>
-            </div>
-            <div className="modal-content-member">
-              <div className="crop-container-member">
-                <ReactCrop
-                  crop={crop}
-                  onChange={c => setCrop(c)}
-                  onComplete={c => setCompletedCrop(c)}
-                  aspect={1}
-                >
-                  <img
-                    src={tempImage}
-                    alt="Crop me"
-                    onLoad={onImageLoad}
-                  />
-                </ReactCrop>
+              <div className="reschedule-content-member">
+                <FaCheck className="success-icon-member" />
+                <h2>Reschedule Request Sent</h2>
+                <p>Your reschedule request has been sent to your trainer:</p>
+                <div className="session-details-member">
+                  <p><strong>Session Type:</strong> {selectedSession.type}</p>
+                  <p><strong>Trainer:</strong> {selectedSession.trainer}</p>
+                  <p><strong>Current Date:</strong> {selectedSession.date}</p>
+                  <p><strong>Current Time:</strong> {selectedSession.time}</p>
+                </div>
+                <p className="notification-member">Your trainer will contact you shortly to confirm the new schedule.</p>
               </div>
-              <div className="preview-container-member">
-                <h4>Preview</h4>
-                {croppedImage && (
-                  <img
-                    src={croppedImage}
-                    alt="Preview"
-                    className="preview-image-member"
-                  />
-                )}
-              </div>
-              <div className="progress-bar-container-member">
-                <div 
-                  className="progress-bar-member"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <p className="progress-text-member">{uploadProgress}%</p>
-            </div>
-            <div className="modal-footer-member">
-              <button className="cancel-button-member" onClick={handleCancelMember}>
-                Cancel
-              </button>
-              <button 
-                className="save-button-member" 
-                onClick={handleUploadMember}
-                disabled={isUploading}
-              >
-                Save
+              <button className="close-button-member" onClick={handleCloseRescheduleModal}>
+                Close
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
-}
+};
 
-export default Member; 
+export default Member;
