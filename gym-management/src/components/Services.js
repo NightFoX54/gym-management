@@ -89,6 +89,18 @@ function Services({ isDarkMode, setIsDarkMode }) {
         "Massage therapy",
         "Stretching area"
       ]
+    },
+    {
+      id: 7,
+      title: "Fitness Market",
+      description: "Premium supplements, equipment, and fitness accessories with exclusive member discounts.",
+      icon: "fas fa-shopping-cart",
+      features: [
+        "Premium supplements",
+        "Training equipment",
+        "Fitness apparel",
+        "Member discounts"
+      ]
     }
   ];
 
@@ -111,6 +123,9 @@ function Services({ isDarkMode, setIsDarkMode }) {
         break;
       case 6:
         navigate('/services/recovery');
+        break;
+      case 7:
+        navigate('/services/market');
         break;
       default:
         break;

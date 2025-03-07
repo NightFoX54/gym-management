@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
 import '../styles/Login.css';
 
 function Login() {
@@ -31,10 +32,16 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-box">
-        <div className="back-arrow" onClick={handleBackClick}>
-          ← Back
+        <div className="card-header">
+          <button 
+            className="back-button"
+            onClick={handleBackClick}
+          >
+            <FaArrowLeft />
+          </button>
+          <h2>Welcome Back</h2>
         </div>
-        <h2>Welcome Back</h2>
+        
         <p className="login-subtitle">Please enter your details</p>
         
         <form onSubmit={handleSubmit} className="login-form">

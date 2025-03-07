@@ -16,6 +16,11 @@ import {
   FaCalendarCheck,
   FaMoneyBillWave,
   FaCheck,
+  FaShoppingCart,
+  FaUserFriends,
+  FaUsers,
+  FaRegCreditCard,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -435,7 +440,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               onClick={() => navigate("/member/training-programs")}
             >
               <FaDumbbell className="card-icon-member" />
-              <h3>Training Programs</h3>
+              <h3>Group Classes</h3>
               <p>Choose the suitable program among our already prepared programs by our trainers</p>
             </div>
 
@@ -447,9 +452,36 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <h3>Settings</h3>
               <p>Manage your account preferences</p>
             </div>
+
+            <div
+              className="dashboard-card-member stagger-8"
+              onClick={() => navigate("/market")}
+            >
+              <FaShoppingCart className="card-icon-member" />
+              <h3>Market</h3>
+              <p>Shop for supplements, equipment, and fitness accessories with your member discount</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-9"
+              onClick={() => navigate("/member/personal-trainers")}
+            >
+              <FaUserFriends className="card-icon-member" />
+              <h3>Personal Trainers</h3>
+              <p>Browse and book sessions with our expert trainers</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-10"
+              onClick={() => navigate("/member/workout-programs")}
+            >
+              <FaUsers className="card-icon-member" />
+              <h3>Workout Programs</h3>
+              <p>Create and browse personalized workout plans</p>
+            </div>
           </div>
 
-          <div className="upcoming-sessions-member card-animate stagger-9">
+          <div className="upcoming-sessions-member card-animate stagger-11">
             <h3>Upcoming Sessions</h3>
             <div className="sessions-list-member">
               {member.upcomingSessions.map((session) => (
@@ -471,7 +503,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
             </div>
           </div>
 
-          <div className="attendance-summary-member card-animate stagger-10">
+          <div className="attendance-summary-member card-animate stagger-12">
             <h3>Attendance Summary</h3>
             <div className="attendance-stats-member">
               <div className="stat-item-member">
@@ -496,7 +528,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
           </div>
 
           <button
-            className="logout-button-member card-animate stagger-11"
+            className="logout-button-member card-animate stagger-13"
             onClick={handleLogoutMember}
           >
             Logout

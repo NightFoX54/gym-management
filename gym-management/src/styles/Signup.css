@@ -202,20 +202,34 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: white;
+  background-color: #2d2d2d;
   border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.payment-container h2 {
+  color: #ffffff;
+  margin-bottom: 2rem;
 }
 
 .order-summary {
-  margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+}
+
+.order-summary h3 {
+  color: #ffffff;
+  margin-bottom: 1rem;
 }
 
 .plan-details {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: #2d2d2d;
   border-radius: 5px;
   margin: 1rem 0;
 }
@@ -224,10 +238,40 @@
   margin-top: 2rem;
 }
 
+.payment-form label {
+  display: block;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.payment-form input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1.5rem;
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 5px;
+  color: #ffffff;
+}
+
+.payment-form input::placeholder {
+  color: #666;
+}
+
+.payment-form input:focus {
+  border-color: #ff4757;
+  outline: none;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
 .submit-btn {
   width: 100%;
   padding: 1rem;
-  margin-top: 1.5rem;
   background-color: #ff4757;
   color: white;
   border: none;
@@ -239,6 +283,72 @@
 
 .submit-btn:hover {
   background-color: #ff3747;
+}
+
+/* Light mode overrides */
+.payment-container {
+  background-color: white;
+}
+
+.payment-container h2 {
+  color: #1a1a1a;
+}
+
+.order-summary {
+  background-color: #f8f9fa;
+}
+
+.order-summary h3 {
+  color: #1a1a1a;
+}
+
+.plan-details {
+  background-color: white;
+}
+
+.payment-form label {
+  color: #1a1a1a;
+}
+
+.payment-form input {
+  background-color: white;
+  border-color: #ddd;
+  color: #1a1a1a;
+}
+
+/* Dark mode styles */
+.dark-mode .payment-container {
+  background-color: #2d2d2d;
+}
+
+.dark-mode .payment-container h2 {
+  color: #ffffff;
+}
+
+.dark-mode .order-summary {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .order-summary h3 {
+  color: #ffffff;
+}
+
+.dark-mode .plan-details {
+  background-color: #2d2d2d;
+}
+
+.dark-mode .payment-form label {
+  color: #ffffff;
+}
+
+.dark-mode .payment-form input {
+  background-color: #1a1a1a;
+  border-color: #444;
+  color: #ffffff;
+}
+
+.dark-mode .payment-form input::placeholder {
+  color: #666;
 }
 
 .back-arrow {
@@ -360,4 +470,54 @@
 
 .dark-mode .plan-price {
   color: #ff4757;
-} 
+}
+
+.duration-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.duration-btn {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.duration-btn.selected {
+  background: #ff4757;
+  color: white;
+  border-color: #ff4757;
+}
+
+.duration-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.monthly-price {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Dark mode styles */
+.dark-mode .duration-btn {
+  background: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+.dark-mode .duration-btn.selected {
+  background: #ff4757;
+  border-color: #ff4757;
+}
+
+.dark-mode .monthly-price {
+  color: #999;
+}

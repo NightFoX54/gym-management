@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Navbar from './Navbar';
 import '../styles/Market.css';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Grid,
@@ -34,8 +34,10 @@ import {
   Checkroom,
   SportsTennis,
 } from '@mui/icons-material';
+import { FaArrowLeft, FaTag, FaMoon, FaSun } from 'react-icons/fa';
 
 const Market = ({ isDarkMode, setIsDarkMode }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cart, setCart] = useState([]);
@@ -201,11 +203,36 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
+  const toggleDarkModeMember = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <div className={isDarkMode ? 'dark-mode' : ''}>
-      <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+    <div className={`container-animate ${isDarkMode ? 'dark-mode' : ''}`}>
+      <div className="member-page-header">
+        <div className="header-left">
+          <button className="back-button" onClick={() => navigate('/member')}>
+            <FaArrowLeft /> Back to Dashboard
+          </button>
+          <h1>Fitness Market</h1>
+        </div>
+
+        <div className="member-discount-badge">
+          <FaTag />
+          <span>Member Discount: 15%</span>
+        </div>
+
+        <button 
+          className={`dark-mode-toggle-trainingplan ${isDarkMode ? 'active' : ''}`} 
+          onClick={toggleDarkModeMember}
+        >
+          <FaSun className="toggle-icon-trainingplan sun-trainingplan" />
+          <div className="toggle-circle-trainingplan"></div>
+          <FaMoon className="toggle-icon-trainingplan moon-trainingplan" />
+        </button>
+      </div>
       
-      <Container maxWidth="xl" sx={{ mt: 12, mb: 4 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
           {/* Sol Sidebar */}
           <Grid item xs={12} md={3}>

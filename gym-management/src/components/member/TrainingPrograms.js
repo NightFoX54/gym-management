@@ -115,7 +115,7 @@ const TrainingPrograms = ({ isDarkMode, setIsDarkMode }) => {
         <button className="back-button" onClick={() => navigate("/member")}>
           <FaArrowLeft /> Back to Dashboard
         </button>
-        <h1 className="header-title">Training Programs</h1>
+        <h1 className="header-title">Group Classes</h1>
         <div className="header-right">
           <button
             className={`dark-mode-toggle ${isDarkMode ? "active" : ""}`}

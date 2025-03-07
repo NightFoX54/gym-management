@@ -42,7 +42,6 @@ function Navbar({ isDarkMode, setIsDarkMode }) {
         <a href="/">Home</a>
         <a href="/#about" onClick={handleAboutClick}>About</a>
         <a href="/services">Services</a>
-        <a href="/market">Market</a>
         <a href="/contact">Contact</a>
         <button 
           className={`dark-mode-toggle-main ${isDarkMode ? 'active' : ''}`} 

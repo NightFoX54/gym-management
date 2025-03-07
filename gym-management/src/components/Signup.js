@@ -6,6 +6,7 @@ function Signup() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedDuration, setSelectedDuration] = useState('monthly');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -56,6 +57,27 @@ function Signup() {
     }
   ];
 
+  const durations = [
+    { value: 'monthly', label: 'Monthly', discount: 0 },
+    { value: '3months', label: '3 Months', discount: 0.10 },
+    { value: '6months', label: '6 Months', discount: 0.20 },
+    { value: '1year', label: '1 Year', discount: 0.28 }
+  ];
+
+  const calculatePrice = (basePrice, duration) => {
+    const durationMultiplier = {
+      'monthly': 1,
+      '3months': 3,
+      '6months': 6,
+      '1year': 12
+    };
+    
+    const multiplier = durationMultiplier[duration];
+    const discount = durations.find(d => d.value === duration).discount;
+    const totalPrice = basePrice * multiplier * (1 - discount);
+    return Math.round(totalPrice);
+  };
+
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
     setStep(2);
@@ -90,6 +112,18 @@ function Signup() {
         return (
           <div className="plans-container">
             <h2>Choose Your Membership Plan</h2>
+            <div className="duration-selector">
+              {durations.map((duration) => (
+                <button
+                  key={duration.value}
+                  className={`duration-btn ${selectedDuration === duration.value ? 'selected' : ''}`}
+                  onClick={() => setSelectedDuration(duration.value)}
+                >
+                  {duration.label}
+                  {duration.discount > 0 && ` (-${(duration.discount * 100).toFixed(0)}%)`}
+                </button>
+              ))}
+            </div>
             <div className="plans-grid">
               {plans.map((plan) => (
                 <div 
@@ -99,8 +133,14 @@ function Signup() {
                 >
                   <h3>{plan.name}</h3>
                   <div className="price">
-                    <span className="amount">₺{plan.price}</span>
-                    <span className="duration">/{plan.duration}</span>
+                    <span className="amount">₺{calculatePrice(plan.price, selectedDuration)}</span>
+                    <span className="duration">/{selectedDuration}</span>
+                  </div>
+                  <div className="monthly-price">
+                    (₺{Math.round(calculatePrice(plan.price, selectedDuration) / 
+                      (selectedDuration === 'monthly' ? 1 : 
+                       selectedDuration === '3months' ? 3 : 
+                       selectedDuration === '6months' ? 6 : 12))} /month)
                   </div>
                   <ul className="features-list">
                     {plan.features.map((feature, index) => (
@@ -202,7 +242,9 @@ function Signup() {
               <h3>Order Summary</h3>
               <div className="plan-details">
                 <p className="plan-name">{selectedPlan.name}</p>
-                <p className="plan-price">${selectedPlan.price}/{selectedPlan.duration}</p>
+                <p className="plan-price">
+                  ₺{calculatePrice(selectedPlan.price, selectedDuration)}/{selectedDuration}
+                </p>
               </div>
               {/* Add payment form here */}
               <form className="payment-form">
