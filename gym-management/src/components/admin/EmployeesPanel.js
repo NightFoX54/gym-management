@@ -5,27 +5,27 @@ const EmployeesPanel = () => {
   const [employees, setEmployees] = useState([
     {
       id: 1,
-      name: 'Sarah',
-      surname: 'Wilson',
-      salary: 3500,
+      name: 'Enes',
+      surname: 'Oy',
+      salary: 32000,
       hoursPerWeek: 40,
-      shiftSchedule: '/shifts/shift1.jpg'
+      shiftSchedule: '/s1.jpg'
     },
     {
       id: 2,
-      name: 'David',
-      surname: 'Brown',
-      salary: 2800,
-      hoursPerWeek: 30,
-      shiftSchedule: '/shifts/shift2.jpg'
+      name: 'Arif',
+      surname: 'Işık',
+      salary: 28000,
+      hoursPerWeek: 38,
+      shiftSchedule: '/s2.jpg'
     },
     {
       id: 3,
-      name: 'Emma',
-      surname: 'Davis',
-      salary: 3200,
-      hoursPerWeek: 35,
-      shiftSchedule: '/shifts/shift3.jpg'
+      name: 'Aziz',
+      surname: 'Vefa',
+      salary: 35000,
+      hoursPerWeek: 42,
+      shiftSchedule: '/s3.jpg'
     }
   ]);
 

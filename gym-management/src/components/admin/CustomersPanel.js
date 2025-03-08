@@ -5,22 +5,22 @@ const CustomersPanel = () => {
   const [customers, setCustomers] = useState([
     {
       id: 1,
-      name: 'John',
-      surname: 'Doe',
+      name: 'Nurettin Enes',
+      surname: 'Karakulak',
       hasMembership: true,
       membershipExpiry: '2024-06-15'
     },
     {
       id: 2,
-      name: 'Jane',
-      surname: 'Smith',
+      name: 'Berkay Mustafa',
+      surname: 'Arıkan',
       hasMembership: true,
       membershipExpiry: '2024-05-20'
     },
     {
       id: 3,
-      name: 'Mike',
-      surname: 'Johnson',
+      name: 'Meriç',
+      surname: 'Ütkü',
       hasMembership: false,
       membershipExpiry: null
     }
