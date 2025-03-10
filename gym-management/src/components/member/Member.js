@@ -35,7 +35,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
     membershipType: "Premium",
     membershipStatus: "Active",
     membershipEndDate: "2024-12-31",
-    profilePhoto: "https://via.placeholder.com/150",
+    profilePhoto: "/pp.jpg",
     attendance: {
       total: 45,
       thisMonth: 12,

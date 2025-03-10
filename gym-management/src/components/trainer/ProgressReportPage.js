@@ -178,7 +178,7 @@ const ProgressReportPage = ({ isDarkMode }) => {
       fill: { opacity: 0.4 },
       stroke: { width: 2 },
       grid: {
-        borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.1)',
       },
       theme: { mode: isDarkMode ? 'dark' : 'light' }
     },
@@ -342,8 +342,8 @@ const ProgressReportPage = ({ isDarkMode }) => {
                 label="Client"
               >
                 <MenuItem value="all">All Clients</MenuItem>
-                <MenuItem value="john">John Doe</MenuItem>
-                <MenuItem value="jane">Jane Smith</MenuItem>
+                <MenuItem value="faruk">Faruk Yılmaz</MenuItem>
+                <MenuItem value="jane">Mahmut Mahmutoğlu</MenuItem>
               </Select>
             </FormControl>
             <FormControl sx={{ 

@@ -666,7 +666,7 @@ const mockAppointments = [
     id: 1,
     date: new Date(),
     time: '09:00',
-    client: 'John Doe',
+    client: 'Necip Uysal',
     type: 'Personal Training',
     color: '#ff4757'
   },
@@ -674,7 +674,7 @@ const mockAppointments = [
     id: 2,
     date: new Date(),
     time: '14:30',
-    client: 'Jane Smith',
+    client: 'Mauro Icardi',
     type: 'Yoga Session',
     color: '#2ecc71'
   },

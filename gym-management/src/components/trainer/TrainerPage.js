@@ -112,9 +112,9 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   ];
 
   const upcomingSessions = [
-    { client: 'John Doe', time: '09:00 AM', program: 'Weight Training' },
-    { client: 'Jane Smith', time: '10:30 AM', program: 'Cardio' },
-    { client: 'Mike Johnson', time: '02:00 PM', program: 'CrossFit' },
+    { client: 'Edin Dzeko', time: '09:00 AM', program: 'Weight Training' },
+    { client: 'Lionel Messi', time: '10:30 AM', program: 'Cardio' },
+    { client: 'Cristiano Ronaldo', time: '02:00 PM', program: 'CrossFit' },
   ];
 
   const quickActions = [
@@ -315,14 +315,14 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       totalHours: 86
     },
     topPerformers: [
-      { name: 'John Doe', progress: 92, achievement: 'Weight Goal Reached' },
-      { name: 'Jane Smith', progress: 88, achievement: 'Monthly Attendance' },
-      { name: 'Mike Johnson', progress: 85, achievement: 'Strength Milestone' }
+      { name: 'Edin Dzeko', progress: 92, achievement: 'Weight Goal Reached' },
+      { name: 'Lionel Messi', progress: 88, achievement: 'Monthly Attendance' },
+      { name: 'Mike Tyson', progress: 85, achievement: 'Strength Milestone' }
     ],
     recentAchievements: [
-      { client: 'Sarah Wilson', type: 'Weight Loss', value: '-5kg' },
-      { client: 'Tom Brown', type: 'Strength Gain', value: '+15kg bench' },
-      { client: 'Emma Davis', type: 'Attendance', value: '15 days streak' }
+      { client: 'Bruce Lee', type: 'Weight Loss', value: '-5kg' },
+      { client: 'Conor McGregor', type: 'Strength Gain', value: '+15kg bench' },
+      { client: 'Jon Jones', type: 'Attendance', value: '15 days streak' }
     ]
   };
 
@@ -511,7 +511,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
           transition={{ delay: 0.2 }}
         >
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
-            Welcome back, John!
+            Welcome back, Enes!
           </Typography>
           <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
             You have 3 sessions scheduled for today

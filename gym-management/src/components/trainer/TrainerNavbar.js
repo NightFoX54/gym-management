@@ -169,7 +169,7 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
                 color: isDarkMode ? '#ffffff' : '#2c3e50',
               }}
             >
-              John Trainer
+              Enes Trainer
             </Typography>
             <Typography 
               variant="body2" 

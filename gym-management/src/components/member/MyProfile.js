@@ -6,13 +6,13 @@ import { useNavigate } from 'react-router-dom';
 
 const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [profile, setProfile] = useState({
-    fullName: 'John Doe',
-    email: 'john@example.com',
+    fullName: 'Meriç Ütkü',
+    email: 'meriç@example.com',
     phone: '+90 555 123 4567',
     birthDate: '1990-01-01',
     membershipStart: '2024-01-01',
     membershipEnd: '2025-01-01',
-    profileImage: 'https://via.placeholder.com/150'
+    profileImage: '/pp.jpg'
   });
 
   const [isEditing, setIsEditing] = useState(false);

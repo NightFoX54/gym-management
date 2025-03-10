@@ -33,8 +33,8 @@ const SettingsPage = ({ isDarkMode }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: 'John Trainer',
-    email: 'john@gymflex.com',
+    fullName: 'Enes Trainer',
+    email: 'enes@gymflex.com',
     phone: '+90 532 123 4567',
     specialization: 'Weight Training',
     bio: 'Professional trainer with 5 years of experience...',

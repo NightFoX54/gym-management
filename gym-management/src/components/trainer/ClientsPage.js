@@ -75,8 +75,8 @@ const ClientsPage = ({ isDarkMode }) => {
   const [clientRequests, setClientRequests] = useState([
     {
       id: 1,
-      name: 'Alex Johnson',
-      email: 'alex@example.com',
+      name: 'Ahmet Beyaz',
+      email: 'ahmet@example.com',
       phone: '+90 555 123 4567',
       program: 'Weight Training',
       message: 'I want to focus on building muscle and strength.',
@@ -887,20 +887,20 @@ const ClientsPage = ({ isDarkMode }) => {
 const mockClients = [
   {
     id: 1,
-    name: 'John Doe',
+    name: 'Faruk Yılmaz',
     avatar: null,
     phone: '+90 532 123 4567',
-    email: 'john@example.com',
+    email: 'faruk@example.com',
     program: 'Weight Training',
     status: 'Active',
     startDate: '2024-01-15',
   },
   {
     id: 2,
-    name: 'Jane Smith',
+    name: 'Mahmut Mahmutoğlu',
     avatar: null,
     phone: '+90 533 234 5678',
-    email: 'jane@example.com',
+    email: 'mahmut@example.com',
     program: 'Cardio',
     status: 'On Hold',
     startDate: '2024-02-01',
