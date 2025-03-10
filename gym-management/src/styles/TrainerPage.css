@@ -477,7 +477,7 @@
 }
 
 .dark-mode .MuiDivider-root {
-  border-color: rgb(255, 255, 255);
+  border-color: rgb(255, 255, 255, 0.12);
 }
 
 .dark-mode .MuiTextField-root {
