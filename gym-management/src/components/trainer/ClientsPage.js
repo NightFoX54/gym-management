@@ -85,6 +85,8 @@ const ClientsPage = ({ isDarkMode }) => {
       requestDate: '2024-02-15'
     },
   ]);
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
     fetchClients();
@@ -104,12 +106,59 @@ const ClientsPage = ({ isDarkMode }) => {
     }
   };
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'name':
+        const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s]{2,50}$/;
+        if (!value) return 'Name is required';
+        if (!nameRegex.test(value)) return 'Name should only contain letters';
+        return '';
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value) return 'Email is required';
+        if (!emailRegex.test(value)) return 'Invalid email format';
+        return '';
+      case 'phone':
+        const phoneRegex = /^\+?[1-9]\d{9,14}$/;
+        if (!value) return 'Phone is required';
+        if (!phoneRegex.test(value.replace(/\s/g, ''))) return 'Invalid phone format';
+        return '';
+      case 'program':
+        return value ? '' : 'Program is required';
+      case 'startDate':
+        if (!value) return 'Start date is required';
+        const selectedDate = new Date(value);
+        const today = new Date();
+        if (selectedDate < today) return 'Date cannot be in the past';
+        return '';
+      case 'scheduleTime':
+        return value ? '' : 'Schedule time is required';
+      default:
+        return '';
+    }
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setNewClient(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // For name field, prevent typing numbers
+    if (name === 'name') {
+      const lastChar = value.slice(-1);
+      if (/[0-9]/.test(lastChar)) return;
+    }
+
+    setNewClient(prev => ({ ...prev, [name]: value }));
+    
+    // Real-time validation
+    const error = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: error }));
+
+    // Check if form is valid
+    const requiredFields = ['name', 'email', 'phone', 'program', 'startDate', 'scheduleTime'];
+    const isValid = requiredFields.every(field => 
+      newClient[field] && !errors[field]
+    );
+    setIsFormValid(isValid);
   };
 
   const validateForm = () => {
@@ -722,6 +771,8 @@ const ClientsPage = ({ isDarkMode }) => {
                   name="name"
                   value={newClient.name}
                   onChange={handleInputChange}
+                  error={!!errors.name}
+                  helperText={errors.name}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -749,6 +800,8 @@ const ClientsPage = ({ isDarkMode }) => {
                   type="email"
                   value={newClient.email}
                   onChange={handleInputChange}
+                  error={!!errors.email}
+                  helperText={errors.email}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -765,6 +818,8 @@ const ClientsPage = ({ isDarkMode }) => {
                   name="phone"
                   value={newClient.phone}
                   onChange={handleInputChange}
+                  error={!!errors.phone}
+                  helperText={errors.phone}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -802,6 +857,8 @@ const ClientsPage = ({ isDarkMode }) => {
                   type="date"
                   value={newClient.startDate}
                   onChange={handleInputChange}
+                  error={!!errors.startDate}
+                  helperText={errors.startDate}
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     startAdornment: (
@@ -820,6 +877,8 @@ const ClientsPage = ({ isDarkMode }) => {
                   type="time"
                   value={newClient.scheduleTime}
                   onChange={handleInputChange}
+                  error={!!errors.scheduleTime}
+                  helperText={errors.scheduleTime}
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     startAdornment: (

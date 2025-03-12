@@ -64,6 +64,12 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openDialog, setOpenDialog] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({
+    show: false,
+    message: '',
+    severity: 'success'
+  });
   const [formData, setFormData] = useState({
     clientName: '',
     email: '',
@@ -75,6 +81,91 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     workoutType: '',
     duration: '',
   });
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const validatePhone = (phone) => {
+    const re = /^\+?[1-9]\d{1,14}$/;
+    return re.test(phone.replace(/\s/g, ''));
+  };
+
+  const validateName = (name) => {
+    // Only allow letters, spaces, and hyphens for names
+    const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s-]{2,50}$/;
+    if (!name) return 'Name is required';
+    if (!nameRegex.test(name)) {
+      return 'Name should only contain letters';
+    }
+    if (name.length < 2) {
+      return 'Name must be at least 2 characters long';
+    }
+    if (name.length > 50) {
+      return 'Name must be less than 50 characters';
+    }
+    return '';
+  };
+
+  const validateFormData = () => {
+    const newErrors = {};
+
+    // Client form validation
+    if (openDialog === 'client') {
+      if (!formData.clientName?.trim()) {
+        newErrors.clientName = 'Name is required';
+      }
+      if (!formData.email?.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!validateEmail(formData.email)) {
+        newErrors.email = 'Invalid email format';
+      }
+      if (!formData.phone?.trim()) {
+        newErrors.phone = 'Phone is required';
+      } else if (!validatePhone(formData.phone)) {
+        newErrors.phone = 'Invalid phone format';
+      }
+    }
+
+    // Session form validation
+    if (openDialog === 'session') {
+      if (!formData.sessionDate) {
+        newErrors.sessionDate = 'Date is required';
+      } else {
+        const selectedDate = new Date(formData.sessionDate);
+        const today = new Date();
+        if (selectedDate < today) {
+          newErrors.sessionDate = 'Date cannot be in the past';
+        }
+      }
+      if (!formData.sessionTime) {
+        newErrors.sessionTime = 'Time is required';
+      }
+      if (!formData.sessionType) {
+        newErrors.sessionType = 'Session type is required';
+      }
+    }
+
+    // Workout form validation
+    if (openDialog === 'workout') {
+      if (!formData.workoutName?.trim()) {
+        newErrors.workoutName = 'Workout name is required';
+      }
+      if (!formData.workoutType) {
+        newErrors.workoutType = 'Workout type is required';
+      }
+      if (!formData.duration) {
+        newErrors.duration = 'Duration is required';
+      } else if (isNaN(formData.duration) || formData.duration <= 0) {
+        newErrors.duration = 'Duration must be a positive number';
+      }
+    }
+
+    return newErrors;
+  };
 
   const handleDialogClose = () => {
     setOpenDialog(null);
@@ -89,19 +180,125 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       workoutType: '',
       duration: '',
     });
+    setErrors({});
+  };
+
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'clientName':
+        return validateName(value.trim());
+      case 'email':
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? '' : 'Invalid email format';
+      case 'phone':
+        return /^\+?[1-9]\d{1,14}$/.test(value.replace(/\s/g, '')) ? '' : 'Invalid phone format';
+      case 'sessionDate':
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selectedDate >= today ? '' : 'Date cannot be in the past';
+      case 'sessionTime':
+        return value ? '' : 'Time is required';
+      case 'sessionType':
+        return value ? '' : 'Session type is required';
+      case 'workoutName':
+        return value.trim().length >= 3 ? '' : 'Workout name must be at least 3 characters';
+      case 'workoutType':
+        return value ? '' : 'Workout type is required';
+      case 'duration':
+        const duration = parseInt(value);
+        return duration > 0 && duration <= 360 ? '' : 'Duration must be between 1 and 360 minutes';
+      default:
+        return '';
+    }
   };
 
   const handleInputChange = (event) => {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
+    const { name, value } = event.target;
+    
+    // For clientName, prevent typing numbers
+    if (name === 'clientName') {
+      const lastChar = value.slice(-1);
+      if (/[0-9]/.test(lastChar)) {
+        return; // Don't update if last character is a number
+      }
+    }
+
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Real-time validation
+    const error = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: error }));
+
+    // Check if form is valid
+    const newErrors = { ...errors, [name]: error };
+    const requiredFields = getRequiredFields(openDialog);
+    const isValid = requiredFields.every(field => 
+      formData[field] && !newErrors[field]
+    );
+    setIsFormValid(isValid);
   };
 
-  const handleSubmit = () => {
-    // Burada form verilerini işleyebilirsiniz
-    console.log('Form submitted:', formData);
-    handleDialogClose();
+  const getRequiredFields = (dialogType) => {
+    switch (dialogType) {
+      case 'client':
+        return ['clientName', 'email', 'phone'];
+      case 'session':
+        return ['sessionDate', 'sessionTime', 'sessionType'];
+      case 'workout':
+        return ['workoutName', 'workoutType', 'duration'];
+      default:
+        return [];
+    }
+  };
+
+  const handleSubmit = async () => {
+    const validationErrors = validateFormData();
+    
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Simulate API call with different endpoints based on dialog type
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      switch (openDialog) {
+        case 'client':
+          // Add client logic
+          console.log('Adding client:', formData);
+          break;
+        case 'session':
+          // Add session logic
+          console.log('Scheduling session:', formData);
+          break;
+        case 'workout':
+          // Add workout logic
+          console.log('Creating workout:', formData);
+          break;
+      }
+      
+      handleDialogClose();
+      // Show success message
+      setAlert({
+        show: true,
+        message: `${openDialog} added successfully!`,
+        severity: 'success'
+      });
+      // Auto hide alert after 3 seconds
+      setTimeout(() => {
+        setAlert(prev => ({ ...prev, show: false }));
+      }, 3000);
+    } catch (error) {
+      setAlert({
+        show: true,
+        message: `Failed to add ${openDialog}`,
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const stats = [
@@ -183,6 +380,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 label="Client Name"
                 value={formData.clientName}
                 onChange={handleInputChange}
+                error={!!errors.clientName}
+                helperText={errors.clientName}
                 fullWidth
                 InputProps={{
                   startAdornment: (
@@ -198,6 +397,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                error={!!errors.email}
+                helperText={errors.email}
                 fullWidth
                 InputProps={{
                   startAdornment: (
@@ -212,6 +413,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 label="Phone"
                 value={formData.phone}
                 onChange={handleInputChange}
+                error={!!errors.phone}
+                helperText={errors.phone}
                 fullWidth
                 InputProps={{
                   startAdornment: (
@@ -237,6 +440,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
               type="date"
               value={formData.sessionDate}
               onChange={handleInputChange}
+              error={!!errors.sessionDate}
+              helperText={errors.sessionDate}
               fullWidth
               InputLabelProps={{ shrink: true }}
             />
@@ -246,6 +451,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
               type="time"
               value={formData.sessionTime}
               onChange={handleInputChange}
+              error={!!errors.sessionTime}
+              helperText={errors.sessionTime}
               fullWidth
               InputLabelProps={{ shrink: true }}
             />
@@ -255,12 +462,14 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 name="sessionType"
                 value={formData.sessionType}
                 onChange={handleInputChange}
+                error={!!errors.sessionType}
                 label="Session Type"
               >
                 <MenuItem value="personal">Personal Training</MenuItem>
                 <MenuItem value="group">Group Class</MenuItem>
                 <MenuItem value="assessment">Assessment</MenuItem>
               </Select>
+              {errors.sessionType && <Typography color="error">{errors.sessionType}</Typography>}
             </FormControl>
           </Box>
         </DialogContent>
@@ -276,6 +485,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
               label="Workout Name"
               value={formData.workoutName}
               onChange={handleInputChange}
+              error={!!errors.workoutName}
+              helperText={errors.workoutName}
               fullWidth
             />
             <FormControl fullWidth>
@@ -284,6 +495,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 name="workoutType"
                 value={formData.workoutType}
                 onChange={handleInputChange}
+                error={!!errors.workoutType}
                 label="Workout Type"
               >
                 <MenuItem value="strength">Strength Training</MenuItem>
@@ -291,6 +503,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 <MenuItem value="hiit">HIIT</MenuItem>
                 <MenuItem value="flexibility">Flexibility</MenuItem>
               </Select>
+              {errors.workoutType && <Typography color="error">{errors.workoutType}</Typography>}
             </FormControl>
             <TextField
               name="duration"
@@ -298,6 +511,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
               type="number"
               value={formData.duration}
               onChange={handleInputChange}
+              error={!!errors.duration}
+              helperText={errors.duration}
               fullWidth
             />
           </Box>
@@ -801,12 +1016,13 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                     <Button 
                       onClick={handleSubmit}
                       variant="contained"
+                      disabled={!isFormValid}
                       sx={{
-                        bgcolor: '#9e9e9e',
+                        bgcolor: isFormValid ? '#ff4757' : '#9e9e9e',
                         borderRadius: '8px',
                         px: 3,
                         '&:hover': {
-                          bgcolor: '#757575',
+                          bgcolor: isFormValid ? '#ff3747' : '#757575',
                         }
                       }}
                     >

@@ -25,6 +25,9 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Pagination,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Search,
@@ -61,6 +64,11 @@ const WorkoutsPage = ({ isDarkMode }) => {
     exercises: '',
     description: ''
   });
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('all');
+  const workoutsPerPage = 6;
 
   useEffect(() => {
     fetchWorkouts();
@@ -81,12 +89,65 @@ const WorkoutsPage = ({ isDarkMode }) => {
     }
   };
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'name':
+        const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s-]{3,50}$/;
+        if (!value) return 'Workout name is required';
+        if (!nameRegex.test(value)) return 'Name format is invalid';
+        return '';
+      case 'type':
+        return value ? '' : 'Workout type is required';
+      case 'difficulty':
+        return value ? '' : 'Difficulty level is required';
+      case 'duration':
+        const duration = parseInt(value);
+        if (!value) return 'Duration is required';
+        if (isNaN(duration) || duration <= 0 || duration > 360) {
+          return 'Duration must be between 1-360 minutes';
+        }
+        return '';
+      case 'calories':
+        const calories = parseInt(value);
+        if (value && (isNaN(calories) || calories < 0 || calories > 2000)) {
+          return 'Calories must be between 0-2000';
+        }
+        return '';
+      case 'exercises':
+        const exercises = parseInt(value);
+        if (value && (isNaN(exercises) || exercises <= 0 || exercises > 50)) {
+          return 'Exercises must be between 1-50';
+        }
+        return '';
+      default:
+        return '';
+    }
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+
+    // For workout name, prevent special characters
+    if (name === 'name') {
+      const lastChar = value.slice(-1);
+      if (!/^[a-zA-ZçğıöşüÇĞİÖŞÜ\s-]$/.test(lastChar)) return;
+    }
+
     setNewWorkout(prev => ({
       ...prev,
       [name]: value
     }));
+
+    // Real-time validation
+    const error = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: error }));
+
+    // Check if form is valid
+    const requiredFields = ['name', 'type', 'difficulty', 'duration'];
+    const isValid = requiredFields.every(field => 
+      newWorkout[field] && !errors[field]
+    );
+    setIsFormValid(isValid);
   };
 
   const validateForm = () => {
@@ -211,6 +272,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
                   '&.Mui-focused fieldset': { borderColor: '#ff4757' }
                 }
               }}
+              error={!!errors.name}
+              helperText={errors.name}
             />
           </Grid>
 
@@ -266,6 +329,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
                 ),
               }}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              error={!!errors.duration}
+              helperText={errors.duration}
             />
           </Grid>
 
@@ -285,6 +350,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
                 ),
               }}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              error={!!errors.calories}
+              helperText={errors.calories}
             />
           </Grid>
 
@@ -304,6 +371,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
                 ),
               }}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              error={!!errors.exercises}
+              helperText={errors.exercises}
             />
           </Grid>
 
@@ -455,10 +524,35 @@ const WorkoutsPage = ({ isDarkMode }) => {
     { value: 'flexibility', label: 'Flexibility' },
   ];
 
-  const filteredWorkouts = workouts.filter(workout => 
+  const groupWorkoutsByType = (workouts) => {
+    return workouts.reduce((acc, workout) => {
+      if (!acc[workout.type]) {
+        acc[workout.type] = [];
+      }
+      acc[workout.type].push(workout);
+      return acc;
+    }, {});
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    setPage(1); // Reset page when changing tabs
+  };
+
+  const filteredWorkouts = workouts.filter(workout =>
     workout.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (selectedFilter === 'all' || workout.type === selectedFilter)
   );
+
+  const getFilteredWorkouts = () => {
+    if (activeTab === 'all') {
+      const startIndex = (page - 1) * workoutsPerPage;
+      return filteredWorkouts.slice(startIndex, startIndex + workoutsPerPage);
+    } else {
+      const groupedWorkouts = groupWorkoutsByType(filteredWorkouts);
+      return groupedWorkouts[activeTab] || [];
+    }
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -557,104 +651,260 @@ const WorkoutsPage = ({ isDarkMode }) => {
           ))}
         </Menu>
 
+        <Box sx={{ mb: 4, borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs 
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              '& .MuiTab-root': {
+                color: isDarkMode ? '#fff' : '#666',
+                '&.Mui-selected': {
+                  color: '#ff4757',
+                }
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#ff4757',
+              }
+            }}
+          >
+            <Tab label="All Workouts" value="all" />
+            <Tab label="Strength" value="strength" />
+            <Tab label="Cardio" value="cardio" />
+            <Tab label="HIIT" value="hiit" />
+            <Tab label="Flexibility" value="flexibility" />
+            <Tab label="CrossFit" value="crossfit" />
+          </Tabs>
+        </Box>
+
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
             <CircularProgress />
           </Box>
         ) : (
-          <Grid container spacing={3}>
-              {filteredWorkouts.map((workout) => (
-                <Grid item xs={12} sm={6} md={4} key={workout.id}>
+          <>
+            <Grid container spacing={3}>
+              {getFilteredWorkouts().map((workout) => (
+                <Grid item xs={12} sm={6} key={workout.id}>
                   <motion.div
-                    whileHover={{ y: -5 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
                     <Card sx={{
-                      p: 2,
-                      height: '100%',
-                      position: 'relative',
-                      overflow: 'visible',
+                      display: 'flex',
                       background: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
                       backdropFilter: 'blur(10px)',
                       border: '1px solid rgba(255,71,87,0.1)',
+                      transition: 'all 0.3s ease',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
                       '&:hover': {
+                        transform: 'translateY(-5px)',
                         boxShadow: '0 8px 32px rgba(255,71,87,0.1)',
                       }
                     }}>
-                      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <Typography variant="h6" sx={{ color: '#ff4757', fontWeight: 600 }}>
-                          {workout.name}
-                        </Typography>
-                        <Box>
-                          <IconButton size="small" sx={{ color: '#ff4757' }} onClick={() => handleEditWorkout(workout)}>
-                            <Edit />
-                          </IconButton>
-                          <IconButton size="small" sx={{ color: '#666' }} onClick={() => handleDeleteWorkout(workout.id)}>
-                            <Delete />
-                          </IconButton>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        width: '100%',
+                        p: 3 
+                      }}>
+                        {/* Header */}
+                        <Box sx={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          mb: 2
+                        }}>
+                          <Typography variant="h6" sx={{ 
+                            color: '#ff4757',
+                            fontWeight: 600,
+                          }}>
+                            {workout.name}
+                          </Typography>
+                          <Box>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleEditWorkout(workout)}
+                              sx={{ color: '#ff4757' }}
+                            >
+                              <Edit />
+                            </IconButton>
+                            <IconButton 
+                              size="small" 
+                              onClick={() => handleDeleteWorkout(workout.id)}
+                              sx={{ color: '#666' }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
                         </Box>
-                      </Box>
 
-                      <Box sx={{ mb: 2 }}>
-                        <Chip
-                          label={workout.difficulty}
-                          size="small"
-                          sx={{
-                            bgcolor: `${difficultyColors[workout.difficulty]}15`,
-                            color: difficultyColors[workout.difficulty],
-                            mr: 1
-                          }}
-                        />
-                        <Chip
-                          label={workout.type}
-                          size="small"
-                          sx={{ bgcolor: 'rgba(255,71,87,0.1)', color: '#ff4757' }}
-                        />
-                      </Box>
+                        {/* Tags */}
+                        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                          <Chip
+                            size="small"
+                            label={workout.difficulty}
+                            sx={{
+                              bgcolor: `${difficultyColors[workout.difficulty]}15`,
+                              color: difficultyColors[workout.difficulty]
+                            }}
+                          />
+                          <Chip
+                            size="small"
+                            label={workout.type}
+                            sx={{
+                              bgcolor: 'rgba(255,71,87,0.1)',
+                              color: '#ff4757'
+                            }}
+                          />
+                        </Box>
 
-                      <Grid container spacing={2} sx={{ mb: 2 }}>
-                        <Grid item xs={4}>
-                          <Box sx={{ textAlign: 'center' }}>
-                            <Timer sx={{ color: '#ff4757', mb: 0.5 }} />
-                            <Typography variant="body2">{workout.duration} min</Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <Box sx={{ textAlign: 'center' }}>
-                            <FireIcon sx={{ color: '#ff4757', mb: 0.5 }} />
-                            <Typography variant="body2">{workout.calories} cal</Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <Box sx={{ textAlign: 'center' }}>
-                            <FitnessCenter sx={{ color: '#ff4757', mb: 0.5 }} />
-                            <Typography variant="body2">{workout.exercises} ex</Typography>
-                          </Box>
-                        </Grid>
-                      </Grid>
-
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                          Completion Rate
+                        {/* Description */}
+                        <Typography variant="body2" sx={{ 
+                          mb: 2,
+                          color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}>
+                          {workout.description}
                         </Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={workout.completion}
-                          sx={{
-                            height: 6,
-                            borderRadius: 3,
-                            bgcolor: 'rgba(255,71,87,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              bgcolor: '#ff4757',
-                            }
-                          }}
-                        />
+
+                        {/* Stats Grid */}
+                        <Grid container spacing={2} sx={{ mb: 2 }}>
+                          <Grid item xs={4}>
+                            <Box sx={{ textAlign: 'center' }}>
+                              <Timer sx={{ color: '#ff4757', mb: 0.5 }} />
+                              <Typography variant="body2">{workout.duration} min</Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Box sx={{ textAlign: 'center' }}>
+                              <FireIcon sx={{ color: '#ff4757', mb: 0.5 }} />
+                              <Typography variant="body2">{workout.calories} cal</Typography>
+                            </Box>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Box sx={{ textAlign: 'center' }}>
+                              <FitnessCenter sx={{ color: '#ff4757', mb: 0.5 }} />
+                              <Typography variant="body2">{workout.exercises} ex</Typography>
+                            </Box>
+                          </Grid>
+                        </Grid>
+
+                        {/* Equipment and Muscles */}
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" sx={{ 
+                            color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                            display: 'block',
+                            mb: 1
+                          }}>
+                            Equipment:
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            {workout.equipment.map((item, index) => (
+                              <Chip
+                                key={index}
+                                label={item}
+                                size="small"
+                                sx={{
+                                  bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                                  fontSize: '0.7rem'
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" sx={{ 
+                            color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                            display: 'block',
+                            mb: 1
+                          }}>
+                            Target Muscles:
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            {workout.targetMuscles.map((muscle, index) => (
+                              <Chip
+                                key={index}
+                                label={muscle}
+                                size="small"
+                                sx={{
+                                  bgcolor: isDarkMode ? 'rgba(255,71,87,0.1)' : 'rgba(255,71,87,0.1)',
+                                  color: '#ff4757',
+                                  fontSize: '0.7rem'
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+
+                        {/* Progress Bar */}
+                        <Box sx={{ mt: 'auto' }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="caption" sx={{ 
+                              color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'
+                            }}>
+                              Completion Rate
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#ff4757' }}>
+                              {workout.completion}%
+                            </Typography>
+                          </Box>
+                          <LinearProgress
+                            variant="determinate"
+                            value={workout.completion}
+                            sx={{
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: 'rgba(255,71,87,0.1)',
+                              '& .MuiLinearProgress-bar': {
+                                bgcolor: '#ff4757',
+                              }
+                            }}
+                          />
+                        </Box>
                       </Box>
                     </Card>
                   </motion.div>
                 </Grid>
               ))}
-          </Grid>
+            </Grid>
+
+            {activeTab === 'all' && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                mt: 4 
+              }}>
+                <Pagination
+                  count={Math.ceil(filteredWorkouts.length / workoutsPerPage)}
+                  page={page}
+                  onChange={(e, value) => setPage(value)}
+                  color="primary"
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      color: isDarkMode ? '#fff' : 'inherit',
+                      '&.Mui-selected': {
+                        bgcolor: '#ff4757',
+                        color: '#fff',
+                        '&:hover': {
+                          bgcolor: '#ff3747',
+                        }
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            )}
+          </>
         )}
 
         <Tooltip title="Add New Workout">

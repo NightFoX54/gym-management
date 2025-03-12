@@ -54,6 +54,8 @@ const SchedulePage = ({ isDarkMode }) => {
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'success' });
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, appointmentId: null });
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
   useEffect(() => {
     fetchAppointments();
@@ -154,6 +156,56 @@ const SchedulePage = ({ isDarkMode }) => {
         appointments
       });
     }
+  };
+
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'client':
+        const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s]{2,50}$/;
+        if (!value) return 'Client name is required';
+        if (!nameRegex.test(value)) return 'Name should only contain letters';
+        return '';
+      case 'date':
+        if (!value) return 'Date is required';
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selectedDate >= today ? '' : 'Date cannot be in the past';
+      case 'time':
+        if (!value) return 'Time is required';
+        // Optional: Add time range validation if needed
+        return '';
+      case 'type':
+        return value ? '' : 'Session type is required';
+      default:
+        return '';
+    }
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+
+    // For client name, prevent typing numbers
+    if (name === 'client') {
+      const lastChar = value.slice(-1);
+      if (/[0-9]/.test(lastChar)) return;
+    }
+
+    setNewSession(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Real-time validation
+    const error = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: error }));
+
+    // Check if form is valid
+    const requiredFields = ['client', 'date', 'time', 'type'];
+    const isValid = requiredFields.every(field => 
+      newSession[field] && !errors[field]
+    );
+    setIsFormValid(isValid);
   };
 
   const monthStart = startOfMonth(currentDate);
@@ -285,8 +337,9 @@ const SchedulePage = ({ isDarkMode }) => {
             <TextField
               fullWidth
               label="Client Name"
+              name="client"
               value={newSession.client}
-              onChange={(e) => setNewSession({ ...newSession, client: e.target.value })}
+              onChange={handleInputChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -294,6 +347,8 @@ const SchedulePage = ({ isDarkMode }) => {
                   </InputAdornment>
                 ),
               }}
+              error={!!errors.client}
+              helperText={errors.client}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -301,9 +356,12 @@ const SchedulePage = ({ isDarkMode }) => {
               fullWidth
               label="Date"
               type="date"
+              name="date"
               value={newSession.date}
-              onChange={(e) => setNewSession({ ...newSession, date: e.target.value })}
+              onChange={handleInputChange}
               InputLabelProps={{ shrink: true }}
+              error={!!errors.date}
+              helperText={errors.date}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -311,23 +369,28 @@ const SchedulePage = ({ isDarkMode }) => {
               fullWidth
               label="Time"
               type="time"
+              name="time"
               value={newSession.time}
-              onChange={(e) => setNewSession({ ...newSession, time: e.target.value })}
+              onChange={handleInputChange}
               InputLabelProps={{ shrink: true }}
+              error={!!errors.time}
+              helperText={errors.time}
             />
           </Grid>
           <Grid item xs={12}>
-            <FormControl fullWidth>
+            <FormControl fullWidth error={!!errors.type}>
               <InputLabel>Session Type</InputLabel>
               <Select
+                name="type"
                 value={newSession.type}
-                onChange={(e) => setNewSession({ ...newSession, type: e.target.value })}
+                onChange={handleInputChange}
                 label="Session Type"
               >
                 <MenuItem value="Personal Training">Personal Training</MenuItem>
                 <MenuItem value="Yoga Session">Yoga Session</MenuItem>
                 <MenuItem value="Strength Training">Strength Training</MenuItem>
               </Select>
+              {errors.type && <Typography color="error">{errors.type}</Typography>}
             </FormControl>
           </Grid>
         </Grid>

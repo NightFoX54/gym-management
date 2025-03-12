@@ -15,6 +15,10 @@ import {
   Alert,
   Tabs,
   Tab,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -25,6 +29,7 @@ import {
   Palette,
   Schedule,
   Settings,
+  AccessTime,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { LoadingButton } from '@mui/lab';
@@ -58,9 +63,78 @@ const SettingsPage = ({ isDarkMode }) => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [workingHours, setWorkingHours] = useState({
+    monday: { active: true, start: '09:00', end: '17:00' },
+    tuesday: { active: true, start: '09:00', end: '17:00' },
+    wednesday: { active: true, start: '09:00', end: '17:00' },
+    thursday: { active: true, start: '09:00', end: '17:00' },
+    friday: { active: true, start: '09:00', end: '17:00' },
+    saturday: { active: false, start: '09:00', end: '13:00' },
+    sunday: { active: false, start: '09:00', end: '13:00' },
+  });
 
   const handleChange = (field) => (event) => {
-    setFormData({ ...formData, [field]: event.target.value });
+    const { value } = event.target;
+
+    // For name field, prevent typing numbers
+    if (field === 'fullName') {
+      const lastChar = value.slice(-1);
+      if (/[0-9]/.test(lastChar)) return;
+    }
+
+    // For phone field, only allow numbers and basic phone characters
+    if (field === 'phone') {
+      const phoneRegex = /^[0-9+\- ]*$/;
+      if (!phoneRegex.test(value)) return;
+    }
+
+    // Validate and set errors immediately
+    const error = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: error }));
+
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'fullName':
+        const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s-]{2,50}$/;
+        if (!value) return 'Name is required';
+        if (!nameRegex.test(value)) return 'Name should only contain letters';
+        if (value.length < 2) return 'Name must be at least 2 characters';
+        if (value.length > 50) return 'Name must be less than 50 characters';
+        return '';
+
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value) return 'Email is required';
+        if (!emailRegex.test(value)) return 'Invalid email format';
+        return '';
+
+      case 'phone':
+        const phoneRegex = /^\+?[1-9][0-9\s-]{8,14}$/;
+        if (!value) return 'Phone number is required';
+        if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+          return 'Invalid phone format (e.g., +90 532 123 4567)';
+        }
+        return '';
+
+      case 'specialization':
+        if (!value) return 'Specialization is required';
+        if (value.length < 3) return 'Specialization must be at least 3 characters';
+        if (value.length > 50) return 'Specialization must be less than 50 characters';
+        return '';
+
+      case 'bio':
+        if (!value) return 'Bio is required';
+        if (value.length < 10) return 'Bio must be at least 10 characters';
+        if (value.length > 500) return 'Bio must be less than 500 characters';
+        return '';
+
+      default:
+        return '';
+    }
   };
 
   const handleFileChange = (event) => {
@@ -75,11 +149,74 @@ const SettingsPage = ({ isDarkMode }) => {
     }
   };
 
-  const handlePasswordChange = async () => {
-    if (newPassword !== confirmPassword) {
-      showAlert('Passwords do not match', 'error');
-      return;
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+  };
+
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateFields = () => {
+    const newErrors = {};
+    
+    // Profile validation
+    if (!formData.fullName?.trim()) {
+      newErrors.fullName = 'Full name is required';
     }
+    
+    if (!formData.email?.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Invalid email format';
+    }
+    
+    if (!formData.phone?.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!validatePhoneNumber(formData.phone)) {
+      newErrors.phone = 'Invalid phone number format';
+    }
+    
+    if (!formData.specialization?.trim()) {
+      newErrors.specialization = 'Specialization is required';
+    }
+    
+    if (!formData.bio?.trim()) {
+      newErrors.bio = 'Bio is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePasswordChange = async () => {
+    const newErrors = {};
+
+    if (!currentPassword) {
+      newErrors.currentPassword = 'Current password is required';
+    }
+
+    if (!newPassword) {
+      newErrors.newPassword = 'New password is required';
+    } else if (!validatePassword(newPassword)) {
+      newErrors.newPassword = 'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character';
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (newPassword !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
     try {
@@ -89,6 +226,7 @@ const SettingsPage = ({ isDarkMode }) => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      setErrors({});
     } catch (error) {
       showAlert('Failed to update password', 'error');
     } finally {
@@ -107,6 +245,7 @@ const SettingsPage = ({ isDarkMode }) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       localStorage.setItem('trainerSettings', JSON.stringify(formData));
       showAlert('Profile updated successfully', 'success');
+      setErrors({});
     } catch (error) {
       showAlert('Failed to update profile', 'error');
     } finally {
@@ -129,17 +268,6 @@ const SettingsPage = ({ isDarkMode }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const validateFields = () => {
-    const errors = {};
-    if (!formData.fullName) errors.fullName = 'Name is required';
-    if (!formData.email) errors.email = 'Email is required';
-    if (!formData.phone) errors.phone = 'Phone is required';
-    if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(formData.email)) {
-      errors.email = 'Invalid email format';
-    }
-    return errors;
   };
 
   const showAlert = (message, severity) => {
@@ -270,6 +398,16 @@ const SettingsPage = ({ isDarkMode }) => {
     { icon: <Security />, label: 'Security' },
   ];
 
+  const handleWorkingHoursChange = (day, field, value) => {
+    setWorkingHours(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value
+      }
+    }));
+  };
+
   const handleTabPanel = (tabIndex) => {
     switch (tabIndex) {
       case 0:
@@ -291,6 +429,24 @@ const SettingsPage = ({ isDarkMode }) => {
                       label="Full Name"
                       value={formData.fullName}
                       onChange={handleChange('fullName')}
+                      error={!!errors.fullName}
+                      helperText={errors.fullName}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&.Mui-error': {
+                            '& fieldset': {
+                              borderColor: 'error.main',
+                              borderWidth: 2
+                            }
+                          },
+                          '&:hover fieldset': {
+                            borderColor: errors.fullName ? 'error.main' : '#ff4757',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: errors.fullName ? 'error.main' : '#ff4757',
+                          }
+                        }
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -299,6 +455,8 @@ const SettingsPage = ({ isDarkMode }) => {
                       label="Email"
                       value={formData.email}
                       onChange={handleChange('email')}
+                      error={!!errors.email}
+                      helperText={errors.email}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -307,6 +465,8 @@ const SettingsPage = ({ isDarkMode }) => {
                       label="Phone"
                       value={formData.phone}
                       onChange={handleChange('phone')}
+                      error={!!errors.phone}
+                      helperText={errors.phone}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -315,6 +475,8 @@ const SettingsPage = ({ isDarkMode }) => {
                       label="Specialization"
                       value={formData.specialization}
                       onChange={handleChange('specialization')}
+                      error={!!errors.specialization}
+                      helperText={errors.specialization}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -325,6 +487,8 @@ const SettingsPage = ({ isDarkMode }) => {
                       label="Bio"
                       value={formData.bio}
                       onChange={handleChange('bio')}
+                      error={!!errors.bio}
+                      helperText={errors.bio}
                     />
                   </Grid>
                 </Grid>
@@ -425,20 +589,219 @@ const SettingsPage = ({ isDarkMode }) => {
 
       case 2:
         return (
-          <Card sx={{ p: 3 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Working Hours"
-                  value={formData.availability}
-                  onChange={handleChange('availability')}
-                />
-              </Grid>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ 
+                color: '#ff4757',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mb: 1
+              }}>
+                <Schedule /> Working Hours
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Set your available working hours for each day of the week. Clients will be able to book sessions only during these hours.
+              </Typography>
+            </Box>
+            
+            <Grid container spacing={3}>
+              {Object.entries(workingHours).map(([day, hours], index) => (
+                <Grid item xs={12} key={day}>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                  >
+                    <Paper
+                      elevation={hours.active ? 2 : 0}
+                      sx={{
+                        p: 2.5,
+                        bgcolor: hours.active 
+                          ? (isDarkMode ? 'rgba(255,71,87,0.15)' : 'rgba(255,71,87,0.07)')
+                          : (isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'),
+                        borderRadius: '16px',
+                        borderLeft: '4px solid',
+                        borderColor: hours.active ? '#ff4757' : 'transparent',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-3px)',
+                          boxShadow: hours.active ? '0 6px 20px rgba(255,71,87,0.15)' : 'none'
+                        }
+                      }}
+                    >
+                      <Grid container spacing={3} alignItems="center">
+                        <Grid item xs={12} sm={3}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={hours.active}
+                                onChange={(e) => handleWorkingHoursChange(day, 'active', e.target.checked)}
+                                color="primary"
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: '#ff4757',
+                                    '&:hover': {
+                                      bgcolor: 'rgba(255, 71, 87, 0.08)',
+                                    },
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    bgcolor: 'rgba(255, 71, 87, 0.5)',
+                                  },
+                                }}
+                              />
+                            }
+                            label={
+                              <Typography sx={{ 
+                                fontWeight: hours.active ? 600 : 400,
+                                fontSize: '1rem',
+                                color: hours.active 
+                                  ? '#ff4757' 
+                                  : (isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')
+                              }}>
+                                {day.charAt(0).toUpperCase() + day.slice(1)}
+                              </Typography>
+                            }
+                          />
+                        </Grid>
+                        
+                        <Grid item xs={12} sm={4}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            opacity: hours.active ? 1 : 0.5
+                          }}>
+                            <Box sx={{ 
+                              mr: 1, 
+                              color: hours.active ? '#ff4757' : 'text.secondary',
+                              display: 'flex'
+                            }}>
+                              <AccessTime fontSize="small" />
+                            </Box>
+                            <TextField
+                              fullWidth
+                              label="Start Time"
+                              type="time"
+                              value={hours.start}
+                              onChange={(e) => handleWorkingHoursChange(day, 'start', e.target.value)}
+                              disabled={!hours.active}
+                              InputLabelProps={{ shrink: true }}
+                              inputProps={{ step: 300 }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '12px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover fieldset': {
+                                    borderColor: hours.active ? '#ff4757' : 'rgba(0, 0, 0, 0.23)',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#ff4757',
+                                  }
+                                }
+                              }}
+                            />
+                          </Box>
+                        </Grid>
+                        
+                        <Grid item xs={12} sm={4}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            opacity: hours.active ? 1 : 0.5
+                          }}>
+                            <Box sx={{ 
+                              mr: 1, 
+                              color: hours.active ? '#ff4757' : 'text.secondary',
+                              display: 'flex'
+                            }}>
+                              <AccessTime fontSize="small" />
+                            </Box>
+                            <TextField
+                              fullWidth
+                              label="End Time"
+                              type="time"
+                              value={hours.end}
+                              onChange={(e) => handleWorkingHoursChange(day, 'end', e.target.value)}
+                              disabled={!hours.active}
+                              InputLabelProps={{ shrink: true }}
+                              inputProps={{ step: 300 }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '12px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover fieldset': {
+                                    borderColor: hours.active ? '#ff4757' : 'rgba(0, 0, 0, 0.23)',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#ff4757',
+                                  }
+                                }
+                              }}
+                            />
+                          </Box>
+                        </Grid>
+                        
+                        {hours.active && (
+                          <Grid item xs={12}>
+                            <Box sx={{ 
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              pt: 1
+                            }}>
+                              <Typography variant="caption" sx={{ 
+                                color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+                                fontWeight: 500
+                              }}>
+                                {`Available ${parseInt(hours.end) - parseInt(hours.start)} hours`}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </Paper>
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
-          </Card>
+            
+            <Box sx={{ 
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mt: 4,
+              pt: 3,
+              borderTop: '1px solid',
+              borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+            }}>
+              <Typography variant="body2" color="text.secondary">
+                Your schedule will be visible to your clients
+              </Typography>
+              
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button variant="outlined" color="inherit" onClick={() => {
+                  // Reset to default working hours
+                  setWorkingHours({
+                    monday: { active: true, start: '09:00', end: '17:00' },
+                    tuesday: { active: true, start: '09:00', end: '17:00' },
+                    wednesday: { active: true, start: '09:00', end: '17:00' },
+                    thursday: { active: true, start: '09:00', end: '17:00' },
+                    friday: { active: true, start: '09:00', end: '17:00' },
+                    saturday: { active: false, start: '09:00', end: '13:00' },
+                    sunday: { active: false, start: '09:00', end: '13:00' },
+                  });
+                }}>
+                  Reset
+                </Button>
+              </Box>
+            </Box>
+          </motion.div>
         );
-
       case 3:
         return (
           <Card sx={{ p: 3 }}>
@@ -450,6 +813,8 @@ const SettingsPage = ({ isDarkMode }) => {
                   label="Current Password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
+                  error={!!errors.currentPassword}
+                  helperText={errors.currentPassword}
                   InputProps={{
                     endAdornment: (
                       <div 
@@ -469,6 +834,8 @@ const SettingsPage = ({ isDarkMode }) => {
                   label="New Password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  error={!!errors.newPassword}
+                  helperText={errors.newPassword}
                   InputProps={{
                     endAdornment: (
                       <div 
@@ -488,6 +855,8 @@ const SettingsPage = ({ isDarkMode }) => {
                   label="Confirm New Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  error={!!errors.confirmPassword}
+                  helperText={errors.confirmPassword}
                   InputProps={{
                     endAdornment: (
                       <div 
