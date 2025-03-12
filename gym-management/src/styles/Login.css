@@ -214,4 +214,43 @@
 
 .back-button:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-container input {
+  width: 100%;
+  padding-right: 40px; /* Make room for the eye icon */
+}
+
+.toggle-password-visibility {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.toggle-password-visibility:hover {
+  color: #333;
+}
+
+.dark-mode .toggle-password-visibility {
+  color: #aaa;
+}
+
+.dark-mode .toggle-password-visibility:hover {
+  color: #fff;
 } 

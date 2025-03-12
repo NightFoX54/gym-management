@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { LoadingButton } from '@mui/lab';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const SettingsPage = ({ isDarkMode }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -54,6 +55,9 @@ const SettingsPage = ({ isDarkMode }) => {
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'success' });
   const fileInputRef = useRef(null);
   const [imageError, setImageError] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (field) => (event) => {
     setFormData({ ...formData, [field]: event.target.value });
@@ -442,28 +446,58 @@ const SettingsPage = ({ isDarkMode }) => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  type="password"
+                  type={showCurrentPassword ? "text" : "password"}
                   label="Current Password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
+                  InputProps={{
+                    endAdornment: (
+                      <div 
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)} 
+                        style={{ cursor: 'pointer', marginRight: '8px' }}
+                      >
+                        {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                      </div>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
                   label="New Password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  InputProps={{
+                    endAdornment: (
+                      <div 
+                        onClick={() => setShowNewPassword(!showNewPassword)} 
+                        style={{ cursor: 'pointer', marginRight: '8px' }}
+                      >
+                        {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                      </div>
+                    ),
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   label="Confirm New Password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  InputProps={{
+                    endAdornment: (
+                      <div 
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                        style={{ cursor: 'pointer', marginRight: '8px' }}
+                      >
+                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                      </div>
+                    ),
+                  }}
                 />
               </Grid>
             </Grid>

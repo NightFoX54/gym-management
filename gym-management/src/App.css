@@ -187,7 +187,7 @@
 
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -198,21 +198,26 @@
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 25px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  text-align: left;
 }
 
 .feature:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature i {
+  font-size: 2.5rem;
+  color: #ff4757;
+  margin-bottom: 1.2rem;
+  display: block;
 }
 
 .feature h3 {
-  color: #ff4757;
+  color: #1a1a1a;
   margin-bottom: 1rem;
+  font-size: 1.3rem;
 }
 
 .feature p {
@@ -220,25 +225,133 @@
   line-height: 1.6;
 }
 
-.contact-section {
-  padding: 5rem 2rem;
-  background-color: #fff;
-  border-top: 1px solid #e0e0e0;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 30px;
-  margin: 2rem;
+/* Replace the contact-section styles with new footer styles */
+
+.footer-section {
+  background-color: #1a1a1a;
+  color: #fff;
+  padding: 4rem 2rem 2rem;
+  position: relative;
 }
 
-.social-icons {
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 2rem;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 240px;
+}
+
+.footer-column h3 {
+  color: #ff4757;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.footer-column h3::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, #ff4757, #ff6b81);
+  border-radius: 2px;
+}
+
+.footer-column p {
+  color: #bbb;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  color: #bbb;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  display: inline-block;
+  position: relative;
+}
+
+.footer-links a:hover {
+  color: #ff4757;
+}
+
+.footer-links a::before {
+  content: "›";
+  position: absolute;
+  left: -15px;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.footer-links a:hover::before {
+  opacity: 1;
+  left: -10px;
+  color: #ff4757;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.contact-list li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  color: #bbb;
+}
+
+.contact-list i {
+  color: #ff4757;
+  margin-right: 10px;
+  margin-top: 4px;
+}
+
+.footer-social-icons {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  margin-bottom: 2rem;
+  margin: 3rem auto 0;
+  position: relative;
+  max-width: 1200px;
+  padding-bottom: 2rem;
 }
 
-.social-icon {
+.footer-social-icons:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #333;
+}
+
+.footer-social-icon {
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -253,50 +366,176 @@
   box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
 }
 
-.social-icon i {
+.footer-social-icon i {
   font-size: 24px;
 }
 
-.social-icon:hover {
+.footer-social-icon:hover {
   transform: translateY(-5px);
   background-color: #ff3747;
 }
 
-.contact-info {
-  margin-top: 2rem;
+.footer-column .social-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #333;
 }
 
-.phone-icon {
-  color: #666;
-  margin-right: 10px;
-}
-
-.phone-number {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #1a1a1a;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.location-icon {
-  color: #666;
-  margin-right: 10px;
-}
-
-.address {
-  font-size: 1.1rem;
-  color: #666;
-  max-width: 600px;
+.footer-bottom {
+  max-width: 1200px;
   margin: 0 auto;
-  line-height: 1.6;
+  padding-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.newsletter {
+  flex: 1;
+  min-width: 300px;
+}
+
+.newsletter h4 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.newsletter-form {
+  display: flex;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.9rem;
+  background: #333;
+  color: #fff;
+}
+
+.newsletter-form button {
+  padding: 10px 20px;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.newsletter-form button:hover {
+  background-color: #ff3747;
+}
+
+.copyright {
+  flex: 1;
+  min-width: 300px;
+  text-align: right;
+}
+
+.copyright p {
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+}
+
+.footer-bottom-links a {
+  color: #bbb;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.footer-bottom-links a:hover {
+  color: #ff4757;
+}
+
+.scroll-to-top {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ff4757;
+  color: white;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(255, 71, 87, 0.3);
+}
+
+.scroll-to-top:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.5);
+}
+
+/* Dark mode adaptations for footer */
+.dark-mode .footer-section {
+  background-color: #111;
+}
+
+.dark-mode .footer-column h3 {
+  color: #ff4757;
+}
+
+.dark-mode .footer-column h3::after {
+  background-color: #ff4757;
+}
+
+.dark-mode .footer-links a,
+.dark-mode .contact-list li,
+.dark-mode .footer-column p {
+  color: #aaa;
+}
+
+.dark-mode .footer-column .social-icon {
+  background-color: #222;
+}
+
+.dark-mode .newsletter h4 {
+  color: #fff;
+}
+
+.dark-mode .footer-bottom {
+  border-top-color: #222;
+}
+
+.dark-mode .newsletter-form input {
+  background: #222;
+}
+
+.dark-mode .copyright p {
+  color: #777;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+  }
+  
+  .copyright {
+    text-align: center;
+  }
+  
+  .footer-bottom-links {
+    justify-content: center;
+  }
+  
+  .newsletter {
+    text-align: center;
+  }
 }
 
 /* Dark mode toggle slider styles */
@@ -562,4 +801,74 @@
 
 .dark-mode-toggle .fa-sun {
   color: #f39c12;
+}
+
+/* Dark mode styles for the new footer social icons */
+.dark-mode .footer-social-icon {
+  background: linear-gradient(145deg, #ff4757, #cc3a47);
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.2);
+}
+
+/* Add responsive styling for footer social icons */
+@media (max-width: 768px) {
+  .footer-social-icons {
+    margin: 2rem 0;
+    gap: 1.5rem;
+  }
+  
+  .footer-social-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .footer-social-icon i {
+    font-size: 20px;
+  }
+}
+
+.social-icons {
+  display: flex;
+  gap: 15px;
+  margin-top: 1rem;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+
+.social-icon:hover {
+  background-color: #ff4757;
+  transform: translateY(-5px);
+}
+
+.dark-mode .footer-social-icons:after {
+  background: #222;
+}
+
+/* Dark mode styles for features */
+.dark-mode .feature {
+  background-color: #2d2d2d;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .feature:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .feature h3 {
+  color: #fff;
+}
+
+.dark-mode .feature p {
+  color: #bbb;
 }

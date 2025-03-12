@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import '../styles/Signup.css';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash, FaGem, FaCrown, FaAward, FaCreditCard } from 'react-icons/fa';
 
 function Signup() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedDuration, setSelectedDuration] = useState('monthly');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [cardDetails, setCardDetails] = useState({
+    cardNumber: '',
+    cardHolder: '',
+    expiryDate: '',
+    cvv: ''
+  });
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -91,6 +100,60 @@ function Signup() {
     }));
   };
 
+  const handleCardInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Format card number with spaces after every 4 digits
+    if (name === 'cardNumber') {
+      const formattedValue = value
+        .replace(/\s/g, '')
+        .replace(/\D/g, '')
+        .substring(0, 16)
+        .replace(/(.{4})/g, '$1 ')
+        .trim();
+      
+      setCardDetails(prevState => ({
+        ...prevState,
+        [name]: formattedValue
+      }));
+      return;
+    }
+    
+    // Format expiry date as MM/YY
+    if (name === 'expiryDate') {
+      const formattedValue = value
+        .replace(/\s/g, '')
+        .replace(/\D/g, '')
+        .substring(0, 4)
+        .replace(/(.{2})/, '$1/');
+      
+      setCardDetails(prevState => ({
+        ...prevState,
+        [name]: formattedValue
+      }));
+      return;
+    }
+    
+    // Limit CVV to 3 or 4 digits
+    if (name === 'cvv') {
+      const formattedValue = value
+        .replace(/\D/g, '')
+        .substring(0, 4);
+      
+      setCardDetails(prevState => ({
+        ...prevState,
+        [name]: formattedValue
+      }));
+      return;
+    }
+    
+    // For card holder name
+    setCardDetails(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setStep(3);
@@ -104,6 +167,14 @@ function Signup() {
     if (clickedStep <= step) {
       setStep(clickedStep);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   const renderStep = () => {
@@ -131,7 +202,12 @@ function Signup() {
                   className={`plan-card ${selectedPlan?.id === plan.id ? 'selected' : ''}`}
                   onClick={() => handlePlanSelect(plan)}
                 >
-                  <h3>{plan.name}</h3>
+                  <h3>
+                    {plan.id === 1 && <FaGem className="plan-icon" />}
+                    {plan.id === 2 && <FaCrown className="plan-icon" />}
+                    {plan.id === 3 && <FaAward className="plan-icon" />}
+                    {plan.name}
+                  </h3>
                   <div className="price">
                     <span className="amount">₺{calculatePrice(plan.price, selectedDuration)}</span>
                     <span className="duration">/{selectedDuration}</span>
@@ -209,25 +285,43 @@ function Signup() {
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                />
+                <div className="password-input-container">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-visibility" 
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  required
-                />
+                <div className="password-input-container">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-visibility" 
+                    onClick={toggleConfirmPasswordVisibility}
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
               <button type="submit" className="next-btn">Proceed to Payment</button>
             </form>
@@ -241,44 +335,105 @@ function Signup() {
             <div className="order-summary">
               <h3>Order Summary</h3>
               <div className="plan-details">
-                <p className="plan-name">{selectedPlan.name}</p>
+                <div className="plan-name-container">
+                  {selectedPlan.id === 1 && <FaGem className="plan-icon" />}
+                  {selectedPlan.id === 2 && <FaCrown className="plan-icon" />}
+                  {selectedPlan.id === 3 && <FaAward className="plan-icon" />}
+                  <p className="plan-name">{selectedPlan.name}</p>
+                </div>
                 <p className="plan-price">
                   ₺{calculatePrice(selectedPlan.price, selectedDuration)}/{selectedDuration}
                 </p>
               </div>
-              {/* Add payment form here */}
-              <form className="payment-form">
-                <div className="form-group">
-                  <label htmlFor="cardNumber">Card Number</label>
-                  <input
-                    type="text"
-                    id="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    required
-                  />
+              
+              <div className="payment-flex-container">
+                <div className="payment-form-container">
+                  <form className="payment-form">
+                    <div className="form-group">
+                      <label htmlFor="cardHolder">Card Holder Name</label>
+                      <input
+                        type="text"
+                        id="cardHolder"
+                        name="cardHolder"
+                        placeholder="Name on Card"
+                        value={cardDetails.cardHolder}
+                        onChange={handleCardInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="cardNumber">Card Number</label>
+                      <input
+                        type="text"
+                        id="cardNumber"
+                        name="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        value={cardDetails.cardNumber}
+                        onChange={handleCardInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor="expiryDate">Expiry Date</label>
+                        <input
+                          type="text"
+                          id="expiryDate"
+                          name="expiryDate"
+                          placeholder="MM/YY"
+                          value={cardDetails.expiryDate}
+                          onChange={handleCardInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="cvv">CVV</label>
+                        <input
+                          type="text"
+                          id="cvv"
+                          name="cvv"
+                          placeholder="123"
+                          value={cardDetails.cvv}
+                          onChange={handleCardInputChange}
+                          onFocus={() => document.querySelector('.credit-card').classList.add('flipped')}
+                          onBlur={() => document.querySelector('.credit-card').classList.remove('flipped')}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <button type="submit" className="submit-btn">Complete Purchase</button>
+                  </form>
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="expiryDate">Expiry Date</label>
-                    <input
-                      type="text"
-                      id="expiryDate"
-                      placeholder="MM/YY"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="cvv">CVV</label>
-                    <input
-                      type="text"
-                      id="cvv"
-                      placeholder="123"
-                      required
-                    />
+                
+                <div className="credit-card-preview">
+                  <div className={`credit-card ${cardDetails.cvv.length > 0 ? 'flipped' : ''}`}>
+                    <div className="credit-card-front">
+                      <div className="card-chip"></div>
+                      <div className="card-logo"><FaCreditCard /></div>
+                      <div className="card-number">
+                        {cardDetails.cardNumber || '•••• •••• •••• ••••'}
+                      </div>
+                      <div className="card-info">
+                        <div className="card-holder">
+                          <span>Card Holder</span>
+                          <div>{cardDetails.cardHolder || 'FULL NAME'}</div>
+                        </div>
+                        <div className="card-expiry">
+                          <span>Expires</span>
+                          <div>{cardDetails.expiryDate || 'MM/YY'}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="credit-card-back">
+                      <div className="card-stripe"></div>
+                      <div className="card-cvv">
+                        <span>CVV</span>
+                        <div className="cvv-band">{cardDetails.cvv || '•••'}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <button type="submit" className="submit-btn">Complete Purchase</button>
-              </form>
+              </div>
             </div>
           </div>
         );

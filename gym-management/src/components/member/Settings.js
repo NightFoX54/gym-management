@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaBell, FaLock, FaArrowLeft, FaSave, FaSun, FaMoon } from 'react-icons/fa';
+import { FaUser, FaBell, FaLock, FaArrowLeft, FaSave, FaSun, FaMoon, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/Settings.css';
 
@@ -15,6 +15,14 @@ const Settings = ({ isDarkMode, setIsDarkMode }) => {
   });
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  
+  // New state variables for password fields and visibility
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -160,15 +168,54 @@ const Settings = ({ isDarkMode, setIsDarkMode }) => {
             <div className="password-form">
               <div className="form-group">
                 <label>Current Password</label>
-                <input type="password" />
+                <div className="password-input-container">
+                  <input 
+                    type={showCurrentPassword ? "text" : "password"} 
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-visibility" 
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label>New Password</label>
-                <input type="password" />
+                <div className="password-input-container">
+                  <input 
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-visibility" 
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
               <div className="form-group">
                 <label>Confirm New Password</label>
-                <input type="password" />
+                <div className="password-input-container">
+                  <input 
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <button 
+                    type="button" 
+                    className="toggle-password-visibility" 
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="modal-actions">

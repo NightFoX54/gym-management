@@ -79,6 +79,27 @@
 .plan-card h3 {
   color: #1a1a1a;
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-icon {
+  color: #ff4757;
+  font-size: 1.3rem;
+}
+
+/* Farklı planlar için farklı ikon renkleri */
+.plan-card:nth-child(1) .plan-icon {
+  color: #6c757d; /* Basic plan için gri renk */
+}
+
+.plan-card:nth-child(2) .plan-icon {
+  color: #ffc107; /* Premium plan için altın renk */
+}
+
+.plan-card:nth-child(3) .plan-icon {
+  color: #00b4d8; /* Elite plan için mavi renk */
 }
 
 .price {
@@ -199,7 +220,7 @@
 
 /* Payment Section */
 .payment-container {
-  max-width: 600px;
+  max-width: 1000px; /* Genişliği artırdım çünkü yan yana yerleşim için daha fazla alan gerekecek */
   margin: 0 auto;
   padding: 2rem;
   background-color: #2d2d2d;
@@ -224,6 +245,182 @@
   margin-bottom: 1rem;
 }
 
+/* Yan yana yerleşim için yeni container */
+.payment-flex-container {
+  display: flex;
+  flex-direction: row; /* Yan yana yerleşim */
+  gap: 2rem;
+  align-items: flex-start;
+  margin-top: 2rem;
+}
+
+/* Form ve kredi kartı için genişlik tanımları */
+.payment-form-container {
+  flex: 1; /* Sol taraf (form kısmı) için alan */
+  min-width: 300px;
+}
+
+.credit-card-preview {
+  flex: 1; /* Sağ taraf (kredi kartı) için alan */
+  perspective: 1000px;
+  min-width: 300px;
+  margin: 0; /* Üstteki margin'i kaldırdık çünkü artık yan yana */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1rem;
+}
+
+.credit-card {
+  width: 100%;
+  max-width: 350px;
+  height: 220px;
+  position: relative;
+  border-radius: 15px;
+  transform-style: preserve-3d;
+  transition: transform 0.8s;
+}
+
+.credit-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.credit-card-front,
+.credit-card-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  overflow: hidden;
+  padding: 25px;
+  box-sizing: border-box;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #ff4757, #ff6b81);
+}
+
+.credit-card-back {
+  transform: rotateY(180deg);
+}
+
+.card-chip {
+  width: 50px;
+  height: 40px;
+  background: linear-gradient(to bottom, #bbb, #ddd);
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.card-logo {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-number {
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: white;
+  font-family: monospace;
+  margin-bottom: 25px;
+  word-spacing: 8px;
+}
+
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+}
+
+.card-holder, .card-expiry {
+  text-transform: uppercase;
+}
+
+.card-holder span, .card-expiry span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 5px;
+}
+
+.card-holder div, .card-expiry div {
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.card-stripe {
+  height: 50px;
+  background-color: #333;
+  margin: 25px 0;
+  width: calc(100% + 50px);
+  margin-left: -25px;
+}
+
+.card-cvv {
+  position: relative;
+  background-color: #fff;
+  width: 65%;
+  padding: 12px;
+  border-radius: 5px;
+  text-align: right;
+  float: right;
+}
+
+.card-cvv span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.cvv-band {
+  background: white;
+  color: #333;
+  font-family: monospace;
+  font-size: 16px;
+}
+
+/* Kredi kartı dark mode */
+.dark-mode .credit-card-front,
+.dark-mode .credit-card-back {
+  background: linear-gradient(135deg, #ff4757, #a83844);
+}
+
+.dark-mode .card-cvv,
+.dark-mode .cvv-band {
+  background-color: #eee;
+}
+
+.dark-mode .progress-step1:not(:last-child)::after {
+  background-color: #444;
+}
+
+/* Responsive tasarım için medya sorgusu */
+@media (max-width: 768px) {
+  .payment-flex-container {
+    flex-direction: column-reverse; /* Mobilde kredi kartı üstte, form altta */
+  }
+  
+  .credit-card-preview {
+    margin-bottom: 2rem;
+  }
+  
+  .payment-container {
+    padding: 1.5rem;
+  }
+  
+  .order-summary {
+    padding: 1rem;
+  }
+}
+
+.payment-form {
+  margin-top: 0; /* Üstteki margin'i kaldırdık çünkü artık yan yana */
+}
+
 .plan-details {
   display: flex;
   justify-content: space-between;
@@ -234,8 +431,50 @@
   margin: 1rem 0;
 }
 
-.payment-form {
-  margin-top: 2rem;
+.plan-name-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-name-container .plan-icon {
+  font-size: 1.2rem;
+}
+
+/* Farklı planlar için farklı ikon renkleri - payment kısmında */
+.plan-name-container .plan-icon[class*="FaGem"] {
+  color: #6c757d; /* Basic plan için gri renk */
+}
+
+.plan-name-container .plan-icon[class*="FaCrown"] {
+  color: #ffc107; /* Premium plan için altın renk */
+}
+
+.plan-name-container .plan-icon[class*="FaAward"] {
+  color: #00b4d8; /* Elite plan için mavi renk */
+}
+
+.plan-name {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Dark mode için ikon renkleri - payment kısmında */
+.dark-mode .plan-name-container .plan-icon[class*="FaGem"] {
+  color: #adb5bd; /* Dark mode'da basic plan için açık gri */
+}
+
+.dark-mode .plan-name-container .plan-icon[class*="FaCrown"] {
+  color: #ffd43b; /* Dark mode'da premium plan için daha parlak altın */
+}
+
+.dark-mode .plan-name-container .plan-icon[class*="FaAward"] {
+  color: #0096c7; /* Dark mode'da elite plan için daha canlı mavi */
+}
+
+.plan-price {
+  font-weight: bold;
+  margin: 0;
 }
 
 .payment-form label {
@@ -472,6 +711,7 @@
   color: #ff4757;
 }
 
+
 .duration-selector {
   display: flex;
   justify-content: center;
@@ -520,4 +760,51 @@
 
 .dark-mode .monthly-price {
   color: #999;
+}
+
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-container input {
+  width: 100%;
+  padding-right: 40px; /* Make room for the eye icon */
+}
+
+.toggle-password-visibility {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.toggle-password-visibility:hover {
+  color: #333;
+}
+
+.dark-mode .plan-card h3 {
+  color: #fff;
+}
+
+.dark-mode .plan-card:nth-child(1) .plan-icon {
+  color: #adb5bd; /* Dark mode'da basic plan için açık gri */
+}
+
+.dark-mode .plan-card:nth-child(2) .plan-icon {
+  color: #ffd43b; /* Dark mode'da premium plan için daha parlak altın */
+}
+
+.dark-mode .plan-card:nth-child(3) .plan-icon {
+  color: #0096c7; /* Dark mode'da elite plan için daha canlı mavi */
 }

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/AdminPanels.css';
 import 'antd/dist/reset.css';
-import { Button, Table, Form, Modal, Input, Select, message, Popconfirm, Upload, Image } from 'antd';
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, Table, Form, Modal, Input, Select, message, Popconfirm, Upload, Image, theme } from 'antd';
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
@@ -14,35 +14,152 @@ const MarketPanel = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [form] = Form.useForm();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  
+  // Check dark mode on component mount and when body classes change
+  useEffect(() => {
+    // Initial check
+    setIsDarkMode(document.body.classList.contains('dark-mode'));
+    
+    // Create observer to watch for class changes on body
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDarkMode(document.body.classList.contains('dark-mode'));
+        }
+      });
+    });
+    
+    // Start observing
+    observer.observe(document.body, { attributes: true });
+    
+    // Cleanup
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    const sampleProducts = [
-      { 
-        id: 1, 
-        name: 'Protein Powder', 
-        category: 'Supplement', 
-        price: 599.99, 
-        stock: 50,
-        imageUrl: '/protein.png'
+    // Müşteri tarafında sunulan tüm ürünleri admin paneline ekliyoruz
+    const allProducts = [
+      // Supplements
+      {
+        id: 1,
+        name: 'Whey Protein Powder',
+        category: 'Supplement',
+        price: 599.99,
+        stock: 45,
+        imageUrl: '/protein.png',
+        description: 'High-quality whey protein powder for muscle recovery - 2000g'
       },
-      { 
-        id: 2, 
-        name: 'Yoga Mat', 
-        category: 'Equipment', 
-        price: 199.99, 
+      {
+        id: 2,
+        name: 'BCAA Amino Acids',
+        category: 'Supplement',
+        price: 299.99,
+        stock: 60,
+        imageUrl: '/bcaa.png',
+        description: 'Essential amino acids for muscle growth and recovery - 400g'
+      },
+      {
+        id: 3,
+        name: 'Pre-Workout Energy',
+        category: 'Supplement',
+        price: 349.99,
+        stock: 38,
+        imageUrl: '/preworkout.png',
+        description: 'Advanced pre-workout formula for maximum performance - 300g'
+      },
+
+      // Equipment
+      {
+        id: 4,
+        name: 'Premium Yoga Mat',
+        category: 'Equipment',
+        price: 199.99,
+        stock: 25,
+        imageUrl: '/yoga-mat.png',
+        description: 'Non-slip, eco-friendly yoga mat with alignment lines'
+      },
+      {
+        id: 5,
+        name: 'Adjustable Dumbbell Set',
+        category: 'Equipment',
+        price: 1499.99,
+        stock: 12,
+        imageUrl: '/dumbbells.png',
+        description: 'Space-saving adjustable dumbbells 2-24kg each'
+      },
+      {
+        id: 6,
+        name: 'Resistance Bands Set',
+        category: 'Equipment',
+        price: 249.99,
         stock: 30,
-        imageUrl: '/yoga-mat.png'
+        imageUrl: '/bands.png',
+        description: 'Set of 5 resistance bands with different strength levels'
       },
-      { 
-        id: 3, 
-        name: 'Sports T-Shirt', 
-        category: 'Clothing', 
-        price: 149.99, 
-        stock: 100,
-        imageUrl: '/tshirt.png'
+
+      // Clothing
+      {
+        id: 7,
+        name: 'Performance T-Shirt',
+        category: 'Clothing',
+        price: 149.99,
+        stock: 85,
+        imageUrl: '/tshirt.png',
+        description: 'Moisture-wicking, breathable training t-shirt'
       },
+      {
+        id: 8,
+        name: 'Training Shorts',
+        category: 'Clothing',
+        price: 179.99,
+        stock: 70,
+        imageUrl: '/shorts.png',
+        description: 'Flexible, quick-dry training shorts with pockets'
+      },
+      {
+        id: 9,
+        name: 'Compression Leggings',
+        category: 'Clothing',
+        price: 229.99,
+        stock: 55,
+        imageUrl: '/leggings.png',
+        description: 'High-waist compression leggings with phone pocket'
+      },
+
+      // Accessories
+      {
+        id: 10,
+        name: 'Sports Water Bottle',
+        category: 'Accessories',
+        price: 89.99,
+        stock: 120,
+        imageUrl: '/bottle.png',
+        description: 'BPA-free sports water bottle with time markings - 1L'
+      },
+      {
+        id: 11,
+        name: 'Gym Bag',
+        category: 'Accessories',
+        price: 259.99,
+        stock: 40,
+        imageUrl: '/gym-bag.png',
+        description: 'Spacious gym bag with wet compartment and shoe pocket'
+      },
+      {
+        id: 12,
+        name: 'Lifting Gloves',
+        category: 'Accessories',
+        price: 129.99,
+        stock: 65,
+        imageUrl: '/gloves.png',
+        description: 'Premium weightlifting gloves with wrist support'
+      }
     ];
-    setProducts(sampleProducts);
+    
+    setProducts(allProducts);
   }, []);
 
   const handleImageUpload = (file) => {
@@ -110,6 +227,18 @@ const MarketPanel = () => {
   const handleDelete = (productId) => {
     setProducts(products.filter(p => p.id !== productId));
     message.success('Product deleted successfully');
+    setDeleteModalVisible(false);
+    setProductToDelete(null);
+  };
+
+  const showDeleteConfirm = (product) => {
+    setProductToDelete(product);
+    setDeleteModalVisible(true);
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalVisible(false);
+    setProductToDelete(null);
   };
 
   const filteredProducts = products.filter(product => {
@@ -129,7 +258,11 @@ const MarketPanel = () => {
           alt="Product image"
           width={80}
           height={80}
-          style={{ objectFit: 'cover' }}
+          style={{ 
+            objectFit: 'contain', 
+            background: 'transparent', 
+            padding: '4px'
+          }}
         />
       ),
     },
@@ -172,21 +305,15 @@ const MarketPanel = () => {
           >
             Edit
           </Button>
-          <Popconfirm
-            title="Are you sure you want to delete this product?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
+          <Button 
+            type="primary" 
+            danger 
+            icon={<DeleteOutlined />}
+            onClick={() => showDeleteConfirm(record)}
+            className="delete-button"
           >
-            <Button 
-              type="primary" 
-              danger 
-              icon={<DeleteOutlined />}
-              className="delete-button"
-            >
-              Delete
-            </Button>
-          </Popconfirm>
+            Delete
+          </Button>
         </span>
       ),
     },
@@ -245,7 +372,18 @@ const MarketPanel = () => {
         columns={columns}
         dataSource={filteredProducts}
         rowKey="id"
-        pagination={{ pageSize: 10 }}
+        pagination={{ 
+          pageSize: 10,
+          className: isDarkMode ? 'dark-pagination' : 'custom-pagination'
+        }}
+        className={isDarkMode ? 'dark-table' : ''}
+        style={{
+          ...(isDarkMode && {
+            color: '#fff',
+            borderRadius: '8px',
+            overflow: 'hidden'
+          })
+        }}
       />
 
       <Modal
@@ -291,7 +429,11 @@ const MarketPanel = () => {
                 alt="Current product image"
                 width={100}
                 height={100}
-                style={{ objectFit: 'cover' }}
+                style={{ 
+                  objectFit: 'contain', 
+                  background: 'transparent',
+                  padding: '4px'
+                }}
               />
             </div>
           )}
@@ -301,6 +443,13 @@ const MarketPanel = () => {
             rules={[{ required: true, message: 'Please enter product name!' }]}
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[{ required: true, message: 'Please enter product description!' }]}
+          >
+            <Input.TextArea rows={3} />
           </Form.Item>
           <Form.Item
             name="category"
@@ -339,6 +488,222 @@ const MarketPanel = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Custom Delete Confirmation Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', color: isDarkMode ? '#fff' : 'inherit' }}>
+            <ExclamationCircleOutlined style={{ color: '#ff4d4f', marginRight: '10px' }} />
+            <span>Delete Product</span>
+          </div>
+        }
+        open={deleteModalVisible}
+        onCancel={cancelDelete}
+        footer={null}
+        centered
+        closable={false}
+        width={400}
+        className={isDarkMode ? 'dark-modal' : ''}
+        bodyStyle={{
+          padding: '24px',
+          backgroundColor: isDarkMode ? '#1f1f1f' : '#f5f5f5',
+          color: isDarkMode ? '#fff' : 'inherit'
+        }}
+      >
+        <p style={{ fontSize: '16px', marginBottom: '24px' }}>
+          Are you sure you want to delete this product?
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+          <Button onClick={cancelDelete}>
+            No
+          </Button>
+          <Button 
+            type="primary" 
+            danger 
+            onClick={() => handleDelete(productToDelete?.id)}
+          >
+            Yes
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Add custom CSS for dark mode */}
+      <style jsx="true">{`
+        /* Custom pagination styles for both light and dark mode */
+        .custom-pagination .ant-pagination-item-active {
+          background-color: #ff4757;
+          border-color: #ff4757;
+        }
+        
+        .custom-pagination .ant-pagination-item-active a {
+          color: #fff;
+        }
+        
+        /* Table header styles for both light and dark mode */
+        .ant-table-thead {
+          position: relative;
+          box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+          z-index: 1;
+        }
+        
+        .ant-table-thead > tr > th {
+          background: linear-gradient(to bottom, #f8f8f8, #f0f0f0) !important;
+          font-weight: 600;
+          border-bottom: 2px solid #d9d9d9 !important;
+          border-right: 1px solid #e8e8e8;
+          padding: 12px 16px;
+        }
+        
+        .ant-table-thead > tr > th:last-child {
+          border-right: none;
+        }
+        
+        /* Dark mode table styles */
+        ${isDarkMode ? `
+          .dark-table {
+            border-radius: 8px;
+            overflow: hidden;
+            background: transparent;
+          }
+          
+          .dark-table .ant-table {
+            background: transparent;
+            color: #fff;
+          }
+          
+          .dark-table .ant-table-container {
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          
+          .dark-table .ant-table-thead {
+            position: relative;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+          }
+          
+          .dark-table .ant-table-thead > tr > th {
+            background: linear-gradient(to bottom, #353535, #2d2d2d) !important;
+            color: #fff !important;
+            border-bottom: 2px solid #505050;
+            border-right: 1px solid #404040;
+            font-weight: 600;
+            padding: 12px 16px;
+          }
+          
+          .dark-table .ant-table-thead > tr > th:last-child {
+            border-right: none;
+          }
+          
+          .dark-table .ant-table-thead > tr:first-child > th:first-child {
+            border-top-left-radius: 8px;
+          }
+          
+          .dark-table .ant-table-thead > tr:first-child > th:last-child {
+            border-top-right-radius: 8px;
+          }
+          
+          .dark-table .ant-table-tbody > tr > td {
+            background-color: #1a1a1a;
+            color: #fff;
+            border-bottom: 1px solid #333;
+          }
+          
+          .dark-table .ant-table-tbody > tr:hover > td {
+            background-color: #2a2a2a !important;
+          }
+          
+          .dark-table .ant-table-tbody > tr:last-child > td:first-child {
+            border-bottom-left-radius: 8px;
+          }
+          
+          .dark-table .ant-table-tbody > tr:last-child > td:last-child {
+            border-bottom-right-radius: 8px;
+          }
+          
+          .dark-table .ant-table-column-sorter {
+            color: #aaa;
+          }
+          
+          .dark-table .ant-table-column-sorter-up.active,
+          .dark-table .ant-table-column-sorter-down.active {
+            color: #fff;
+          }
+          
+          .dark-table .ant-table-column-sort {
+            background-color: #2d2d2d !important;
+          }
+          
+          .dark-table .ant-table-pagination.ant-pagination {
+            margin: 16px 0;
+            background: transparent;
+          }
+          
+          .dark-pagination {
+            background: transparent !important;
+          }
+          
+          .dark-pagination .ant-pagination-item {
+            background-color: #2c2c2c;
+            border-color: #444;
+          }
+          
+          .dark-pagination .ant-pagination-item a {
+            color: #fff;
+          }
+          
+          .dark-pagination .ant-pagination-item-active {
+            background-color: #ff4757;
+            border-color: #ff4757;
+          }
+          
+          .dark-pagination .ant-pagination-prev button,
+          .dark-pagination .ant-pagination-next button,
+          .dark-pagination .ant-pagination-jump-prev button,
+          .dark-pagination .ant-pagination-jump-next button {
+            background-color: #2c2c2c;
+            color: #fff;
+            border-color: #444;
+          }
+          
+          .dark-pagination .ant-pagination-options {
+            background: transparent;
+          }
+          
+          .dark-pagination .ant-pagination-options .ant-select-selector {
+            background-color: #2c2c2c;
+            color: #fff;
+            border-color: #444;
+          }
+          
+          .dark-pagination .ant-select-selection-item {
+            color: #fff;
+          }
+          
+          /* Dark Mode Modal Styles */
+          .dark-modal .ant-modal-content {
+            background-color: #1f1f1f;
+            box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.48), 0 6px 16px 0 rgba(0, 0, 0, 0.32), 0 9px 28px 8px rgba(0, 0, 0, 0.2);
+          }
+          
+          .dark-modal .ant-modal-header {
+            background-color: #1f1f1f;
+            border-bottom: 1px solid #303030;
+          }
+          
+          .dark-modal .ant-modal-title {
+            color: #fff;
+          }
+          
+          .dark-modal .ant-modal-close {
+            color: #999;
+          }
+          
+          .dark-modal .ant-modal-close:hover {
+            color: #fff;
+          }
+        ` : ''}
+      `}</style>
     </div>
   );
 };
