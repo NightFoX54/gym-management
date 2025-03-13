@@ -111,7 +111,6 @@ function CardioZone({ isDarkMode, setIsDarkMode }) {
                 <li>Instructor assistance upon request</li>
               </ul>
               <p className="package-note">* Unlimited access to the Cardio Zone included with all membership plans. Premium (₺1300/mo) and Elite (₺2000/mo) members get priority booking for popular machines during peak hours. Day passes and weekly passes available for non-members.</p>
-              <button className="book-now-btn">View Hours</button>
             </div>
           </div>
 

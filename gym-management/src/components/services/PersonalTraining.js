@@ -111,15 +111,14 @@ function PersonalTraining({ isDarkMode, setIsDarkMode }) {
                 <li>Access to exclusive training areas</li>
               </ul>
               <p className="package-note">* Discounted personal training packages available for all members. Premium members (₺1300/mo) receive personal trainer consultation. Elite members (₺2000/mo) receive 2 complimentary sessions per month. Training packages of 5, 10, or 20 sessions available with progressive discounts.</p>
-              <button className="book-now-btn">Meet Our Trainers</button>
             </div>
           </div>
 
           <div className="booking-section">
             <h2>Ready to Take Your Fitness to the Next Level?</h2>
-            <p>Schedule a complimentary consultation with one of our expert trainers today.</p>
+            <p>Join our gym start your fitness journey</p>
             <button className="consultation-btn" onClick={() => navigate('/signup')}>
-              Book a Consultation
+              Join Now
             </button>
           </div>
         </div>

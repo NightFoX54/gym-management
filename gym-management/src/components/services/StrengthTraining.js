@@ -111,7 +111,6 @@ function StrengthTraining({ isDarkMode, setIsDarkMode }) {
                 <li>Workout guidance from floor staff</li>
               </ul>
               <p className="package-note">* Full access to strength training facilities included with all membership plans. Premium ($1300/mo) and Elite ($2000/mo) members receive complimentary form check sessions and personalized equipment recommendations. Day passes available for non-members.</p>
-              <button className="book-now-btn">View Hours</button>
             </div>
           </div>
 

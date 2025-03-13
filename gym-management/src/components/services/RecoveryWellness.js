@@ -111,7 +111,6 @@ function RecoveryWellness({ isDarkMode, setIsDarkMode }) {
                 <li>Dedicated stretching and relaxation areas</li>
               </ul>
               <p className="package-note">* Basic recovery facilities included with all memberships. Premium members (₺1300/mo) receive 4 specialized recovery sessions monthly. Unlimited access to all recovery amenities included with Elite (₺2000/mo) membership. Day passes and treatment packages available.</p>
-              <button className="book-now-btn">View Schedule</button>
             </div>
           </div>
 

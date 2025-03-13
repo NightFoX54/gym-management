@@ -109,7 +109,6 @@ function NutritionCounseling({ isDarkMode, setIsDarkMode }) {
                 <li>Ongoing support and follow-up</li>
               </ul>
               <p className="package-note">* Basic nutrition consultation included with Elite (₺2000/mo) membership. Premium members (₺1300/mo) receive 50% discount on all nutrition services. Individual sessions and packages available.</p>
-              <button className="book-now-btn">Book Consultation</button>
             </div>
           </div>
 

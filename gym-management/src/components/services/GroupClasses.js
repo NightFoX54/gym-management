@@ -111,15 +111,14 @@ function GroupClasses({ isDarkMode, setIsDarkMode }) {
                 <li>Ability to book classes up to 7 days in advance</li>
               </ul>
               <p className="package-note">* Unlimited group classes are included with Premium (₺1300/mo) and Elite (₺2000/mo) membership plans. Basic members (₺800/mo) receive 4 classes per month. Drop-in and class pack options available for non-members.</p>
-              <button className="book-now-btn">View Schedule</button>
             </div>
           </div>
 
           <div className="booking-section">
             <h2>Ready to Experience the Energy of Group Fitness?</h2>
-            <p>Join us for a class today and discover the motivation of working out together.</p>
+            <p>Join our gym start your fitness journey</p>
             <button className="consultation-btn" onClick={() => navigate('/signup')}>
-              Book a Class
+              Join Now
             </button>
           </div>
         </div>
