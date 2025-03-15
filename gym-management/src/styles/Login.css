@@ -253,4 +253,15 @@
 
 .dark-mode .toggle-password-visibility:hover {
   color: #fff;
+}
+
+.login-error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  text-align: center;
+  border-left: 4px solid #c62828;
 } 

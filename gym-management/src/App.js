@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -31,8 +31,29 @@ import WorkoutPrograms from "./components/member/WorkoutPrograms";
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import AiAssistantButton from './components/AiAssistantButton';
+import ProtectedRoute from './components/ProtectedRoute';
+import { isAuthenticated, getUserRole } from './utils/auth';
 
-function Home({ isDarkMode, setIsDarkMode }) {
+const Root = ({ isDarkMode, setIsDarkMode }) => {
+  if (!isAuthenticated()) {
+    return <Home isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />;
+  }
+  
+  const role = getUserRole();
+  
+  switch (role) {
+    case 'ADMIN':
+      return <Navigate to="/admin" replace />;
+    case 'MEMBER':
+      return <Navigate to="/member" replace />;
+    case 'TRAINER':
+      return <Navigate to="/trainer" replace />;
+    default:
+      return <Home isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />;
+  }
+};
+
+function Home({ isDarkMode, setIsDarkMode = () => {} }) {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -187,23 +208,18 @@ function Home({ isDarkMode, setIsDarkMode }) {
 }
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    document.body.classList.toggle('dark-mode', savedDarkMode);
-    return savedDarkMode;
-  });
-
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem('darkMode') === 'true' || false
+  );
+  
   useEffect(() => {
     localStorage.setItem('darkMode', isDarkMode);
-    document.body.classList.toggle('dark-mode', isDarkMode);
-    console.log('Dark mode state:', isDarkMode);
   }, [isDarkMode]);
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/admin/*" element={<AdminPanel isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        <Route path="/" element={<Root isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/login" element={<Login isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/forgot-password" element={<ForgotPassword isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/signup" element={<Signup isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
@@ -214,28 +230,104 @@ function App() {
         <Route path="/services/group-classes" element={<GroupClasses isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/strength-training" element={<StrengthTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/cardio-zone" element={<CardioZone isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/trainer" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/trainer/clients" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/trainer/schedule" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/trainer/workouts" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/trainer/reports" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/trainer/settings" element={<TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member" element={<Member isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/profile" element={<MyProfile isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/schedule" element={<Member isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/membership" element={<MembershipStatus isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/training" element={<TrainingPlan isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/weekly-schedule" element={<WeeklySchedule isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/personal-statistics" element={<PersonalStatistics isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/training-programs" element={<TrainingPrograms isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/settings" element={<Settings isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/nutrition" element={<NutritionCounseling isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/recovery" element={<RecoveryWellness isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/services/market" element={<MarketService isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/personal-trainers" element={<PersonalTrainers isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-        <Route path="/member/workout-programs" element={<WorkoutPrograms isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
         <Route path="/terms-of-service" element={<TermsOfService isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+        
+        <Route path="/admin/*" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <AdminPanel isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/trainer" element={
+          <ProtectedRoute requiredRole="TRAINER">
+            <TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/trainer/clients" element={
+          <ProtectedRoute requiredRole="TRAINER">
+            <TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/trainer/schedule" element={
+          <ProtectedRoute requiredRole="TRAINER">
+            <TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/trainer/workouts" element={
+          <ProtectedRoute requiredRole="TRAINER">
+            <TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/trainer/reports" element={
+          <ProtectedRoute requiredRole="TRAINER">
+            <TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/trainer/settings" element={
+          <ProtectedRoute requiredRole="TRAINER">
+            <TrainerPage isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/member" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <Member isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/profile" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <MyProfile isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/schedule" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <Member isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/membership" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <MembershipStatus isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/training" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <TrainingPlan isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/weekly-schedule" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <WeeklySchedule isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/personal-statistics" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <PersonalStatistics isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/training-programs" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <TrainingPrograms isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/settings" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <Settings isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/personal-trainers" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <PersonalTrainers isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
+        <Route path="/member/workout-programs" element={
+          <ProtectedRoute requiredRole="MEMBER">
+            <WorkoutPrograms isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

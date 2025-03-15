@@ -26,6 +26,7 @@ import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import "../../styles/Member.css";
 import "../../styles/PageTransitions.css";
+import { logout } from '../../utils/auth';
 
 const Member = ({ isDarkMode, setIsDarkMode }) => {
   const [member, setMember] = useState({
@@ -98,8 +99,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   const [selectedSession, setSelectedSession] = useState(null);
 
   const handleLogoutMember = () => {
-    // TODO: Add proper logout logic here
-    navigate("/login");
+    logout();
   };
 
   const handleCardClickMember = (route) => {
@@ -531,6 +531,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
             className="logout-button-member card-animate stagger-13"
             onClick={handleLogoutMember}
           >
+            <i className="fas fa-sign-out-alt"></i>
             Logout
           </button>
         </div>

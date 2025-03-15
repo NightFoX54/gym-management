@@ -27,6 +27,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styled } from '@mui/system';
+import { logout } from '../../utils/auth';
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
@@ -89,6 +90,10 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
   const handleThemeToggle = () => {
     setIsDarkMode(!isDarkMode);
     localStorage.setItem('darkMode', (!isDarkMode).toString());
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   const drawer = (
@@ -342,6 +347,7 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
         <motion.div whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
           <ListItem
             button
+            onClick={handleLogout}
             sx={{
               borderRadius: '12px',
               color: '#ff4757',

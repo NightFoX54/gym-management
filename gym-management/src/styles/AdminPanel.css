@@ -550,3 +550,64 @@
 .dark-mode .ant-table-column-sorter-down.active {
   color: #ff4757 !important;
 }
+
+/* Enhanced admin nav footer and logout button */
+.admin-nav-footer {
+  width: 100%;
+  padding: 20px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.admin-container.dark-mode .admin-nav-footer {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Logout button - updated to look more like a button */
+.admin-logout-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: #ff4757;
+  background-color: rgba(255, 71, 87, 0.1); /* Light background in normal state */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.admin-logout-button:hover {
+  background-color: rgba(255, 71, 87, 0.2); /* Darker background on hover */
+  color: #ff6b81; /* Slightly lighter text on hover */
+}
+
+.admin-logout-button i {
+  font-size: 1.2rem;
+}
+
+/* Dark mode specific styles for logout button */
+.dark-mode .admin-logout-button {
+  background-color: rgba(255, 71, 87, 0.15);
+  color: #ff6b81;
+}
+
+.dark-mode .admin-logout-button:hover {
+  background-color: rgba(255, 71, 87, 0.25);
+  color: #ff8c9a;
+}
+
+/* Remove the old logout button */
+.logout-button {
+  display: none;
+}
+
+/* Make nav flex column with proper spacing */
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}

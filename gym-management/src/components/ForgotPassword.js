@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
 import '../styles/ForgotPassword.css';
 
-function ForgotPassword() {
+function ForgotPassword({ isDarkMode = false, setIsDarkMode = () => {} }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,7 @@ function ForgotPassword() {
   };
 
   return (
-    <div className="forgot-password-container">
+    <div className={`forgot-password-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="forgot-password-card">
         <div className="card-header">
           <button 

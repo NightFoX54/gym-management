@@ -6,12 +6,17 @@ import MarketPanel from './admin/MarketPanel';
 import Dashboard from './admin/dashboard';
 import FinancialPanel from './admin/FinancialPanel';
 import '../styles/AdminPanel.css';
+import { logout } from '../utils/auth';
 
 const AdminPanel = ({ isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -46,6 +51,13 @@ const AdminPanel = ({ isDarkMode, setIsDarkMode }) => {
             <div className="dark-mode-toggle-slider1"></div>
           </div>
           <i className="fas fa-moon"></i>
+        </div>
+        
+        <div className="admin-nav-footer">
+          <button className="admin-logout-button" onClick={handleLogout}>
+            <i className="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
         </div>
       </nav>
       <div className="admin-content">

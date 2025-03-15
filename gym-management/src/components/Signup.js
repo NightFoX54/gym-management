@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import '../styles/Signup.css';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaGem, FaCrown, FaAward, FaCreditCard } from 'react-icons/fa';
+import api from '../services/api';
+import { setAuthUser } from '../utils/auth';
 
-function Signup() {
+function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -24,6 +26,8 @@ function Signup() {
     password: '',
     confirmPassword: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState(null);
 
   const plans = [
     {
@@ -175,6 +179,78 @@ function Signup() {
 
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const completeSignup = async () => {
+    setIsSubmitting(true);
+    setSubmissionError(null);
+    
+    console.log('Starting signup process...');
+    console.log('Selected plan:', selectedPlan);
+    console.log('Selected duration:', selectedDuration);
+    console.log('Form data:', formData);
+    console.log('Card details:', cardDetails);
+    
+    try {
+      // Calculate duration months from selectedDuration
+      let durationMonths = 1; // default monthly
+      switch(selectedDuration) {
+        case '3months': durationMonths = 3; break;
+        case '6months': durationMonths = 6; break;
+        case '1year': durationMonths = 12; break;
+        default: durationMonths = 1;
+      }
+      
+      // Create request payload
+      const signupData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        phoneNumber: formData.phone,
+        planId: selectedPlan.id,
+        durationMonths: durationMonths,
+        startDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD
+        paymentMethod: "CREDIT_CARD",
+        cardNumber: cardDetails.cardNumber.replace(/\s/g, '').slice(-4), // Last 4 digits
+        cardholderName: cardDetails.cardHolder
+      };
+      
+      console.log('Sending signup data:', signupData);
+      
+      // Call the API
+      const response = await api.post('/auth/signup', signupData);
+      
+      console.log('API response:', response);
+      
+      if (response.data.success) {
+        // Create user data structure expected by your auth system
+        const userData = {
+          id: response.data.userId,
+          email: response.data.email,
+          role: response.data.role,
+          token: response.data.token || `USER_${response.data.userId}`, // Temporary token if not provided
+          membershipInfo: {
+            id: response.data.membershipId,
+            plan: response.data.membershipPlan,
+            endDate: response.data.membershipEndDate
+          }
+        };
+        
+        // Use the auth utility to set the user
+        setAuthUser(userData);
+        
+        // Redirect to member dashboard
+        navigate('/member');
+      } else {
+        setSubmissionError(response.data.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      setSubmissionError(error.response?.data?.message || 'An error occurred during registration');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -401,7 +477,14 @@ function Signup() {
                         />
                       </div>
                     </div>
-                    <button type="submit" className="submit-btn">Complete Purchase</button>
+                    <button 
+                      type="button" 
+                      className="submit-btn" 
+                      onClick={completeSignup}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Processing...' : 'Complete Purchase'}
+                    </button>
                   </form>
                 </div>
                 
@@ -435,6 +518,7 @@ function Signup() {
                 </div>
               </div>
             </div>
+            {submissionError && <div className="error-message">{submissionError}</div>}
           </div>
         );
 
@@ -444,7 +528,7 @@ function Signup() {
   };
 
   return (
-    <div className="signup-container">
+    <div className={`signup-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="back-arrow" onClick={handleBackClick}>
         ← Back
       </div>

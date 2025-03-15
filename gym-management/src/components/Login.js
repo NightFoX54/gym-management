@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
 import '../styles/Login.css';
+import axios from 'axios';
 
-function Login() {
+function Login({ isDarkMode = false, setIsDarkMode = () => {} }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const navigate = useNavigate();
 
@@ -24,10 +27,37 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Add authentication logic here
-    console.log('Login attempt:', formData);
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await axios.post('http://localhost:8080/api/auth/login', {
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data && response.data.token) {
+        localStorage.setItem('user', JSON.stringify({
+          token: response.data.token,
+          role: response.data.role,
+          name: response.data.name
+        }));
+
+        console.log('Login successful:', response.data);
+
+        navigate(response.data.redirectUrl || '/');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(
+        err.response?.data?.message || 
+        'Login failed. Please check your credentials.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBackClick = () => {
@@ -35,7 +65,7 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className={`login-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="login-box">
         <div className="card-header">
           <button 
@@ -48,6 +78,8 @@ function Login() {
         </div>
         
         <p className="login-subtitle">Please enter your details</p>
+        
+        {error && <div className="login-error-message">{error}</div>}
         
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
@@ -92,7 +124,13 @@ function Login() {
             <a href="/forgot-password" className="forgot-password">Forgot password?</a>
           </div>
 
-          <button type="submit" className="login-button">Sign In</button>
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing In...' : 'Sign In'}
+          </button>
           
           <p className="signup-prompt">
             Don't have an account? <a href="/signup">Join Now</a>
