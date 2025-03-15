@@ -199,8 +199,11 @@ const MarketPanel = () => {
       imageUrl = await handleImageUpload(values.image.fileList[0].originFileObj);
     }
 
+    // Ensure price is stored as a number, not a string
     const productData = {
       ...values,
+      price: parseFloat(values.price),
+      stock: parseInt(values.stock, 10),
       imageUrl
     };
 
@@ -284,7 +287,11 @@ const MarketPanel = () => {
       dataIndex: 'price',
       key: 'price',
       sorter: (a, b) => a.price - b.price,
-      render: (price) => `₺${price.toFixed(2)}`,
+      render: (price) => {
+        // Handle possible string values or invalid data
+        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+        return isNaN(numPrice) ? '₺0.00' : `₺${numPrice.toFixed(2)}`;
+      },
     },
     {
       title: 'Stock',

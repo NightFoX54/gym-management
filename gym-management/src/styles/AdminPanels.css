@@ -146,70 +146,222 @@
   background-color: #2c2c2c !important;
 }
 
-/* Update modal styles */
+/* Enhanced Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(3px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  width: 550px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.4s ease;
+  position: relative;
 }
 
-/* Dark mode modal styles */
-.dark-mode .modal {
-  background: #2c2c2c;
-  color: #e0e0e0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-.dark-mode .modal input,
-.dark-mode .modal select {
-  background-color: #363636;
-  border-color: #404040;
-  color: #e0e0e0;
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 1.8rem;
+  color: #2c3e50;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 1rem;
 }
 
-.dark-mode .modal input:focus,
-.dark-mode .modal select:focus {
-  border-color: #ff4757;
-  outline: none;
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
 }
 
-.dark-mode .modal input::placeholder {
-  color: #888;
+.form-grid-full {
+  grid-column: span 2;
 }
 
 .modal form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
-.modal input {
-  padding: 0.8rem;
+.modal .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal .input-group label {
+  font-weight: 500;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.modal input,
+.modal select {
+  width: 100%;
+  padding: 0.8rem 1rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+}
+
+.modal input:focus,
+.modal select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  outline: none;
+  background-color: #fff;
 }
 
 .modal-buttons {
   display: flex;
-  gap: 1rem;
   justify-content: flex-end;
-  margin-top: 1.5rem;
+  gap: 1rem;
+  margin-top: 2rem;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1.5rem;
+}
+
+.modal-buttons button {
+  padding: 0.8rem 1.6rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-section {
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.2rem;
+  background-color: #fafafa;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.form-section:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border-color: #ddd;
+}
+
+.form-section h4 {
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 0.8rem;
+}
+
+.form-section .checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-section .checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+/* Dark mode modal styles */
+.dark-mode .modal {
+  background: #1a1a1a;
+  color: #e0e0e0;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .modal h3 {
+  color: #fff;
+  border-bottom-color: #333;
+}
+
+.dark-mode .modal .input-group label {
+  color: #bbb;
+}
+
+.dark-mode .modal input,
+.dark-mode .modal select {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .modal input:focus,
+.dark-mode .modal select:focus {
+  border-color: #3498db;
+  background-color: #333;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
+.dark-mode .modal input::placeholder {
+  color: #777;
+}
+
+.dark-mode .form-section {
+  background-color: #222;
+  border-color: #333;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .form-section:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  border-color: #444;
+}
+
+.dark-mode .form-section h4 {
+  color: #e0e0e0;
+  border-bottom-color: #333;
+}
+
+.dark-mode .modal-buttons {
+  border-top-color: #333;
+}
+
+/* Responsive form design */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-grid-full {
+    grid-column: span 1;
+  }
 }
 
 .shift-button {
@@ -243,27 +395,24 @@
 }
 
 .edit-button {
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  padding: 0.8rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.3s;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  color: #ffffff;
   width: 40px;
   height: 40px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.edit-button:hover {
-  background-color: #7f8c8d;
-}
-
-.edit-button.active {
-  background-color: #2c3e50;
+.edit-button:hover, .edit-button.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
 }
 
 .edit-row-button {
@@ -740,9 +889,9 @@
 }
 
 .edit-button:hover, .edit-button.active {
-  background-color: #ff4757;
+  background-color: #3498db;
   color: white;
-  border-color: #ff4757;
+  border-color: #3498db;
 }
 
 .edit-row-button {
@@ -892,9 +1041,9 @@
 
 .dark-mode .edit-button:hover,
 .dark-mode .edit-button.active {
-  background-color: #ff4757;
+  background-color: #3498db;
   color: white;
-  border-color: #ff4757;
+  border-color: #3498db;
 }
 
 .dark-mode .modal {
@@ -1051,15 +1200,30 @@
 .edit-mode-container {
   position: relative;
   padding: 10px;
-  border: 2px dashed #ff4757;
+  border: 2px dashed #3498db;
   border-radius: 10px;
-  background-color: rgba(255, 71, 87, 0.03);
+  background-color: rgba(52, 152, 219, 0.03);
+  transition: all 0.3s ease;
+}
+
+/* Delete mode container styles */
+.delete-mode-container {
+  position: relative;
+  padding: 10px;
+  border: 2px dashed #e74c3c;
+  border-radius: 10px;
+  background-color: rgba(231, 76, 60, 0.03);
   transition: all 0.3s ease;
 }
 
 .dark-mode .edit-mode-container {
-  border-color: #ff4757;
-  background-color: rgba(255, 71, 87, 0.08);
+  border-color: #3498db;
+  background-color: rgba(52, 152, 219, 0.08);
+}
+
+.dark-mode .delete-mode-container {
+  border-color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.08);
 }
 
 .edit-mode-banner {
@@ -1067,7 +1231,7 @@
   padding: 12px 15px;
   margin-bottom: 15px;
   background-color: #f8f9fa;
-  border-left: 4px solid #ff4757;
+  border-left: 4px solid #3498db;
   color: #333;
   font-size: 1rem;
   font-weight: 500;
@@ -1081,7 +1245,7 @@
 .edit-mode-banner .edit-icon {
   font-size: 1.3rem;
   margin-right: 10px;
-  color: #ff4757;
+  color: #3498db;
 }
 
 .edit-mode-banner .edit-text {
@@ -1101,7 +1265,8 @@
 }
 
 .selectable-row:hover {
-  background-color: rgba(255, 71, 87, 0.1) !important;
+  background-color: rgba(52, 152, 219, 0.1) !important;
+  border-left: 3px solid rgba(52, 152, 219, 0.5);
 }
 
 /* Removing the "Click to edit" tooltip that appears on hover */
@@ -1109,8 +1274,13 @@
   content: none;
 }
 
+.dark-mode .selectable-row {
+  border-bottom: 1px solid rgba(52, 152, 219, 0.1) !important;
+}
+
 .dark-mode .selectable-row:hover {
-  background-color: rgba(255, 71, 87, 0.15) !important;
+  background-color: rgba(52, 152, 219, 0.2) !important;
+  border-left: 3px solid rgba(52, 152, 219, 0.8);
 }
 
 /* Cancel edit mode hint - it's now replaced by the banner */
@@ -1123,4 +1293,289 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* Delete button styles */
+.delete-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.delete-button:hover, .delete-button.active {
+  background-color: #c0392b;
+}
+
+/* Delete mode banner */
+.delete-mode-banner {
+  background-color: rgba(231, 76, 60, 0.2);
+  border-left: 4px solid #e74c3c;
+  padding: 0.8rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 4px;
+}
+
+.delete-mode-banner .delete-icon {
+  font-size: 1.5rem;
+}
+
+.delete-mode-banner .delete-text {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* Delete confirmation button */
+.delete-confirm-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.delete-confirm-button:hover {
+  background-color: #c0392b;
+}
+
+/* Dark mode styles for delete elements */
+.dark-mode .delete-button {
+  background-color: #e74c3c;
+}
+
+.dark-mode .delete-button:hover,
+.dark-mode .delete-button.active {
+  background-color: #c0392b;
+}
+
+.dark-mode .delete-mode-banner {
+  background-color: rgba(231, 76, 60, 0.15);
+  border-left: 4px solid #e74c3c;
+}
+
+.dark-mode .delete-mode-banner .delete-text {
+  color: #e0e0e0;
+}
+
+.dark-mode .delete-confirm-button {
+  background-color: #e74c3c;
+}
+
+.dark-mode .delete-confirm-button:hover {
+  background-color: #c0392b;
+}
+
+/* Delete mode row styling */
+.deletable-row {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.deletable-row:hover {
+  background-color: rgba(231, 76, 60, 0.15) !important;
+  border-left: 3px solid rgba(231, 76, 60, 0.5);
+}
+
+.dark-mode .deletable-row {
+  border-bottom: 1px solid rgba(231, 76, 60, 0.1) !important;
+}
+
+.dark-mode .deletable-row:hover {
+  background-color: rgba(231, 76, 60, 0.25) !important;
+  border-left: 3px solid rgba(231, 76, 60, 0.8);
+}
+
+/* Delete confirmation modal styles */
+.confirmation-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.warning-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #e74c3c;
+}
+
+.confirmation-content p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.highlighted-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0.8rem 0;
+  padding: 0.5rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #e74c3c;
+}
+
+.warning-text {
+  color: #e74c3c !important;
+  font-weight: 500;
+}
+
+.dark-mode .confirmation-content p {
+  color: #bbb;
+}
+
+.dark-mode .highlighted-name {
+  color: #fff;
+  background-color: #333;
+  border-left-color: #e74c3c;
+}
+
+.modal .input-group .input-hint {
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+.dark-mode .modal .input-group .input-hint {
+  color: #999;
+}
+
+/* Custom Checkbox Styling */
+.custom-checkbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.custom-checkbox:hover {
+  transform: translateY(-1px);
+}
+
+.custom-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: relative;
+  height: 22px;
+  width: 22px;
+  background-color: #f8f9fa;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  margin-right: 12px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.custom-checkbox:hover input ~ .checkmark {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+  background-color: #3498db;
+  border-color: #3498db;
+  transform: scale(1.05);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) scale(0);
+  opacity: 0;
+  top: 3.5px;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+  display: block;
+  transform: rotate(45deg) scale(1);
+  opacity: 1;
+  animation: checkAnim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes checkAnim {
+  0% {
+    opacity: 0;
+    transform: rotate(45deg) scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+  }
+}
+
+.custom-checkbox-label {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #555;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox:hover .custom-checkbox-label {
+  color: #3498db;
+}
+
+/* Dark mode custom checkbox styles */
+.dark-mode .checkmark {
+  background-color: #2a2a2a;
+  border-color: #444;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .custom-checkbox:hover input ~ .checkmark {
+  background-color: #333;
+  border-color: #555;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .custom-checkbox input:checked ~ .checkmark {
+  background-color: #3498db;
+  border-color: #3498db;
+}
+
+.dark-mode .custom-checkbox-label {
+  color: #bbb;
+}
+
+.dark-mode .custom-checkbox:hover .custom-checkbox-label {
+  color: #3498db;
 } 

@@ -1,0 +1,1144 @@
+:root {
+  /* Genel değişkenler */
+  --button-border-radius: 50%;
+  --button-transition: all 0.3s ease;
+  --button-z-index: 100;
+  
+  /* Ön vücut butonları için değişkenler */
+  --chest-top: 22%;
+  --chest-left: 50%;
+  --chest-width: 45px;
+  --chest-height: 45px;
+  
+  --biceps-top: 26%;
+  --biceps-left: 34%;
+  --biceps-width: 32px;
+  --biceps-height: 32px;
+  
+  --abs-top: 38%;
+  --abs-left: 50%;
+  --abs-width: 40px;
+  --abs-height: 50px;
+  
+  --shoulders-top: 16%;
+  --shoulders-left: 34%;
+  --shoulders-width: 32px;
+  --shoulders-height: 32px;
+  
+  --forearms-top: 35%;
+  --forearms-left: 28%;
+  --forearms-width: 28px;
+  --forearms-height: 30px;
+  
+  --quads-top: 56%;
+  --quads-left: 38%;
+  --quads-width: 34px;
+  --quads-height: 45px;
+  
+  --calves-front-top: 76%;
+  --calves-front-left: 38%;
+  --calves-front-width: 30px;
+  --calves-front-height: 35px;
+  
+  /* Arka vücut butonları için değişkenler */
+  --back-top: 28%;
+  --back-left: 50%;
+  --back-width: 50px;
+  --back-height: 50px;
+  
+  --triceps-top: 28%;
+  --triceps-left: 32%;
+  --triceps-width: 32px;
+  --triceps-height: 32px;
+  
+  --shoulders-back-top: 16%;
+  --shoulders-back-left: 32%;
+  --shoulders-back-width: 32px;
+  --shoulders-back-height: 32px;
+  
+  --trapezius-top: 14%;
+  --trapezius-left: 50%;
+  --trapezius-width: 42px;
+  --trapezius-height: 25px;
+  
+  --lower-back-top: 42%;
+  --lower-back-left: 50%;
+  --lower-back-width: 40px;
+  --lower-back-height: 30px;
+  
+  --glutes-top: 52%;
+  --glutes-left: 50%;
+  --glutes-width: 45px;
+  --glutes-height: 35px;
+  
+  --hamstrings-top: 62%;
+  --hamstrings-left: 38%;
+  --hamstrings-width: 34px;
+  --hamstrings-height: 40px;
+  
+  --calves-top: 78%;
+  --calves-left: 38%;
+  --calves-width: 30px;
+  --calves-height: 35px;
+  
+  /* Kardiyovasküler sistem için değişkenler */
+  --cardio-top: 12%;
+  --cardio-left: 50%;
+  --cardio-width: 35px;
+  --cardio-height: 35px;
+}
+
+.ai-assistant-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 85vh;
+  background-color: #ffffff;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.dark-mode.ai-assistant-container {
+  background-color: #1a1a1a;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+  color: #e0e0e0;
+}
+
+.ai-assistant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  border-bottom: 1px solid #eaeaea;
+  background: linear-gradient(to right, #ff4757, #ff6b81);
+  color: white;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.dark-mode .ai-assistant-header {
+  border-bottom-color: #333;
+}
+
+.ai-assistant-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.ai-assistant-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chat-section {
+  flex: 0.6;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-right: 1px solid #eaeaea;
+  overflow: hidden;
+}
+
+.dark-mode .chat-section {
+  border-right-color: #333;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+.dark-mode .chat-messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.message {
+  max-width: 85%;
+  display: flex;
+}
+
+.message.user {
+  align-self: flex-end;
+}
+
+.message.ai {
+  align-self: flex-start;
+}
+
+.message-bubble {
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.message.user .message-bubble {
+  background-color: #ff4757;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message.ai .message-bubble {
+  background-color: #f0f0f0;
+  color: #333;
+  border-bottom-left-radius: 4px;
+}
+
+.dark-mode .message.ai .message-bubble {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.chat-input {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.chat-input input:focus {
+  border-color: #ff4757;
+  box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.2);
+}
+
+.dark-mode .chat-input input {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .chat-input input::placeholder {
+  color: #999;
+}
+
+.chat-input button {
+  padding: 0 20px;
+  border: none;
+  border-radius: 25px;
+  background-color: #ff4757;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.chat-input button:hover {
+  background-color: #ff6b81;
+}
+
+.body-view-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.dark-mode .body-view-toggle {
+  border-bottom-color: #333;
+}
+
+.body-view-toggle h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.dark-mode .body-view-toggle h3 {
+  color: #e0e0e0;
+}
+
+.body-selector-section {
+  flex: 0.4;
+  padding: 20px 15px 20px 15px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.body-parts-container {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  overflow: visible;
+  padding: 0 5px;
+  width: 100%;
+  height: 100%;
+}
+
+.body-diagram-container {
+  position: relative;
+  height: 480px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1000px;
+  padding-right: 0;
+  margin-right: 0;
+  margin-bottom: 20px;
+}
+
+.dark-mode .body-diagram-container {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.diagram-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-style: preserve-3d;
+}
+
+.body-diagram-image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  z-index: 0;
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.15));
+  transform: scale(1.15) translateX(0);
+  transition: transform 0.3s ease;
+}
+
+.dark-mode .body-diagram-image {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.15));
+}
+
+.diagram-instruction {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #333;
+  text-align: center;
+  width: auto;
+  min-width: 150px;
+  transition: all 0.3s ease;
+  z-index: 90;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .diagram-instruction {
+  background-color: rgba(40, 40, 40, 0.8);
+  color: #f0f0f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Vücut Parçası Butonları */
+.body-part-button {
+  position: absolute;
+  cursor: pointer;
+  background-color: rgba(255, 71, 87, 0.25);
+  border: 2px solid rgba(255, 71, 87, 0.7);
+  box-shadow: 0 0 8px rgba(255, 71, 87, 0.3);
+  transition: all 0.3s ease;
+  z-index: var(--button-z-index);
+  border-radius: 40%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: bold;
+  text-align: center;
+}
+
+.body-part-button:hover {
+  background-color: rgba(255, 71, 87, 0.4);
+  border-color: rgba(255, 71, 87, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
+  z-index: 200;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.body-part-button.selected {
+  background-color: rgba(255, 71, 87, 0.5);
+  border-color: rgba(255, 71, 87, 1);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(255, 71, 87, 0.5);
+  z-index: 200;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.dark-mode .body-part-button {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark-mode .body-part-button:hover,
+.dark-mode .body-part-button.selected {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Orta konumlu butonların transform düzenlemeleri */
+.body-part-button.chest:hover,
+.body-part-button.abs:hover,
+.body-part-button.back:hover,
+.body-part-button.trapezius:hover,
+.body-part-button.lower_back:hover,
+.body-part-button.glutes:hover,
+.body-part-button.cardio:hover {
+  transform: translateX(-50%) scale(1.1);
+  z-index: 200;
+}
+
+.body-part-button.chest.selected,
+.body-part-button.abs.selected,
+.body-part-button.back.selected,
+.body-part-button.trapezius.selected,
+.body-part-button.lower_back.selected,
+.body-part-button.glutes.selected,
+.body-part-button.cardio.selected {
+  transform: translateX(-50%) scale(1.1);
+  z-index: 200;
+}
+
+/* Diğer butonların z-index'ini artırma */
+.body-part-button:hover,
+.body-part-button.selected {
+  z-index: 200;
+}
+
+/* Kardiyovasküler sisteme özel stil */
+.body-part-button.cardio {
+  background-color: rgba(255, 71, 87, 0.25);
+  border-color: rgba(255, 71, 87, 0.7);
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+}
+
+.body-part-button.cardio:hover {
+  background-color: rgba(255, 71, 87, 0.4);
+  border-color: rgba(255, 71, 87, 0.9);
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
+}
+
+.body-part-button.cardio.selected {
+  background-color: rgba(255, 71, 87, 0.5);
+  border-color: rgba(255, 71, 87, 1);
+  box-shadow: 0 0 15px rgba(255, 71, 87, 0.7);
+}
+
+.dark-mode .body-part-button.cardio {
+  background-color: rgba(255, 71, 87, 0.3);
+  border-color: rgba(255, 71, 87, 0.7);
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.35);
+}
+
+.dark-mode .body-part-button.cardio:hover {
+  background-color: rgba(255, 71, 87, 0.45);
+  border-color: rgba(255, 71, 87, 0.9);
+}
+
+.dark-mode .body-part-button.cardio.selected {
+  background-color: rgba(255, 71, 87, 0.55);
+  border-color: rgba(255, 71, 87, 1);
+}
+
+/* Body part buttons - front body */
+.body-part-button.chest {
+  top: var(--chest-top);
+  left: var(--chest-left);
+  width: var(--chest-width);
+  height: var(--chest-height);
+  transform: translateX(-50%);
+  border-radius: var(--button-border-radius);
+  transition: var(--button-transition);
+}
+
+.body-part-button.biceps {
+  top: var(--biceps-top);
+  left: var(--biceps-left);
+  width: var(--biceps-width);
+  height: var(--biceps-height);
+  border-radius: var(--button-border-radius);
+  transition: var(--button-transition);
+}
+
+.body-part-button.biceps::after {
+  content: 'Biceps';
+}
+
+.body-part-button.abs {
+  top: var(--abs-top);
+  left: var(--abs-left);
+  width: var(--abs-width);
+  height: var(--abs-height);
+  transform: translateX(-50%);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.abs::after {
+  content: 'Abs';
+}
+
+.body-part-button.shoulders {
+  top: var(--shoulders-top);
+  left: var(--shoulders-left);
+  width: var(--shoulders-width);
+  height: var(--shoulders-height);
+  border-radius: var(--button-border-radius);
+  transition: var(--button-transition);
+}
+
+.body-part-button.shoulders::after {
+  content: 'Shoulder';
+}
+
+.body-part-button.chest::after {
+  content: 'Chest';
+}
+
+.body-part-button.forearms {
+  top: var(--forearms-top);
+  left: var(--forearms-left);
+  width: var(--forearms-width);
+  height: var(--forearms-height);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.forearms::after {
+  content: 'Forearm';
+}
+
+.body-part-button.quads {
+  top: var(--quads-top);
+  left: var(--quads-left);
+  width: var(--quads-width);
+  height: var(--quads-height);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.quads::after {
+  content: 'Quad';
+}
+
+.body-part-button.calves-front {
+  top: var(--calves-front-top);
+  left: var(--calves-front-left);
+  width: var(--calves-front-width);
+  height: var(--calves-front-height);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.calves-front::after {
+  content: 'Calf';
+}
+
+/* Body part buttons - back body */
+.body-part-button.back {
+  top: var(--back-top);
+  left: var(--back-left);
+  width: var(--back-width);
+  height: var(--back-height);
+  transform: translateX(-50%);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.back::after {
+  content: 'Back';
+}
+
+.body-part-button.triceps {
+  top: var(--triceps-top);
+  left: var(--triceps-left);
+  width: var(--triceps-width);
+  height: var(--triceps-height);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.triceps::after {
+  content: 'Triceps';
+}
+
+.body-part-button.shoulders-back {
+  top: var(--shoulders-back-top);
+  left: var(--shoulders-back-left);
+  width: var(--shoulders-back-width);
+  height: var(--shoulders-back-height);
+  border-radius: var(--button-border-radius);
+  transition: var(--button-transition);
+}
+
+.body-part-button.shoulders-back::after {
+  content: 'Shoulder';
+}
+
+.body-part-button.trapezius {
+  top: var(--trapezius-top);
+  left: var(--trapezius-left);
+  width: var(--trapezius-width);
+  height: var(--trapezius-height);
+  transform: translateX(-50%);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.trapezius::after {
+  content: 'Traps';
+}
+
+.body-part-button.lower_back {
+  top: var(--lower-back-top);
+  left: var(--lower-back-left);
+  width: var(--lower-back-width);
+  height: var(--lower-back-height);
+  transform: translateX(-50%);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.lower_back::after {
+  content: 'Lower Back';
+}
+
+.body-part-button.glutes {
+  top: var(--glutes-top);
+  left: var(--glutes-left);
+  width: var(--glutes-width);
+  height: var(--glutes-height);
+  transform: translateX(-50%);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.glutes::after {
+  content: 'Glutes';
+}
+
+.body-part-button.hamstrings {
+  top: var(--hamstrings-top);
+  left: var(--hamstrings-left);
+  width: var(--hamstrings-width);
+  height: var(--hamstrings-height);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.hamstrings::after {
+  content: 'Hamstring';
+}
+
+.body-part-button.calves {
+  top: var(--calves-top);
+  left: var(--calves-left);
+  width: var(--calves-width);
+  height: var(--calves-height);
+  border-radius: 40%;
+  transition: var(--button-transition);
+}
+
+.body-part-button.calves::after {
+  content: 'Calf';
+}
+
+/* Cardiovascular system button - available in both views */
+.body-part-button.cardio {
+  top: var(--cardio-top);
+  left: var(--cardio-left);
+  width: var(--cardio-width);
+  height: var(--cardio-height);
+  transform: translateX(-50%);
+  border-radius: var(--button-border-radius);
+  transition: var(--button-transition);
+}
+
+.body-part-button.cardio::after {
+  content: 'Cardio';
+}
+
+/* Vücut Parçaları Listesi */
+.body-parts-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 0;
+  max-height: 480px;
+  width: 25%;
+  min-width: 120px;
+  overflow-y: auto;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f8f8f8;
+  border: 1px solid #eaeaea;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 71, 87, 0.5) rgba(0, 0, 0, 0.05);
+}
+
+.body-parts-legend::-webkit-scrollbar {
+  width: 6px;
+}
+
+.body-parts-legend::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+.body-parts-legend::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 71, 87, 0.5);
+  border-radius: 10px;
+}
+
+.dark-mode .body-parts-legend {
+  background-color: #222;
+  border-color: #333;
+  scrollbar-color: rgba(255, 71, 87, 0.5) rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .body-parts-legend::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Liste Öğesi */
+.legend-item {
+  padding: 8px 12px;
+  border-radius: 20px;
+  background-color: rgba(255, 71, 87, 0.2);
+  border: 1px solid rgba(255, 71, 87, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.legend-item:hover {
+  background-color: rgba(255, 71, 87, 0.3);
+  transform: translateX(5px);
+  box-shadow: 0 2px 6px rgba(255, 71, 87, 0.2);
+}
+
+.legend-item.selected {
+  background-color: rgba(255, 71, 87, 0.4);
+  border-color: rgba(255, 71, 87, 0.8);
+  font-weight: 600;
+  transform: translateX(8px);
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+}
+
+.dark-mode .legend-item {
+  background-color: rgba(255, 71, 87, 0.15);
+  border-color: rgba(255, 71, 87, 0.4);
+}
+
+.dark-mode .legend-item:hover {
+  background-color: rgba(255, 71, 87, 0.25);
+}
+
+.dark-mode .legend-item.selected {
+  background-color: rgba(255, 71, 87, 0.35);
+  border-color: rgba(255, 71, 87, 0.9);
+}
+
+/* Kardiyovasküler Sistem Liste Öğesi */
+.legend-item.cardio {
+  background-color: rgba(255, 71, 87, 0.1);
+  border-color: rgba(255, 71, 87, 0.3);
+}
+
+.legend-item.cardio:hover {
+  background-color: rgba(255, 71, 87, 0.2);
+  border-color: rgba(255, 71, 87, 0.5);
+}
+
+.legend-item.cardio.selected {
+  background-color: rgba(255, 71, 87, 0.3);
+  border-color: rgba(255, 71, 87, 0.7);
+}
+
+.service-recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.service-card {
+  padding: 15px;
+  background-color: #f8f8f8;
+  border-radius: 12px;
+  border-left: 4px solid #ff4757;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.dark-mode .service-card {
+  background-color: #2a2a2a;
+  border-left-color: #ff4757;
+}
+
+.service-card:hover {
+  transform: translateX(5px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .service-card:hover {
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.service-card h4 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.dark-mode .service-card h4 {
+  color: #fff;
+}
+
+.service-card p {
+  margin: 0 0 15px 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.dark-mode .service-card p {
+  color: #ccc;
+}
+
+.service-link {
+  display: inline-block;
+  padding: 5px 15px;
+  background-color: #ff4757;
+  color: white;
+  text-decoration: none;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  transition: background-color 0.3s;
+}
+
+.service-link:hover {
+  background-color: #ff6b81;
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+  :root {
+    /* Tablet boyutları için button ölçeklendirme */
+    --chest-width: calc(var(--chest-width) * 0.85);
+    --chest-height: calc(var(--chest-height) * 0.85);
+    --biceps-width: calc(var(--biceps-width) * 0.85);
+    --biceps-height: calc(var(--biceps-height) * 0.85);
+    --abs-width: calc(var(--abs-width) * 0.85);
+    --abs-height: calc(var(--abs-height) * 0.85);
+    --shoulders-width: calc(var(--shoulders-width) * 0.85);
+    --shoulders-height: calc(var(--shoulders-height) * 0.85);
+    --forearms-width: calc(var(--forearms-width) * 0.85);
+    --forearms-height: calc(var(--forearms-height) * 0.85);
+    --quads-width: calc(var(--quads-width) * 0.85);
+    --quads-height: calc(var(--quads-height) * 0.85);
+    --calves-front-width: calc(var(--calves-front-width) * 0.85);
+    --calves-front-height: calc(var(--calves-front-height) * 0.85);
+    --back-width: calc(var(--back-width) * 0.85);
+    --back-height: calc(var(--back-height) * 0.85);
+    --triceps-width: calc(var(--triceps-width) * 0.85);
+    --triceps-height: calc(var(--triceps-height) * 0.85);
+    --shoulders-back-width: calc(var(--shoulders-back-width) * 0.85);
+    --shoulders-back-height: calc(var(--shoulders-back-height) * 0.85);
+    --trapezius-width: calc(var(--trapezius-width) * 0.85);
+    --trapezius-height: calc(var(--trapezius-height) * 0.85);
+    --lower-back-width: calc(var(--lower-back-width) * 0.85);
+    --lower-back-height: calc(var(--lower-back-height) * 0.85);
+    --glutes-width: calc(var(--glutes-width) * 0.85);
+    --glutes-height: calc(var(--glutes-height) * 0.85);
+    --hamstrings-width: calc(var(--hamstrings-width) * 0.85);
+    --hamstrings-height: calc(var(--hamstrings-height) * 0.85);
+    --calves-width: calc(var(--calves-width) * 0.85);
+    --calves-height: calc(var(--calves-height) * 0.85);
+    --cardio-width: calc(var(--cardio-width) * 0.85);
+    --cardio-height: calc(var(--cardio-height) * 0.85);
+  }
+  
+  .body-diagram-container {
+    height: 400px;
+  }
+  
+  .body-diagram-image {
+    transform: scale(1.05) translateX(0);
+  }
+  
+  .ai-assistant-content {
+    flex-direction: column;
+  }
+  
+  .chat-section {
+    flex: 0.6;
+    border-right: none;
+    border-bottom: 1px solid #eaeaea;
+    overflow-y: auto;
+  }
+  
+  .dark-mode .chat-section {
+    border-bottom-color: #333;
+  }
+  
+  .body-selector-section {
+    flex: 0.4;
+  }
+  
+  .body-parts-legend {
+    width: 30%;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    /* Mobil boyutları için button ölçeklendirme */
+    --chest-width: calc(var(--chest-width) * 0.8);
+    --chest-height: calc(var(--chest-height) * 0.8);
+    --biceps-width: calc(var(--biceps-width) * 0.8);
+    --biceps-height: calc(var(--biceps-height) * 0.8);
+    --abs-width: calc(var(--abs-width) * 0.8);
+    --abs-height: calc(var(--abs-height) * 0.8);
+    --shoulders-width: calc(var(--shoulders-width) * 0.8);
+    --shoulders-height: calc(var(--shoulders-height) * 0.8);
+    --forearms-width: calc(var(--forearms-width) * 0.8);
+    --forearms-height: calc(var(--forearms-height) * 0.8);
+    --quads-width: calc(var(--quads-width) * 0.8);
+    --quads-height: calc(var(--quads-height) * 0.8);
+    --calves-front-width: calc(var(--calves-front-width) * 0.8);
+    --calves-front-height: calc(var(--calves-front-height) * 0.8);
+    --back-width: calc(var(--back-width) * 0.8);
+    --back-height: calc(var(--back-height) * 0.8);
+    --triceps-width: calc(var(--triceps-width) * 0.8);
+    --triceps-height: calc(var(--triceps-height) * 0.8);
+    --shoulders-back-width: calc(var(--shoulders-back-width) * 0.8);
+    --shoulders-back-height: calc(var(--shoulders-back-height) * 0.8);
+    --trapezius-width: calc(var(--trapezius-width) * 0.8);
+    --trapezius-height: calc(var(--trapezius-height) * 0.8);
+    --lower-back-width: calc(var(--lower-back-width) * 0.8);
+    --lower-back-height: calc(var(--lower-back-height) * 0.8);
+    --glutes-width: calc(var(--glutes-width) * 0.8);
+    --glutes-height: calc(var(--glutes-height) * 0.8);
+    --hamstrings-width: calc(var(--hamstrings-width) * 0.8);
+    --hamstrings-height: calc(var(--hamstrings-height) * 0.8);
+    --calves-width: calc(var(--calves-width) * 0.8);
+    --calves-height: calc(var(--calves-height) * 0.8);
+    --cardio-width: calc(var(--cardio-width) * 0.8);
+    --cardio-height: calc(var(--cardio-height) * 0.8);
+  }
+  
+  .body-diagram-container {
+    height: 350px;
+  }
+  
+  .body-diagram-image {
+    transform: scale(1) translateX(0);
+  }
+  
+  .chat-section {
+    flex: 0.55;
+    max-height: 50vh;
+  }
+  
+  .body-selector-section {
+    flex: 0.45;
+  }
+  
+  .body-parts-legend {
+    width: 35%;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .body-diagram-container {
+    height: 280px;
+    justify-content: center;
+  }
+  
+  .body-diagram-image {
+    transform: scale(0.95) translateX(0);
+  }
+  
+  .chat-section {
+    flex: 0.5;
+    max-height: 45vh;
+  }
+  
+  .body-selector-section {
+    flex: 0.5;
+  }
+  
+  .body-parts-container {
+    flex-direction: column;
+  }
+  
+  .body-parts-legend {
+    width: 100%;
+    max-height: 150px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 1600px) {
+  .body-diagram-container {
+    height: 520px;
+  }
+  
+  .body-diagram-image {
+    transform: scale(1.2) translateX(0);
+  }
+}
+
+.toggle-view-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #ff4757, #ff6b81);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(255, 71, 87, 0.3);
+}
+
+.toggle-view-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+}
+
+.toggle-view-button i {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.toggle-view-button i.rotate-right {
+  transform: rotate(0deg);
+}
+
+.toggle-view-button i.rotate-left {
+  transform: rotate(180deg);
+}
+
+/* Responsive düzenlemeler */
+@media (max-width: 768px) {
+  .ai-assistant-container {
+    height: 90vh;
+  }
+}
+
+/* Dark mode uyumluluğu */
+.dark-mode .body-part-button {
+  background-color: rgba(255, 71, 87, 0.25);
+  border-color: rgba(255, 71, 87, 0.6);
+  box-shadow: 0 0 8px rgba(255, 71, 87, 0.3);
+}
+
+.dark-mode .body-part-button:hover {
+  background-color: rgba(255, 71, 87, 0.4);
+  border-color: rgba(255, 71, 87, 0.8);
+}
+
+.dark-mode .body-part-button.selected {
+  background-color: rgba(255, 71, 87, 0.5);
+  border-color: rgba(255, 71, 87, 1);
+}
+
+/* Dark Mode için Kardiyovasküler Sistem Butonu */
+.dark-mode .body-part-button.cardio {
+  background-color: rgba(255, 71, 87, 0.25);
+  border-color: rgba(255, 71, 87, 0.7);
+  box-shadow: 0 0 8px rgba(255, 71, 87, 0.3);
+}
+
+.dark-mode .body-part-button.cardio:hover {
+  background-color: rgba(255, 71, 87, 0.4);
+  border-color: rgba(255, 71, 87, 0.9);
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.5);
+}
+
+.dark-mode .body-part-button.cardio.selected {
+  background-color: rgba(255, 71, 87, 0.5);
+  border-color: rgba(255, 71, 87, 1);
+  box-shadow: 0 0 15px rgba(255, 71, 87, 0.7);
+} 

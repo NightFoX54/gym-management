@@ -30,6 +30,7 @@ import PersonalTrainers from './components/member/PersonalTrainers';
 import WorkoutPrograms from "./components/member/WorkoutPrograms";
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
+import AiAssistantButton from './components/AiAssistantButton';
 
 function Home({ isDarkMode, setIsDarkMode }) {
   const scrollToTop = () => {
@@ -179,6 +180,8 @@ function Home({ isDarkMode, setIsDarkMode }) {
           <i className="fas fa-arrow-up"></i>
         </button>
       </footer>
+      
+      <AiAssistantButton isDarkMode={isDarkMode} />
     </div>
   );
 }

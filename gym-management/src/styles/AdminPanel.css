@@ -538,3 +538,15 @@
 .dark-mode .ant-statistic-content {
   color: #e0e0e0 !important;
 }
+/* Update ant-table sort icons to match theme color */
+.ant-table-column-sorter-up.active,
+.ant-table-column-sorter-down.active {
+  color: #ff4757 !important;
+}
+
+
+/* Dark mode sort arrow styles */
+.dark-mode .ant-table-column-sorter-up.active,
+.dark-mode .ant-table-column-sorter-down.active {
+  color: #ff4757 !important;
+}
