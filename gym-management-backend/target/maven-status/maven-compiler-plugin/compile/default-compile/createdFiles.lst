@@ -1,11 +1,11 @@
+com\gymmanagement\dto\LoginResponse.class
+com\gymmanagement\service\AuthService.class
+com\gymmanagement\GymManagementApplication.class
+com\gymmanagement\controller\AuthController.class
 com\gymmanagement\dto\LoginResponse$LoginResponseBuilder.class
 com\gymmanagement\repository\UserRepository.class
 com\gymmanagement\config\DatabaseInitializer.class
-com\gymmanagement\dto\LoginResponse.class
 com\gymmanagement\controller\TestController.class
-com\gymmanagement\service\AuthService.class
 com\gymmanagement\config\SecurityConfig.class
-com\gymmanagement\GymManagementApplication.class
 com\gymmanagement\model\User.class
-com\gymmanagement\controller\AuthController.class
 com\gymmanagement\dto\LoginRequest.class
