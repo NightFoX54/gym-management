@@ -72,38 +72,144 @@ const ClientsPage = ({ isDarkMode }) => {
     status: 'Active'
   });
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, clientId: null });
-  const [clientRequests, setClientRequests] = useState([
-    {
-      id: 1,
-      name: 'Ahmet Beyaz',
-      email: 'ahmet@example.com',
-      phone: '+90 555 123 4567',
-      program: 'Weight Training',
-      message: 'I want to focus on building muscle and strength.',
-      preferredTime: 'Evening',
-      status: 'pending',
-      requestDate: '2024-02-15'
-    },
-  ]);
+  const [clientRequests, setClientRequests] = useState([]);
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [trainerId, setTrainerId] = useState(null);
 
   useEffect(() => {
-    fetchClients();
+    // Get the trainer ID from user in local storage or use a default for testing
+    const userStr = localStorage.getItem('user');
+    try {
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        console.log("Found user in localStorage:", user);
+        
+        if (user && user.id) {
+          console.log("Setting trainer ID to:", user.id);
+          setTrainerId(user.id);
+        } else {
+          // For demo purposes
+          console.log("User exists but no ID found, using default trainer ID");
+          setTrainerId(4); // Default ID for trainer in our seed data
+        }
+      } else {
+        // No user in localStorage - likely not logged in
+        console.log("No user found in localStorage, using default trainer ID for testing");
+        setTrainerId(4); // Default ID for trainer in our seed data
+      }
+    } catch (error) {
+      console.error("Error parsing user from localStorage:", error);
+      setTrainerId(4); // Default ID for trainer in our seed data
+    }
   }, []);
+
+  useEffect(() => {
+    if (trainerId) {
+      fetchClients();
+      fetchRequests();
+    }
+  }, [trainerId]);
 
   const fetchClients = async () => {
     setLoading(true);
     try {
-      const response = await new Promise(resolve => 
-        setTimeout(() => resolve(mockClients), 1000)
-      );
-      setClients(response);
+      console.log(`Fetching clients for trainer ID: ${trainerId}`);
+      const response = await fetch(`http://localhost:8080/api/trainer/${trainerId}/clients`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.status === 403) {
+        console.error('Access forbidden (403) - Authentication issue');
+        showAlert('Authentication error - Please log in again', 'error');
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch clients: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Clients data received:", data);
+      setClients(data);
     } catch (error) {
-      showAlert('Failed to fetch clients', 'error');
+      console.error('Error fetching clients:', error);
+      showAlert(`Failed to fetch clients: ${error.message}`, 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      console.log(`Fetching requests for trainer ID: ${trainerId}`);
+      
+      // Add debugging output
+      console.log("localStorage content:", localStorage.getItem('user'));
+      console.log("All localStorage keys:", Object.keys(localStorage));
+      
+      const response = await fetch(`http://localhost:8080/api/trainer/${trainerId}/requests`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json', 
+          'Content-Type': 'application/json',
+          // Add any auth headers you're using
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        // For testing purposes, disable credentials
+        credentials: 'omit'
+      });
+      
+      // Log the full response for debugging
+      console.log("Response status:", response.status);
+      console.log("Response headers:", [...response.headers.entries()]);
+      
+      if (response.status === 403) {
+        console.error('Access forbidden (403) - Authentication issue');
+        showAlert('Authentication error when fetching requests - Please log in again', 'error');
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch requests: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Requests data received:", data);
+      
+      setClientRequests(data.map(req => ({
+        ...req,
+        preferredTime: req.meetingTime || 'Not specified',
+        program: req.program || 'Personal Training',
+        requestDate: req.meetingDate || 'Not specified'
+      })));
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+      showAlert(`Failed to fetch client requests: ${error.message}`, 'error');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString; // Return as-is if it's not a valid date
+      }
+      return date.toLocaleDateString();
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return 'N/A';
+    return timeString;
   };
 
   const validateField = (name, value) => {
@@ -167,29 +273,8 @@ const ClientsPage = ({ isDarkMode }) => {
   };
 
   const handleAddClient = async () => {
-    if (!validateForm()) {
-      showAlert('Please fill in all required fields', 'error');
-      return;
-    }
-
-    setActionLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newClientData = {
-        id: clients.length + 1,
-        ...newClient,
-        avatar: null
-      };
-
-      setClients(prev => [...prev, newClientData]);
-      handleCloseDialog();
-      showAlert('Client added successfully!', 'success');
-    } catch (error) {
-      showAlert('Failed to add client', 'error');
-    } finally {
-      setActionLoading(false);
-    }
+    // This function is now unused as we're integrating with the backend API
+    // Instead, we'll use handleSubmit for all client operations
   };
 
   const handleDeleteClient = (clientId) => {
@@ -200,10 +285,18 @@ const ClientsPage = ({ isDarkMode }) => {
     const clientId = deleteConfirm.clientId;
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(`http://localhost:8080/api/trainer/clients/${clientId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete client');
+      }
+      
       setClients(prev => prev.filter(client => client.id !== clientId));
       showAlert('Client deleted successfully!', 'success');
     } catch (error) {
+      console.error('Error deleting client:', error);
       showAlert('Failed to delete client', 'error');
     } finally {
       setActionLoading(false);
@@ -214,9 +307,13 @@ const ClientsPage = ({ isDarkMode }) => {
   const handleEditClient = (client) => {
     setSelectedClient(client);
     setNewClient({
-      ...client,
+      name: client.name,
+      email: client.email,
+      phone: client.phone || '',
+      program: client.program || '',
       startDate: client.startDate || '', // Ensure date format compatibility
-      scheduleTime: client.scheduleTime || ''
+      scheduleTime: client.scheduleTime || '',
+      remainingSessions: client.remainingSessions || 0
     });
     setOpenDialog(true);
   };
@@ -240,9 +337,16 @@ const ClientsPage = ({ isDarkMode }) => {
   };
 
   const handleContactAction = async (type, contact) => {
+    if (!contact) {
+      showAlert('Contact information not available', 'error');
+      return;
+    }
+    
     switch (type) {
       case 'whatsapp':
-        window.open(`https://wa.me/${contact}`, '_blank');
+        // Remove spaces and ensure it starts with a '+'
+        const formattedNumber = contact.replace(/\s+/g, '');
+        window.open(`https://wa.me/${formattedNumber}`, '_blank');
         break;
       case 'email':
         window.location.href = `mailto:${contact}`;
@@ -260,26 +364,36 @@ const ClientsPage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (selectedClient) {
-        // Update existing client
+        // Update existing client's session count
+        const response = await fetch(`http://localhost:8080/api/trainer/clients/${selectedClient.id}/sessions`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ sessions: parseInt(newClient.remainingSessions) })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update client');
+        }
+        
+        const updatedClient = await response.json();
+        
+        // Update the client in the list
         setClients(prev => prev.map(client => 
-          client.id === selectedClient.id ? { ...newClient, id: client.id } : client
+          client.id === selectedClient.id ? updatedClient : client
         ));
+        
         showAlert('Client updated successfully!', 'success');
       } else {
-        // Add new client
-        const newClientData = {
-          id: clients.length + 1,
-          ...newClient,
-          avatar: null
-        };
-        setClients(prev => [...prev, newClientData]);
-        showAlert('Client added successfully!', 'success');
+        // We don't add clients directly through this interface
+        // Clients are added by approving registration requests
+        showAlert('New clients should be added through registration requests', 'info');
       }
       handleCloseDialog();
     } catch (error) {
+      console.error('Error updating client:', error);
       showAlert(selectedClient ? 'Failed to update client' : 'Failed to add client', 'error');
     } finally {
       setActionLoading(false);
@@ -289,29 +403,42 @@ const ClientsPage = ({ isDarkMode }) => {
   const handleRequestAction = async (requestId, action) => {
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      let response;
       
       if (action === 'approve') {
-        const approvedRequest = clientRequests.find(req => req.id === requestId);
-        const newClient = {
-          id: clients.length + 1,
-          name: approvedRequest.name,
-          email: approvedRequest.email,
-          phone: approvedRequest.phone,
-          program: approvedRequest.program,
-          status: 'Active',
-          startDate: new Date().toISOString().split('T')[0],
-          avatar: null
-        };
+        // For simplicity, we'll assume 10 initial sessions when approving a request
+        response = await fetch(`http://localhost:8080/api/trainer/requests/${requestId}/approve`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ initialSessions: 10 })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to approve request');
+        }
+        
+        const newClient = await response.json();
         setClients(prev => [...prev, newClient]);
         showAlert('Client request approved successfully!', 'success');
       } else {
+        response = await fetch(`http://localhost:8080/api/trainer/requests/${requestId}/reject`, {
+          method: 'POST'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to reject request');
+        }
+        
         showAlert('Client request rejected', 'info');
       }
       
+      // Remove the processed request from the list
       setClientRequests(prev => prev.filter(req => req.id !== requestId));
     } catch (error) {
-      showAlert('Failed to process request', 'error');
+      console.error('Error processing request:', error);
+      showAlert(`Failed to ${action} request`, 'error');
     } finally {
       setActionLoading(false);
     }
@@ -332,7 +459,7 @@ const ClientsPage = ({ isDarkMode }) => {
       );
     }
 
-    if (clients.length === 0) {
+    if (!clients || clients.length === 0) {
       return (
         <TableRow>
           <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
@@ -361,13 +488,13 @@ const ClientsPage = ({ isDarkMode }) => {
           <Fade in={true} timeout={500}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar 
-                src={client.avatar}
+                src={client.profilePhoto}
                 sx={{
                   transition: 'transform 0.3s ease',
                   '&:hover': { transform: 'scale(1.1)' }
                 }}
               >
-                {client.name[0]}
+                {client.name ? client.name[0] : '?'}
               </Avatar>
               <Typography color={isDarkMode ? 'white' : 'inherit'}>{client.name}</Typography>
             </Box>
@@ -375,22 +502,24 @@ const ClientsPage = ({ isDarkMode }) => {
         </TableCell>
         <TableCell>
           <Box sx={{ display: 'flex', gap: 1 }}>
+            {client.phone && (
+              <IconButton 
+                size="small" 
+                sx={{ 
+                  color: '#25D366 !important',
+                  '&:hover': {
+                    backgroundColor: 'rgba(37, 211, 102, 0.1)',
+                  }
+                }} 
+                onClick={() => handleContactAction('whatsapp', client.phone)}
+              >
+                <WhatsApp />
+              </IconButton>
+            )}
             <IconButton 
               size="small" 
               sx={{ 
-                color: '#25D366 !important', // WhatsApp green with !important
-                '&:hover': {
-                  backgroundColor: 'rgba(37, 211, 102, 0.1)',
-                }
-              }} 
-              onClick={() => handleContactAction('whatsapp', client.phone)}
-            >
-              <WhatsApp />
-            </IconButton>
-            <IconButton 
-              size="small" 
-              sx={{ 
-                color: '#EA4335 !important', // Gmail red with !important
+                color: '#EA4335 !important',
                 '&:hover': {
                   backgroundColor: 'rgba(234, 67, 53, 0.1)',
                 }
@@ -401,7 +530,7 @@ const ClientsPage = ({ isDarkMode }) => {
             </IconButton>
           </Box>
         </TableCell>
-        <TableCell>{client.program}</TableCell>
+        <TableCell>Personal Training</TableCell>
         <TableCell>
           <Chip
             label={client.status}
@@ -409,15 +538,19 @@ const ClientsPage = ({ isDarkMode }) => {
             size="small"
           />
         </TableCell>
-        <TableCell>{client.startDate}</TableCell>
+        <TableCell>{formatDate(client.registrationDate)}</TableCell>
         <TableCell>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <IconButton size="small" sx={{ color: '#ff4757' }} onClick={() => handleEditClient(client)}>
-              <Edit />
-            </IconButton>
-            <IconButton size="small" sx={{ color: '#666' }} onClick={() => handleDeleteClient(client.id)}>
-              <Delete />
-            </IconButton>
+            <Tooltip title="Edit sessions" TransitionComponent={Zoom} arrow>
+              <IconButton size="small" sx={{ color: '#ff4757' }} onClick={() => handleEditClient(client)}>
+                <Edit />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete client" TransitionComponent={Zoom} arrow>
+              <IconButton size="small" sx={{ color: '#666' }} onClick={() => handleDeleteClient(client.id)}>
+                <Delete />
+              </IconButton>
+            </Tooltip>
           </Box>
         </TableCell>
       </TableRow>
@@ -495,7 +628,7 @@ const ClientsPage = ({ isDarkMode }) => {
                             Email: {request.email}
                           </Typography>
                           <Typography variant="body2" color="textSecondary">
-                            Phone: {request.phone}
+                            Phone: {request.phone || 'Not provided'}
                           </Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -503,23 +636,28 @@ const ClientsPage = ({ isDarkMode }) => {
                             Program: {request.program}
                           </Typography>
                           <Typography variant="body2" color="textSecondary">
-                            Preferred Time: {request.preferredTime}
+                            Meeting Date: {formatDate(request.meetingDate)}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            Meeting Time: {formatTime(request.meetingTime)}
                           </Typography>
                         </Grid>
                       </Grid>
 
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          mb: 2,
-                          p: 2,
-                          bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-                          borderRadius: '8px',
-                          color: isDarkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
-                        }}
-                      >
-                        "{request.message}"
-                      </Typography>
+                      {request.message && (
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            mb: 2,
+                            p: 2,
+                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                            borderRadius: '8px',
+                            color: isDarkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
+                          }}
+                        >
+                          "{request.message}"
+                        </Typography>
+                      )}
 
                       <Box sx={{ 
                         display: 'flex', 
@@ -531,6 +669,7 @@ const ClientsPage = ({ isDarkMode }) => {
                             variant="outlined"
                             startIcon={<Close />}
                             onClick={() => handleRequestAction(request.id, 'reject')}
+                            disabled={actionLoading}
                             sx={{
                               borderColor: '#ff4757',
                               color: '#ff4757',
@@ -548,6 +687,7 @@ const ClientsPage = ({ isDarkMode }) => {
                             variant="contained"
                             startIcon={<Check />}
                             onClick={() => handleRequestAction(request.id, 'approve')}
+                            disabled={actionLoading}
                             sx={{
                               bgcolor: '#ff4757',
                               '&:hover': {
@@ -619,6 +759,102 @@ const ClientsPage = ({ isDarkMode }) => {
     </Dialog>
   );
 
+  const renderClientDialog = () => (
+    <Dialog 
+      open={openDialog} 
+      onClose={handleCloseDialog}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+          backgroundImage: 'none',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        }
+      }}
+    >
+      <DialogTitle sx={{
+        background: 'linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%)',
+        color: 'white',
+        borderRadius: '16px 16px 0 0',
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Edit />
+          Update Client Sessions
+        </Box>
+      </DialogTitle>
+      <DialogContent sx={{ mt: 2 }}>
+        {selectedClient && (
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="h6">{selectedClient.name}</Typography>
+              <Typography variant="body2" color="textSecondary">
+                {selectedClient.email} • {selectedClient.phone || 'No phone'}
+              </Typography>
+              <Box sx={{ mt: 3 }}>
+                <TextField
+                  fullWidth
+                  label="Remaining Sessions"
+                  name="remainingSessions"
+                  type="number"
+                  value={newClient.remainingSessions}
+                  onChange={handleInputChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <FitnessCenter sx={{ color: '#ff4757' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#ff4757',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#ff4757',
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ p: 3 }}>
+        <LoadingButton 
+          onClick={handleCloseDialog}
+          variant="outlined"
+          sx={{
+            borderColor: '#ff4757',
+            color: '#ff4757',
+            '&:hover': {
+              borderColor: '#ff3747',
+              backgroundColor: 'rgba(255,71,87,0.1)',
+            }
+          }}
+        >
+          Cancel
+        </LoadingButton>
+        <LoadingButton
+          onClick={handleSubmit}
+          loading={actionLoading}
+          variant="contained"
+          sx={{
+            background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #ff6b81, #ff4757)',
+            }
+          }}
+        >
+          Update Sessions
+        </LoadingButton>
+      </DialogActions>
+    </Dialog>
+  );
+
   return (
     <Box sx={{ p: 3 }}>
       <motion.div
@@ -626,7 +862,7 @@ const ClientsPage = ({ isDarkMode }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Add the requests section here, before the existing content */}
+        {/* Render pending requests section */}
         {renderRequestsSection()}
         
         <Box sx={{ 
@@ -663,8 +899,7 @@ const ClientsPage = ({ isDarkMode }) => {
               }
             }}
             onClick={() => {
-              setSelectedClient(null);
-              setOpenDialog(true);
+              showAlert("New clients should be added through registration requests", "info");
             }}
           >
             Add New Client
@@ -738,190 +973,7 @@ const ClientsPage = ({ isDarkMode }) => {
           </Table>
         </TableContainer>
 
-        <Dialog 
-          open={openDialog} 
-          onClose={handleCloseDialog}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: '16px',
-              bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
-              backgroundImage: 'none',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-            }
-          }}
-        >
-          <DialogTitle sx={{
-            background: 'linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%)',
-            color: 'white',
-            borderRadius: '16px 16px 0 0',
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {selectedClient ? <Edit /> : <PersonAdd />}
-              {selectedClient ? 'Update Client' : 'Add New Client'}
-            </Box>
-          </DialogTitle>
-          <DialogContent sx={{ mt: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  name="name"
-                  value={newClient.name}
-                  onChange={handleInputChange}
-                  error={!!errors.name}
-                  helperText={errors.name}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Person sx={{ color: '#ff4757' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#ff4757',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#ff4757',
-                      }
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={newClient.email}
-                  onChange={handleInputChange}
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Email sx={{ color: '#ff4757' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Phone"
-                  name="phone"
-                  value={newClient.phone}
-                  onChange={handleInputChange}
-                  error={!!errors.phone}
-                  helperText={errors.phone}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Phone sx={{ color: '#ff4757' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Program</InputLabel>
-                  <Select
-                    name="program"
-                    value={newClient.program}
-                    onChange={handleInputChange}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <FitnessCenter sx={{ color: '#ff4757', ml: 2 }} />
-                      </InputAdornment>
-                    }
-                  >
-                    <MenuItem value="Weight Training">Weight Training</MenuItem>
-                    <MenuItem value="Cardio">Cardio</MenuItem>
-                    <MenuItem value="Yoga">Yoga</MenuItem>
-                    <MenuItem value="CrossFit">CrossFit</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Start Date"
-                  name="startDate"
-                  type="date"
-                  value={newClient.startDate}
-                  onChange={handleInputChange}
-                  error={!!errors.startDate}
-                  helperText={errors.startDate}
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <CalendarToday sx={{ color: '#ff4757' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Preferred Time"
-                  name="scheduleTime"
-                  type="time"
-                  value={newClient.scheduleTime}
-                  onChange={handleInputChange}
-                  error={!!errors.scheduleTime}
-                  helperText={errors.scheduleTime}
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <AccessTime sx={{ color: '#ff4757' }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions sx={{ p: 3 }}>
-            <LoadingButton 
-              onClick={handleCloseDialog}
-              variant="outlined"
-              sx={{
-                borderColor: '#ff4757',
-                color: '#ff4757',
-                '&:hover': {
-                  borderColor: '#ff3747',
-                  backgroundColor: 'rgba(255,71,87,0.1)',
-                }
-              }}
-            >
-              Cancel
-            </LoadingButton>
-            <LoadingButton
-              onClick={handleSubmit}
-              loading={actionLoading}
-              variant="contained"
-              sx={{
-                background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
-                '&:hover': {
-                  background: 'linear-gradient(45deg, #ff6b81, #ff4757)',
-                }
-              }}
-            >
-              {selectedClient ? 'Update Client' : 'Add Client'}
-            </LoadingButton>
-          </DialogActions>
-        </Dialog>
-
+        {renderClientDialog()}
         {renderDeleteConfirmDialog()}
 
         <Snackbar
@@ -942,28 +994,5 @@ const ClientsPage = ({ isDarkMode }) => {
     </Box>
   );
 };
-
-const mockClients = [
-  {
-    id: 1,
-    name: 'Faruk Yılmaz',
-    avatar: null,
-    phone: '+90 532 123 4567',
-    email: 'faruk@example.com',
-    program: 'Weight Training',
-    status: 'Active',
-    startDate: '2024-01-15',
-  },
-  {
-    id: 2,
-    name: 'Mahmut Mahmutoğlu',
-    avatar: null,
-    phone: '+90 533 234 5678',
-    email: 'mahmut@example.com',
-    program: 'Cardio',
-    status: 'On Hold',
-    startDate: '2024-02-01',
-  },
-];
 
 export default ClientsPage;
