@@ -212,8 +212,10 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
         durationMonths: durationMonths,
         startDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD
         paymentMethod: "CREDIT_CARD",
-        cardNumber: cardDetails.cardNumber.replace(/\s/g, '').slice(-4), // Last 4 digits
-        cardholderName: cardDetails.cardHolder
+        cardNumber: cardDetails.cardNumber.replace(/\s/g, ''), // Last 4 digits
+        cardHolderName: cardDetails.cardHolder,
+        expiryDate: cardDetails.expiryDate,
+        cvv: cardDetails.cvv
       };
       
       console.log('Sending signup data:', signupData);

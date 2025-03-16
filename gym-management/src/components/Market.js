@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Market.css';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ import {
   IconButton,
   Paper,
   Divider,
+  CircularProgress,
 } from '@mui/material';
 import {
   Search,
@@ -42,8 +43,13 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const categories = [
+  // Define default categories in case API fails
+  const defaultCategories = [
     { id: 'all', name: 'All Products', icon: <FitnessCenter /> },
     { id: 'Supplement', name: 'Supplements', icon: <LocalDrink /> },
     { id: 'Equipment', name: 'Equipment', icon: <FitnessCenter /> },
@@ -51,120 +57,66 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
     { id: 'Accessories', name: 'Accessories', icon: <SportsTennis /> },
   ];
 
-  // Örnek ürün verileri
-  const products = [
-    // Supplements
-    {
-      id: 1,
-      name: 'Whey Protein Powder',
-      category: 'Supplement',
-      price: 599.99,
-      image: '/protein.png',
-      description: 'High-quality whey protein powder for muscle recovery - 2000g'
-    },
-    {
-      id: 2,
-      name: 'BCAA Amino Acids',
-      category: 'Supplement',
-      price: 299.99,
-      image: '/bcaa.png',
-      description: 'Essential amino acids for muscle growth and recovery - 400g'
-    },
-    {
-      id: 3,
-      name: 'Pre-Workout Energy',
-      category: 'Supplement',
-      price: 349.99,
-      image: '/preworkout.png',
-      description: 'Advanced pre-workout formula for maximum performance - 300g'
-    },
-
-    // Equipment
-    {
-      id: 4,
-      name: 'Premium Yoga Mat',
-      category: 'Equipment',
-      price: 199.99,
-      image: '/yoga-mat.png',
-      description: 'Non-slip, eco-friendly yoga mat with alignment lines'
-    },
-    {
-      id: 5,
-      name: 'Adjustable Dumbbell Set',
-      category: 'Equipment',
-      price: 1499.99,
-      image: '/dumbbells.png',
-      description: 'Space-saving adjustable dumbbells 2-24kg each'
-    },
-    {
-      id: 6,
-      name: 'Resistance Bands Set',
-      category: 'Equipment',
-      price: 249.99,
-      image: '/bands.png',
-      description: 'Set of 5 resistance bands with different strength levels'
-    },
-
-    // Clothing
-    {
-      id: 7,
-      name: 'Performance T-Shirt',
-      category: 'Clothing',
-      price: 149.99,
-      image: '/tshirt.png',
-      description: 'Moisture-wicking, breathable training t-shirt'
-    },
-    {
-      id: 8,
-      name: 'Training Shorts',
-      category: 'Clothing',
-      price: 179.99,
-      image: '/shorts.png',
-      description: 'Flexible, quick-dry training shorts with pockets'
-    },
-    {
-      id: 9,
-      name: 'Compression Leggings',
-      category: 'Clothing',
-      price: 229.99,
-      image: '/leggings.png',
-      description: 'High-waist compression leggings with phone pocket'
-    },
-
-    // Accessories
-    {
-      id: 10,
-      name: 'Sports Water Bottle',
-      category: 'Accessories',
-      price: 89.99,
-      image: '/bottle.png',
-      description: 'BPA-free sports water bottle with time markings - 1L'
-    },
-    {
-      id: 11,
-      name: 'Gym Bag',
-      category: 'Accessories',
-      price: 259.99,
-      image: '/gym-bag.png',
-      description: 'Spacious gym bag with wet compartment and shoe pocket'
-    },
-    {
-      id: 12,
-      name: 'Lifting Gloves',
-      category: 'Accessories',
-      price: 129.99,
-      image: '/gloves.png',
-      description: 'Premium weightlifting gloves with wrist support'
-    }
-  ];
+  // Fetch products and categories from the backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch products
+        const productsResponse = await fetch('http://localhost:8080/api/market/products');
+        if (!productsResponse.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        const productsData = await productsResponse.json();
+        
+        // Fetch categories
+        const categoriesResponse = await fetch('http://localhost:8080/api/market/categories');
+        if (!categoriesResponse.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const categoriesData = await categoriesResponse.json();
+        
+        // Map categories to include icons
+        const mappedCategories = [
+          { id: 'all', name: 'All Products', icon: <FitnessCenter /> },
+          ...categoriesData.map(category => {
+            let icon = <FitnessCenter />;
+            if (category.name === 'Supplement') icon = <LocalDrink />;
+            else if (category.name === 'Clothing') icon = <Checkroom />;
+            else if (category.name === 'Accessories') icon = <SportsTennis />;
+            
+            return {
+              id: category.id,
+              name: category.name,
+              icon: icon
+            };
+          })
+        ];
+        
+        setProducts(productsData);
+        setCategories(mappedCategories);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load products. Please try again later.');
+        setCategories(defaultCategories);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || 
+                           (product.category && product.category.id.toString() === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
-  // Sepet işlemleri
+  // Cart operations
   const addToCart = (product) => {
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
@@ -208,7 +160,13 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   return (
-    <div className={`container-animate ${isDarkMode ? 'dark-mode' : ''}`}>
+    <div 
+      className={`container-animate ${isDarkMode ? 'dark-mode' : ''}`}
+      style={{ 
+        minHeight: '100vh',
+        backgroundColor: isDarkMode ? '#121212' : '#ffffff'
+      }}
+    >
       <div className="member-page-header">
         <div className="header-left">
           <button className="back-button" onClick={() => navigate('/member')}>
@@ -234,7 +192,7 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
       
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         <Grid container spacing={3}>
-          {/* Sol Sidebar */}
+          {/* Left Sidebar */}
           <Grid item xs={12} md={3}>
             <Paper 
               elevation={3}
@@ -251,8 +209,8 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                   <ListItem
                     button
                     key={category.id}
-                    selected={selectedCategory === category.id}
-                    onClick={() => setSelectedCategory(category.id)}
+                    selected={selectedCategory === category.id.toString()}
+                    onClick={() => setSelectedCategory(category.id.toString())}
                     sx={{
                       borderRadius: '8px',
                       mb: 1,
@@ -269,7 +227,7 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                   >
                     <ListItemIcon 
                       sx={{ 
-                        color: selectedCategory === category.id 
+                        color: selectedCategory === category.id.toString() 
                           ? '#ff4757' 
                           : isDarkMode 
                             ? '#fff' 
@@ -282,7 +240,7 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                       primary={category.name}
                       sx={{
                         '& .MuiListItemText-primary': {
-                          color: selectedCategory === category.id 
+                          color: selectedCategory === category.id.toString() 
                             ? '#ff4757' 
                             : isDarkMode 
                               ? '#fff' 
@@ -327,7 +285,7 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
             </Paper>
           </Grid>
 
-          {/* Ana İçerik */}
+          {/* Main Content */}
           <Grid item xs={12} md={9}>
             <TextField
               fullWidth
@@ -360,241 +318,282 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
               }}
             />
 
-            <Grid container spacing={3}>
-              {filteredProducts.map((product) => (
-                <Grid item xs={12} sm={6} md={4} key={product.id}>
-                  <motion.div
-                    whileHover={{ y: -10 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Card 
-                      sx={{ 
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        position: 'relative',
-                        bgcolor: isDarkMode ? '#2c2c2c' : '#fff',
-                        minHeight: 450,
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          width: '100%',
-                          height: 250,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          overflow: 'hidden',
-                          bgcolor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
-                        }}
-                      >
-                        <CardMedia
-                          component="img"
-                          image={product.image}
-                          alt={product.name}
-                          sx={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain',
-                            p: 2,
-                          }}
-                        />
-                      </Box>
-                      <CardContent 
-                        sx={{ 
-                          flexGrow: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          p: 3,
-                        }}
-                      >
-                        <Box>
-                          <Typography 
-                            gutterBottom 
-                            variant="h6" 
-                            component="h2"
-                            sx={{
-                              color: isDarkMode ? '#fff' : 'inherit',
-                              fontSize: '1.1rem',
-                              fontWeight: 600,
-                              mb: 1,
-                            }}
-                          >
-                            {product.name}
-                          </Typography>
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary" 
-                            sx={{ 
-                              mb: 2,
-                              color: isDarkMode ? '#aaa' : 'text.secondary',
-                            }}
-                          >
-                            {product.description}
-                          </Typography>
-                        </Box>
-                        <Box 
-                          sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            mt: 'auto',
-                          }}
-                        >
-                          <Typography 
-                            variant="h6" 
-                            sx={{ 
-                              color: '#ff4757',
-                              fontWeight: 600,
-                            }}
-                          >
-                            ₺{product.price.toFixed(2)}
-                          </Typography>
-                          <Button 
-                            variant="contained" 
-                            onClick={() => addToCart(product)}
-                            sx={{
-                              bgcolor: '#ff4757',
-                              '&:hover': { bgcolor: '#ff6b81' },
-                              textTransform: 'none',
-                              px: 2,
-                            }}
-                          >
-                            Add to Cart
-                          </Button>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
-          </Grid>
-        </Grid>
-
-        {/* Sepet Drawer */}
-        <Drawer
-          anchor="right"
-          open={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          PaperProps={{
-            sx: {
-              width: 350,
-              bgcolor: 'transparent',
-            }
-          }}
-        >
-          <Paper
-            elevation={0}
-            sx={{
-              width: '100%',
-              height: '100%',
-              bgcolor: isDarkMode ? '#1a1a1a' : '#ffffff',
-              borderRadius: 0,
-            }}
-          >
-            <Box 
-              sx={{ 
-                p: 2,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column'
-              }}
-            >
-              <Typography variant="h6" sx={{ mb: 2, color: isDarkMode ? '#ffffff' : '#000000' }}>
-                Shopping Cart
-              </Typography>
-              
-              <Box sx={{ 
-                flexGrow: 1, 
-                overflowY: 'auto',
-                '&::-webkit-scrollbar': {
-                  width: '8px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  bgcolor: isDarkMode ? '#2c2c2c' : '#f1f1f1',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  bgcolor: isDarkMode ? '#555' : '#888',
-                  borderRadius: '4px',
-                },
-              }}>
-                <List>
-                  {cart.map((item) => (
-                    <ListItem key={item.id}>
-                      <ListItemText
-                        primary={item.name}
-                        secondary={`₺${item.price.toFixed(2)} x ${item.quantity}`}
-                        sx={{
-                          '& .MuiListItemText-primary': {
-                            color: isDarkMode ? '#ffffff' : '#000000'
-                          },
-                          '& .MuiListItemText-secondary': {
-                            color: isDarkMode ? '#aaaaaa' : '#666666'
-                          }
-                        }}
-                      />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <IconButton 
-                          size="small" 
-                          onClick={() => removeFromCart(item.id)}
-                          sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}
-                        >
-                          <Remove />
-                        </IconButton>
-                        <Typography sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
-                          {item.quantity}
-                        </Typography>
-                        <IconButton 
-                          size="small" 
-                          onClick={() => addToCart(item)}
-                          sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}
-                        >
-                          <Add />
-                        </IconButton>
-                        <IconButton 
-                          onClick={() => deleteFromCart(item.id)}
-                          sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </ListItem>
-                  ))}
-                </List>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}>
+                <CircularProgress sx={{ color: '#ff4757' }} />
               </Box>
-
-              <Box sx={{ 
-                mt: 2, 
-                pt: 2, 
-                borderTop: 1, 
-                borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                bgcolor: isDarkMode ? '#1a1a1a' : '#ffffff',
-              }}>
-                <Typography variant="h6" sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
-                  Total: ₺{getTotalPrice().toFixed(2)}
-                </Typography>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    bgcolor: '#ff4757',
-                    '&:hover': { bgcolor: '#ff6b81' }
-                  }}
-                  disabled={cart.length === 0}
+            ) : error ? (
+              <Box sx={{ textAlign: 'center', my: 5, color: isDarkMode ? '#fff' : 'inherit' }}>
+                <Typography variant="h6" color="error">{error}</Typography>
+                <Button 
+                  variant="contained" 
+                  sx={{ mt: 2, bgcolor: '#ff4757', '&:hover': { bgcolor: '#ff6b81' } }}
+                  onClick={() => window.location.reload()}
                 >
-                  Checkout
+                  Try Again
                 </Button>
               </Box>
-            </Box>
-          </Paper>
-        </Drawer>
+            ) : (
+              <Grid container spacing={3}>
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <Grid item xs={12} sm={6} md={4} key={product.id}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Card 
+                          elevation={3}
+                          sx={{ 
+                            height: '100%', 
+                            display: 'flex', 
+                            flexDirection: 'column',
+                            bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+                            '&:hover': {
+                              boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                            }
+                          }}
+                        >
+                          <CardMedia
+                            component="img"
+                            height="200"
+                            image={product.imagePath || '/placeholder.png'}
+                            alt={product.productName}
+                            sx={{ 
+                              objectFit: 'contain',
+                              p: 2,
+                              bgcolor: isDarkMode ? '#2c2c2c' : '#f8f9fa'
+                            }}
+                          />
+                          <CardContent sx={{ flexGrow: 1 }}>
+                            <Typography 
+                              gutterBottom 
+                              variant="h6" 
+                              component="div"
+                              sx={{ 
+                                color: isDarkMode ? '#fff' : 'inherit',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              {product.productName}
+                            </Typography>
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{ 
+                                mb: 2,
+                                color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit',
+                                minHeight: '40px'
+                              }}
+                            >
+                              {product.description}
+                            </Typography>
+                            <Typography 
+                              variant="h6" 
+                              sx={{ 
+                                color: '#ff4757',
+                                fontWeight: 'bold',
+                                mb: 2
+                              }}
+                            >
+                              ₺{product.price.toFixed(2)}
+                            </Typography>
+                            <Button
+                              fullWidth
+                              variant="contained"
+                              startIcon={<Add />}
+                              onClick={() => addToCart(product)}
+                              sx={{
+                                bgcolor: '#ff4757',
+                                '&:hover': { bgcolor: '#ff6b81' },
+                              }}
+                            >
+                              Add to Cart
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+                  ))
+                ) : (
+                  <Grid item xs={12}>
+                    <Box sx={{ 
+                      textAlign: 'center', 
+                      my: 5, 
+                      color: isDarkMode ? '#fff' : 'inherit',
+                      bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+                      p: 4,
+                      borderRadius: 2,
+                      minHeight: '50vh',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}>
+                      <Typography variant="h6">No products found</Typography>
+                      <Button 
+                        variant="contained" 
+                        sx={{ mt: 2, bgcolor: '#ff4757', '&:hover': { bgcolor: '#ff6b81' } }}
+                        onClick={() => {
+                          setSearchTerm('');
+                          setSelectedCategory('all');
+                        }}
+                      >
+                        Clear Filters
+                      </Button>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+            )}
+          </Grid>
+        </Grid>
       </Container>
+
+      {/* Shopping Cart Drawer */}
+      <Drawer
+        anchor="right"
+        open={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: 400 },
+            bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+            color: isDarkMode ? '#fff' : 'inherit',
+          }
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">Your Cart</Typography>
+            <IconButton onClick={() => setIsCartOpen(false)} sx={{ color: isDarkMode ? '#fff' : 'inherit' }}>
+              <FaArrowLeft />
+            </IconButton>
+          </Box>
+          
+          <Divider sx={{ mb: 2 }} />
+          
+          {cart.length === 0 ? (
+            <Box sx={{ textAlign: 'center', my: 5 }}>
+              <ShoppingCart sx={{ fontSize: 60, color: 'rgba(0,0,0,0.2)', mb: 2 }} />
+              <Typography variant="h6">Your cart is empty</Typography>
+              <Button 
+                variant="contained" 
+                sx={{ mt: 2, bgcolor: '#ff4757', '&:hover': { bgcolor: '#ff6b81' } }}
+                onClick={() => setIsCartOpen(false)}
+              >
+                Continue Shopping
+              </Button>
+            </Box>
+          ) : (
+            <>
+              <List sx={{ mb: 2 }}>
+                {cart.map((item) => (
+                  <ListItem 
+                    key={item.id}
+                    sx={{ 
+                      mb: 2, 
+                      bgcolor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+                      borderRadius: 2,
+                      p: 2
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', width: '100%' }}>
+                      <Box 
+                        component="img"
+                        src={item.imagePath || '/placeholder.png'}
+                        alt={item.productName}
+                        sx={{ 
+                          width: 60, 
+                          height: 60, 
+                          objectFit: 'contain',
+                          mr: 2,
+                          bgcolor: '#fff',
+                          borderRadius: 1,
+                          p: 1
+                        }}
+                      />
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                          {item.productName}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#ff4757', fontWeight: 'bold' }}>
+                          ₺{item.price.toFixed(2)}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => removeFromCart(item.id)}
+                            sx={{ 
+                              bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                              color: isDarkMode ? '#fff' : 'inherit',
+                            }}
+                          >
+                            <Remove fontSize="small" />
+                          </IconButton>
+                          <Typography sx={{ mx: 1 }}>{item.quantity}</Typography>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => addToCart(item)}
+                            sx={{ 
+                              bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                              color: isDarkMode ? '#fff' : 'inherit',
+                            }}
+                          >
+                            <Add fontSize="small" />
+                          </IconButton>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => deleteFromCart(item.id)}
+                            sx={{ 
+                              ml: 'auto',
+                              color: '#ff4757',
+                            }}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+              
+              <Divider sx={{ mb: 2 }} />
+              
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography>Subtotal:</Typography>
+                  <Typography>₺{getTotalPrice().toFixed(2)}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography>Discount (15%):</Typography>
+                  <Typography color="#ff4757">-₺{(getTotalPrice() * 0.15).toFixed(2)}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+                  <Typography variant="h6">Total:</Typography>
+                  <Typography variant="h6">₺{(getTotalPrice() * 0.85).toFixed(2)}</Typography>
+                </Box>
+              </Box>
+              
+              <Button
+                fullWidth
+                variant="contained"
+                sx={{
+                  bgcolor: '#ff4757',
+                  '&:hover': { bgcolor: '#ff6b81' },
+                  py: 1.5,
+                }}
+              >
+                Checkout
+              </Button>
+            </>
+          )}
+        </Box>
+      </Drawer>
     </div>
   );
 };
 
-export default Market; 
+export default Market;

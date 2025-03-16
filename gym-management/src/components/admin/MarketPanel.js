@@ -8,7 +8,7 @@ const { Option } = Select;
 
 const MarketPanel = () => {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState(['Supplement', 'Equipment', 'Clothing', 'Accessories']);
+  const [categories, setCategories] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -17,6 +17,7 @@ const MarketPanel = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   // Check dark mode on component mount and when body classes change
   useEffect(() => {
@@ -39,144 +40,92 @@ const MarketPanel = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Fetch products and categories from the backend
   useEffect(() => {
-    // Müşteri tarafında sunulan tüm ürünleri admin paneline ekliyoruz
-    const allProducts = [
-      // Supplements
-      {
-        id: 1,
-        name: 'Whey Protein Powder',
-        category: 'Supplement',
-        price: 599.99,
-        stock: 45,
-        imageUrl: '/protein.png',
-        description: 'High-quality whey protein powder for muscle recovery - 2000g'
-      },
-      {
-        id: 2,
-        name: 'BCAA Amino Acids',
-        category: 'Supplement',
-        price: 299.99,
-        stock: 60,
-        imageUrl: '/bcaa.png',
-        description: 'Essential amino acids for muscle growth and recovery - 400g'
-      },
-      {
-        id: 3,
-        name: 'Pre-Workout Energy',
-        category: 'Supplement',
-        price: 349.99,
-        stock: 38,
-        imageUrl: '/preworkout.png',
-        description: 'Advanced pre-workout formula for maximum performance - 300g'
-      },
-
-      // Equipment
-      {
-        id: 4,
-        name: 'Premium Yoga Mat',
-        category: 'Equipment',
-        price: 199.99,
-        stock: 25,
-        imageUrl: '/yoga-mat.png',
-        description: 'Non-slip, eco-friendly yoga mat with alignment lines'
-      },
-      {
-        id: 5,
-        name: 'Adjustable Dumbbell Set',
-        category: 'Equipment',
-        price: 1499.99,
-        stock: 12,
-        imageUrl: '/dumbbells.png',
-        description: 'Space-saving adjustable dumbbells 2-24kg each'
-      },
-      {
-        id: 6,
-        name: 'Resistance Bands Set',
-        category: 'Equipment',
-        price: 249.99,
-        stock: 30,
-        imageUrl: '/bands.png',
-        description: 'Set of 5 resistance bands with different strength levels'
-      },
-
-      // Clothing
-      {
-        id: 7,
-        name: 'Performance T-Shirt',
-        category: 'Clothing',
-        price: 149.99,
-        stock: 85,
-        imageUrl: '/tshirt.png',
-        description: 'Moisture-wicking, breathable training t-shirt'
-      },
-      {
-        id: 8,
-        name: 'Training Shorts',
-        category: 'Clothing',
-        price: 179.99,
-        stock: 70,
-        imageUrl: '/shorts.png',
-        description: 'Flexible, quick-dry training shorts with pockets'
-      },
-      {
-        id: 9,
-        name: 'Compression Leggings',
-        category: 'Clothing',
-        price: 229.99,
-        stock: 55,
-        imageUrl: '/leggings.png',
-        description: 'High-waist compression leggings with phone pocket'
-      },
-
-      // Accessories
-      {
-        id: 10,
-        name: 'Sports Water Bottle',
-        category: 'Accessories',
-        price: 89.99,
-        stock: 120,
-        imageUrl: '/bottle.png',
-        description: 'BPA-free sports water bottle with time markings - 1L'
-      },
-      {
-        id: 11,
-        name: 'Gym Bag',
-        category: 'Accessories',
-        price: 259.99,
-        stock: 40,
-        imageUrl: '/gym-bag.png',
-        description: 'Spacious gym bag with wet compartment and shoe pocket'
-      },
-      {
-        id: 12,
-        name: 'Lifting Gloves',
-        category: 'Accessories',
-        price: 129.99,
-        stock: 65,
-        imageUrl: '/gloves.png',
-        description: 'Premium weightlifting gloves with wrist support'
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch products
+        const productsResponse = await fetch('http://localhost:8080/api/market/products');
+        if (!productsResponse.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        const productsData = await productsResponse.json();
+        
+        // Fetch categories
+        const categoriesResponse = await fetch('http://localhost:8080/api/market/categories');
+        if (!categoriesResponse.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const categoriesData = await categoriesResponse.json();
+        
+        setProducts(productsData);
+        setCategories(categoriesData.map(category => category.name));
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        message.error('Failed to load data from server');
+        setLoading(false);
       }
-    ];
+    };
     
-    setProducts(allProducts);
+    fetchData();
   }, []);
 
-  const handleImageUpload = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-    });
+  const handleImageUpload = async (file) => {
+    try {
+      console.log("Starting image upload for file:", file.name);
+      
+      // Convert file to base64
+      const base64Image = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          console.log("File converted to base64, length:", reader.result.length);
+          resolve(reader.result);
+        };
+      });
+      
+      // Get the authentication token
+      const token = localStorage.getItem('token');
+      console.log("Got authentication token");
+      
+      // Upload the base64 image to the server
+      console.log("Sending image to server...");
+      const response = await fetch('http://localhost:8080/api/images/upload-base64', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ image: base64Image })
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server response not OK:", response.status, errorText);
+        throw new Error(`Failed to upload image: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log("Image upload successful, received path:", data.imagePath);
+      return data.imagePath; // Return the path to the saved image
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      message.error('Failed to upload image: ' + error.message);
+      return null;
+    }
   };
 
   const showModal = (product = null) => {
     setEditingProduct(product);
     if (product) {
       form.setFieldsValue({
-        ...product,
+        name: product.productName,
+        description: product.description,
+        categoryId: product.category?.id,
+        price: product.price,
+        stock: product.stock,
         image: undefined // Reset image field for Upload component
       });
     } else {
@@ -192,46 +141,126 @@ const MarketPanel = () => {
   };
 
   const handleSubmit = async (values) => {
-    let imageUrl = editingProduct?.imageUrl;
-
-    // If a new image is uploaded
-    if (values.image?.fileList?.[0]?.originFileObj) {
-      imageUrl = await handleImageUpload(values.image.fileList[0].originFileObj);
-    }
-
-    // Ensure price is stored as a number, not a string
-    const productData = {
-      ...values,
-      price: parseFloat(values.price),
-      stock: parseInt(values.stock, 10),
-      imageUrl
-    };
-
-    if (editingProduct) {
-      // Update product
-      setProducts(products.map(p => 
-        p.id === editingProduct.id ? { ...productData, id: p.id } : p
-      ));
-      message.success('Product updated successfully');
-    } else {
-      // Add new product
-      const newProduct = {
-        ...productData,
-        id: Math.max(...products.map(p => p.id), 0) + 1
+    try {
+      console.log("Starting form submission, values:", values);
+      
+      // Get the authentication token
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       };
-      setProducts([...products, newProduct]);
-      message.success('Product added successfully');
+      
+      let imageUrl = editingProduct?.imagePath;
+      console.log("Initial image URL:", imageUrl);
+
+      // Check if there's an image to upload
+      console.log("Image value:", values.image);
+      if (values.image && values.image.length > 0) {
+        const fileObj = values.image[0].originFileObj;
+        console.log("File object:", fileObj);
+        
+        if (fileObj) {
+          console.log("New image detected, uploading...");
+          const uploadedImagePath = await handleImageUpload(fileObj);
+          if (uploadedImagePath) {
+            imageUrl = uploadedImagePath;
+            console.log("Image uploaded successfully, new path:", imageUrl);
+          } else {
+            // If image upload failed, show error and return
+            console.error("Image upload failed");
+            message.error('Failed to upload image. Please try again.');
+            return;
+          }
+        }
+      }
+
+      // Prepare the product data
+      const productData = {
+        productName: values.name,
+        description: values.description,
+        price: parseFloat(values.price),
+        stock: parseInt(values.stock, 10),
+        imagePath: imageUrl,
+        category: {
+          id: values.categoryId
+        }
+      };
+      
+      console.log("Prepared product data:", productData);
+
+      let response;
+      
+      if (editingProduct) {
+        // Update existing product
+        console.log("Updating existing product ID:", editingProduct.id);
+        response = await fetch(`http://localhost:8080/api/market/products/${editingProduct.id}`, {
+          method: 'PUT',
+          headers: headers,
+          body: JSON.stringify({
+            ...productData,
+            id: editingProduct.id
+          }),
+        });
+      } else {
+        // Create new product
+        console.log("Creating new product");
+        response = await fetch('http://localhost:8080/api/market/products', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(productData),
+        });
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server response not OK:", response.status, errorText);
+        throw new Error(`Failed to save product: ${response.status} ${errorText}`);
+      }
+
+      // Refresh the products list
+      console.log("Product saved successfully, refreshing product list");
+      const productsResponse = await fetch('http://localhost:8080/api/market/products', {
+        headers: headers
+      });
+      const updatedProducts = await productsResponse.json();
+      setProducts(updatedProducts);
+      
+      message.success(editingProduct ? 'Product updated successfully' : 'Product added successfully');
+      setIsModalVisible(false);
+      form.resetFields();
+      setEditingProduct(null);
+    } catch (error) {
+      console.error('Error saving product:', error);
+      message.error('Failed to save product: ' + error.message);
     }
-    setIsModalVisible(false);
-    form.resetFields();
-    setEditingProduct(null);
   };
 
-  const handleDelete = (productId) => {
-    setProducts(products.filter(p => p.id !== productId));
-    message.success('Product deleted successfully');
-    setDeleteModalVisible(false);
-    setProductToDelete(null);
+  const handleDelete = async (productId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      };
+      
+      const response = await fetch(`http://localhost:8080/api/market/products/${productId}`, {
+        method: 'DELETE',
+        headers: headers
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+
+      // Update the local state
+      setProducts(products.filter(p => p.id !== productId));
+      message.success('Product deleted successfully');
+      setDeleteModalVisible(false);
+      setProductToDelete(null);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      message.error('Failed to delete product');
+    }
   };
 
   const showDeleteConfirm = (product) => {
@@ -245,19 +274,20 @@ const MarketPanel = () => {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchText.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesSearch = product.productName.toLowerCase().includes(searchText.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || 
+                           (product.category && product.category.name === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
   const columns = [
     {
       title: 'Product Image',
-      dataIndex: 'imageUrl',
-      key: 'imageUrl',
-      render: (imageUrl) => (
+      dataIndex: 'imagePath',
+      key: 'imagePath',
+      render: (imagePath) => (
         <Image
-          src={imageUrl}
+          src={imagePath}
           alt="Product image"
           width={80}
           height={80}
@@ -271,16 +301,26 @@ const MarketPanel = () => {
     },
     {
       title: 'Product Name',
-      dataIndex: 'name',
-      key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: 'productName',
+      key: 'productName',
+      sorter: (a, b) => a.productName.localeCompare(b.productName),
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      ellipsis: true,
+      render: (text) => (
+        <span title={text}>{text}</span>
+      ),
     },
     {
       title: 'Category',
       dataIndex: 'category',
       key: 'category',
+      render: (category) => category?.name,
       filters: categories.map(cat => ({ text: cat, value: cat })),
-      onFilter: (value, record) => record.category === value,
+      onFilter: (value, record) => record.category?.name === value,
     },
     {
       title: 'Price (₺)',
@@ -288,7 +328,6 @@ const MarketPanel = () => {
       key: 'price',
       sorter: (a, b) => a.price - b.price,
       render: (price) => {
-        // Handle possible string values or invalid data
         const numPrice = typeof price === 'string' ? parseFloat(price) : price;
         return isNaN(numPrice) ? '₺0.00' : `₺${numPrice.toFixed(2)}`;
       },
@@ -376,6 +415,7 @@ const MarketPanel = () => {
       </div>
 
       <Table
+        loading={loading}
         columns={columns}
         dataSource={filteredProducts}
         rowKey="id"
@@ -409,7 +449,13 @@ const MarketPanel = () => {
             name="image"
             label="Product Image"
             valuePropName="fileList"
-            getValueFromEvent={e => e?.fileList}
+            getValueFromEvent={e => {
+              console.log("Upload event:", e);
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e?.fileList;
+            }}
             extra="Supported formats: JPG, PNG. Maximum size: 2MB"
           >
             <Upload
@@ -428,11 +474,11 @@ const MarketPanel = () => {
               )}
             </Upload>
           </Form.Item>
-          {editingProduct?.imageUrl && !form.getFieldValue('image') && (
+          {editingProduct?.imagePath && !form.getFieldValue('image') && (
             <div style={{ marginBottom: 24 }}>
               <p>Current Image:</p>
               <Image
-                src={editingProduct.imageUrl}
+                src={editingProduct.imagePath}
                 alt="Current product image"
                 width={100}
                 height={100}
@@ -456,16 +502,16 @@ const MarketPanel = () => {
             label="Description"
             rules={[{ required: true, message: 'Please enter product description!' }]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={4} />
           </Form.Item>
           <Form.Item
-            name="category"
+            name="categoryId"
             label="Category"
             rules={[{ required: true, message: 'Please select a category!' }]}
           >
             <Select>
-              {categories.map(category => (
-                <Option key={category} value={category}>{category}</Option>
+              {categories.map((category, index) => (
+                <Option key={index} value={index + 1}>{category}</Option>
               ))}
             </Select>
           </Form.Item>
