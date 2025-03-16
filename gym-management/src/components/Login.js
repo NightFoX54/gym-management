@@ -40,6 +40,7 @@ function Login({ isDarkMode = false, setIsDarkMode = () => {} }) {
 
       if (response.data && response.data.token) {
         localStorage.setItem('user', JSON.stringify({
+          id: response.data.id,
           token: response.data.token,
           role: response.data.role,
           name: response.data.name

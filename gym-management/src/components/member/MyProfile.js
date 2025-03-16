@@ -1,18 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaCalendar, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner } from 'react-icons/fa';
 import '../../styles/MyProfile.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
 
 const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [profile, setProfile] = useState({
-    fullName: 'Meriç Ütkü',
-    email: 'meriç@example.com',
-    phone: '+90 555 123 4567',
-    birthDate: '1990-01-01',
-    membershipStart: '2024-01-01',
-    membershipEnd: '2025-01-01',
-    profileImage: '/pp.jpg'
+    fullName: '',
+    email: '',
+    phone: '',
+    membershipStart: '',
+    membershipEnd: '',
+    profileImage: '/uploads/images/default-avatar.jpg'
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -20,8 +19,17 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [tempImage, setTempImage] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Get user info from localStorage
+  const userInfoString = localStorage.getItem('user');
+  const userInfo = JSON.parse(userInfoString || '{}');
+  const userId = userInfo.id;
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -33,25 +41,147 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
     }
   }, [setIsDarkMode]);
 
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!userId) {
+        setError("User not authenticated");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:8080/api/members/${userId}/profile`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch profile: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("User profile data:", data);
+
+        // Update profile state with real data
+        setProfile({
+          fullName: `${data.firstName} ${data.lastName}`,
+          email: data.email,
+          phone: data.phoneNumber || "Not provided",
+          membershipStart: data.membershipStartDate || "N/A",
+          membershipEnd: data.membershipEndDate || "N/A",
+          profileImage: data.profilePhotoPath || "/default-avatar.jpg"
+        });
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        setError("Failed to load profile data");
+        
+        // If we can't fetch the profile, use the data from localStorage
+        setProfile(prev => ({
+          ...prev,
+          fullName: userInfo.name || "User",
+          email: userInfo.email || "No email available",
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   const handleEditMember = () => {
     setIsEditing(true);
   };
 
-  const handleSaveMember = () => {
-    setProfile(prev => ({
-      ...prev,
-      fullName: prev.fullName,
-      email: prev.email,
-      phone: prev.phone,
-      birthDate: prev.birthDate,
-      membershipStart: prev.membershipStart,
-      membershipEnd: prev.membershipEnd
-    }));
-    setIsEditing(false);
+  const handleSaveMember = async () => {
+    try {
+      setIsLoading(true);
+      setSuccessMessage('');
+      setErrorMessage('');
+      
+      // Extract first and last name from fullName
+      const nameParts = profile.fullName.split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+      
+      const updateData = {
+        firstName: firstName,
+        lastName: lastName,
+        email: profile.email,
+        phoneNumber: profile.phone
+      };
+      
+      const response = await fetch(`http://localhost:8080/api/members/${userId}/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update profile: ${response.status} ${errorText}`);
+      }
+      
+      // Update was successful
+      setSuccessMessage('Profile updated successfully!');
+      setIsEditing(false);
+      
+      // Refresh the profile data
+      const updatedResponse = await fetch(`http://localhost:8080/api/members/${userId}/profile`);
+      if (updatedResponse.ok) {
+        const updatedData = await updatedResponse.json();
+        setProfile({
+          fullName: `${updatedData.firstName} ${updatedData.lastName}`,
+          email: updatedData.email,
+          phone: updatedData.phoneNumber || "Not provided",
+          membershipStart: updatedData.membershipStartDate || "N/A",
+          membershipEnd: updatedData.membershipEndDate || "N/A",
+          profileImage: updatedData.profilePhotoPath || "/default-avatar.jpg"
+        });
+      }
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      setErrorMessage(`Failed to update profile: ${err.message}`);
+      
+      // Clear error message after 3 seconds
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancelMember = () => {
     setIsEditing(false);
+    
+    // Reset form to original values
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/members/${userId}/profile`);
+        if (response.ok) {
+          const data = await response.json();
+          setProfile({
+            fullName: `${data.firstName} ${data.lastName}`,
+            email: data.email,
+            phone: data.phoneNumber || "Not provided",
+            membershipStart: data.membershipStartDate || "N/A",
+            membershipEnd: data.membershipEndDate || "N/A",
+            profileImage: data.profilePhotoPath || "/default-avatar.jpg"
+          });
+        }
+      } catch (err) {
+        console.error("Error resetting profile form:", err);
+      }
+    };
+    
+    fetchUserProfile();
   };
 
   const handleChangeMember = (e) => {
@@ -139,6 +269,15 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
     setUploadProgress(0);
   };
 
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <FaSpinner className="spinner" />
+        <p>Loading profile...</p>
+      </div>
+    );
+  }
+
   return (
     <div className={`my-profile-container-myprofile container-animate ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="profile-content-myprofile">
@@ -157,6 +296,18 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
             <FaMoon className="toggle-icon-myprofile moon-myprofile" />
           </button>
         </div>
+
+        {successMessage && (
+          <div className="success-message-myprofile">
+            {successMessage}
+          </div>
+        )}
+        
+        {errorMessage && (
+          <div className="error-message-myprofile">
+            {errorMessage}
+          </div>
+        )}
 
         <div className="profile-top-myprofile">
           <div className="profile-photo-container-myprofile" onClick={handleImageClick}>
@@ -249,35 +400,16 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
             </div>
           </div>
 
-          <div className="profile-field-myprofile card-animate stagger-4">
-            <div className="field-icon-myprofile">
-              <FaCalendar />
-            </div>
-            <div className="field-content-myprofile">
-              <label>Date of Birth</label>
-              {isEditing ? (
-                <input
-                  type="date"
-                  name="birthDate"
-                  value={profile.birthDate}
-                  onChange={handleChangeMember}
-                />
-              ) : (
-                <p>{new Date(profile.birthDate).toLocaleDateString('en-US')}</p>
-              )}
-            </div>
-          </div>
-
           <div className="membership-info-myprofile card-animate stagger-5">
             <h3>Membership Information</h3>
             <div className="membership-dates-myprofile">
               <div>
                 <label>Start Date</label>
-                <p>{new Date(profile.membershipStart).toLocaleDateString('en-US')}</p>
+                <p>{profile.membershipStart ? new Date(profile.membershipStart).toLocaleDateString('en-US') : 'N/A'}</p>
               </div>
               <div>
                 <label>End Date</label>
-                <p>{new Date(profile.membershipEnd).toLocaleDateString('en-US')}</p>
+                <p>{profile.membershipEnd ? new Date(profile.membershipEnd).toLocaleDateString('en-US') : 'N/A'}</p>
               </div>
             </div>
           </div>

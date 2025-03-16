@@ -29,36 +29,29 @@ import "../../styles/PageTransitions.css";
 import { logout } from '../../utils/auth';
 
 const Member = ({ isDarkMode, setIsDarkMode }) => {
+  // Get user info from localStorage
+  const userInfoString = localStorage.getItem('user');
+  const userInfo = JSON.parse(userInfoString || '{}');
+  const userId = userInfo.id;
+
   const [member, setMember] = useState({
-    name: "Meriç Ütkü",
-    email: "mericutku@gmail.com",
-    phone: "+90 539 654 7890",
-    membershipType: "Premium",
-    membershipStatus: "Active",
-    membershipEndDate: "2024-12-31",
-    profilePhoto: "/pp.jpg",
+    name: userInfo.name || "Loading...",
+    email: "Loading...",
+    phone: "Loading...",
+    membershipType: "Loading...",
+    membershipStatus: "Loading...",
+    membershipEndDate: "Loading...",
+    profilePhoto: "/default-avatar.jpg",
     attendance: {
-      total: 45,
-      thisMonth: 12,
-      lastMonth: 15,
+      total: 0,
+      thisMonth: 0,
+      lastMonth: 0,
     },
-    upcomingSessions: [
-      {
-        id: 1,
-        type: "Personal Training",
-        trainer: "Berkay Mustafa Arıkan",
-        date: "2024-03-15",
-        time: "10:00 AM",
-      },
-      {
-        id: 2,
-        type: "Group Class",
-        trainer: "Nurettin Enes Karakulak",
-        date: "2024-03-16",
-        time: "2:00 PM",
-      },
-    ],
+    upcomingSessions: [],
   });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -97,6 +90,63 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!userId) {
+        setError("User not authenticated");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:8080/api/members/${userId}/profile`, {
+          headers: {
+            'Authorization': `Bearer ${userInfo.token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch profile: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("User profile data:", data);
+
+        // Update member state with real data
+        setMember({
+          name: data.firstName + " " + data.lastName,
+          email: data.email,
+          phone: data.phoneNumber || "Not provided",
+          membershipType: data.membershipPlan || "Standard",
+          membershipStatus: data.membershipStatus || "Active",
+          membershipEndDate: data.membershipEndDate || "N/A",
+          profilePhoto: data.profilePhotoPath || "/uploads/images/default-avatar.jpg",
+          attendance: data.attendance || {
+            total: 0,
+            thisMonth: 0,
+            lastMonth: 0,
+          },
+          upcomingSessions: data.upcomingSessions || [],
+        });
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        setError("Failed to load profile data");
+        
+        // If we can't fetch the profile, use the data from localStorage
+        setMember(prev => ({
+          ...prev,
+          name: userInfo.name || "User",
+          email: userInfo.email || "No email available",
+        }));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleLogoutMember = () => {
     logout();
@@ -380,12 +430,37 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
           <div className="member-profile-member card-animate stagger-2">
             <div className="profile-photo-member">
-              <img src={member.profilePhoto} alt="Profile" />
+              {isLoading ? (
+                <div className="loading-spinner">
+                  <FaSpinner className="spinner" />
+                </div>
+              ) : (
+                <img
+                  src={member.profilePhoto}
+                  alt="Profile"
+                  className="profile-photo-member"
+                  onClick={handleImageClickMember}
+                />
+              )}
+              <div className="photo-overlay" onClick={handleImageClickMember}>
+                <FaCamera />
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChangeMember}
+                style={{ display: "none" }}
+                accept="image/*"
+              />
             </div>
             <div className="profile-info-member">
               <h2>{member.name}</h2>
-              <p>{member.email}</p>
-              <p>{member.phone}</p>
+              <p>
+                <strong>Email:</strong> {member.email}
+              </p>
+              <p>
+                <strong>Phone:</strong> {member.phone}
+              </p>
             </div>
           </div>
 

@@ -767,3 +767,25 @@
     padding: 20px;
   }
 } 
+
+.discount-badge {
+  background-color: #e74c3c;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #95a5a6;
+  font-size: 0.9rem;
+  margin-right: 8px;
+}
+
+.discounted-price {
+  font-weight: bold;
+  color: #e74c3c;
+}

@@ -47,6 +47,23 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(null);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [memberDiscount, setMemberDiscount] = useState(0);
+  const [discountPlanName, setDiscountPlanName] = useState('');
+  const [loadingDiscount, setLoadingDiscount] = useState(true);
+  const [discountError, setDiscountError] = useState(null);
+
+  // Get user info from localStorage with better debugging
+  const userInfoString = localStorage.getItem('user');
+  console.log('Raw user info from localStorage:', userInfoString);
+  
+  const userInfo = JSON.parse(userInfoString || '{}');
+  console.log('Parsed user info:', userInfo);
+  
+  const userId = userInfo.id;
+  console.log('User ID extracted:', userId);
 
   // Define default categories in case API fails
   const defaultCategories = [
@@ -109,6 +126,53 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
     fetchData();
   }, []);
 
+  // Fetch member's discount rate
+  useEffect(() => {
+    const fetchMemberDiscount = async () => {
+      if (!userId) {
+        setLoadingDiscount(false);
+        return;
+      }
+
+      try {
+        console.log(`Fetching discount for user ID: ${userId}`);
+        const response = await fetch(`http://localhost:8080/api/members/${userId}/discount`, {
+          headers: {
+            'Authorization': `Bearer ${userInfo.token}`
+          }
+        });
+        
+        console.log('Discount API response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Discount API error:', errorText);
+          throw new Error(`Failed to fetch discount: ${response.status} ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Member discount data:', data);
+        
+        if (data && typeof data.marketDiscount === 'number') {
+          setMemberDiscount(data.marketDiscount);
+          setDiscountPlanName(data.planName || '');
+        } else {
+          console.error('Invalid discount data format:', data);
+          setDiscountError('Invalid discount data received');
+        }
+      } catch (err) {
+        console.error('Error fetching member discount:', err);
+        setDiscountError(err.message);
+        
+        setMemberDiscount(0);
+      } finally {
+        setLoadingDiscount(false);
+      }
+    };
+
+    fetchMemberDiscount();
+  }, [userId, userInfo.token]);
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || 
@@ -155,8 +219,95 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
+  // Calculate the discounted price
+  const getDiscountedPrice = () => {
+    const subtotal = getTotalPrice();
+    const discountAmount = subtotal * (memberDiscount / 100);
+    return subtotal - discountAmount;
+  };
+
   const toggleDarkModeMember = () => {
     setIsDarkMode(!isDarkMode);
+  };
+
+  // Handle checkout
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    
+    console.log('Checking out with user ID:', userId);
+    
+    // Check if user is logged in
+    if (!userId) {
+      console.log('User ID is missing or invalid');
+      setCheckoutError('You must be logged in to checkout. Please log in and try again.');
+      return;
+    }
+    
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+    
+    try {
+      // Apply member's discount rate
+      const discountedTotal = getDiscountedPrice();
+      
+      console.log('Checkout payload:', {
+        userId: userId,
+        cartItems: cart,
+        totalPrice: discountedTotal
+      });
+      
+      const response = await fetch('http://localhost:8080/api/market/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          cartItems: cart,
+          totalPrice: discountedTotal
+        }),
+      });
+      
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        let errorMessage = 'Checkout failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          console.error('Error parsing error response:', jsonError);
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Check if response has content before parsing
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        // Only parse if there's actual content
+        const data = text ? JSON.parse(text) : { success: true };
+        
+        if (!data.success) {
+          throw new Error(data.message || 'Checkout failed');
+        }
+      }
+      
+      // Clear cart and show success message
+      setCart([]);
+      setCheckoutSuccess(true);
+      
+      // Close success message after 3 seconds
+      setTimeout(() => {
+        setCheckoutSuccess(false);
+        setIsCartOpen(false);
+      }, 3000);
+      
+    } catch (err) {
+      console.error('Checkout error:', err);
+      setCheckoutError(err.message || 'Failed to process your order. Please try again.');
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
   return (
@@ -176,8 +327,22 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
         </div>
 
         <div className="member-discount-badge">
-          <FaTag />
-          <span>Member Discount: 15%</span>
+          {loadingDiscount ? (
+            <>
+              <FaTag />
+              <span>Loading discount...</span>
+            </>
+          ) : discountError ? (
+            <>
+              <FaTag />
+              <span>No discount available</span>
+            </>
+          ) : (
+            <>
+              <FaTag />
+              <span>Member Discount: {memberDiscount}% ({discountPlanName})</span>
+            </>
+          )}
         </div>
 
         <button 
@@ -474,9 +639,39 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
           
           <Divider sx={{ mb: 2 }} />
           
+          {checkoutSuccess && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              my: 2, 
+              p: 2, 
+              bgcolor: 'rgba(46, 204, 113, 0.2)', 
+              borderRadius: 2,
+              color: isDarkMode ? '#fff' : 'inherit'
+            }}>
+              <Typography variant="subtitle1">
+                Order placed successfully! Thank you for your purchase.
+              </Typography>
+            </Box>
+          )}
+          
+          {checkoutError && (
+            <Box sx={{ 
+              textAlign: 'center', 
+              my: 2, 
+              p: 2, 
+              bgcolor: 'rgba(231, 76, 60, 0.2)', 
+              borderRadius: 2,
+              color: isDarkMode ? '#fff' : 'inherit'
+            }}>
+              <Typography variant="subtitle1" color="error">
+                {checkoutError}
+              </Typography>
+            </Box>
+          )}
+          
           {cart.length === 0 ? (
             <Box sx={{ textAlign: 'center', my: 5 }}>
-              <ShoppingCart sx={{ fontSize: 60, color: 'rgba(0,0,0,0.2)', mb: 2 }} />
+              <ShoppingCart sx={{ fontSize: 60, color: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', mb: 2 }} />
               <Typography variant="h6">Your cart is empty</Typography>
               <Button 
                 variant="contained" 
@@ -568,25 +763,31 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                   <Typography>₺{getTotalPrice().toFixed(2)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography>Discount (15%):</Typography>
-                  <Typography color="#ff4757">-₺{(getTotalPrice() * 0.15).toFixed(2)}</Typography>
+                  <Typography>Discount ({memberDiscount}%):</Typography>
+                  <Typography color="#ff4757">-₺{(getTotalPrice() * (memberDiscount / 100)).toFixed(2)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                   <Typography variant="h6">Total:</Typography>
-                  <Typography variant="h6">₺{(getTotalPrice() * 0.85).toFixed(2)}</Typography>
+                  <Typography variant="h6">₺{(getTotalPrice() * (1 - memberDiscount / 100)).toFixed(2)}</Typography>
                 </Box>
               </Box>
               
               <Button
                 fullWidth
                 variant="contained"
+                disabled={checkoutLoading}
+                onClick={handleCheckout}
                 sx={{
                   bgcolor: '#ff4757',
                   '&:hover': { bgcolor: '#ff6b81' },
                   py: 1.5,
                 }}
               >
-                Checkout
+                {checkoutLoading ? (
+                  <CircularProgress size={24} sx={{ color: '#fff' }} />
+                ) : (
+                  'Checkout'
+                )}
               </Button>
             </>
           )}

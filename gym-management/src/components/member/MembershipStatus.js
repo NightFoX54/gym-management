@@ -1,51 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { FaCalendarAlt, FaCreditCard, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaSun, FaMoon, FaSync } from 'react-icons/fa';
+import { FaCalendarAlt, FaCreditCard, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaSun, FaMoon, FaSync, FaSpinner } from 'react-icons/fa';
 import '../../styles/MembershipStatus.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
 
 const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
+  // Get user info from localStorage
+  const userInfoString = localStorage.getItem('user');
+  const userInfo = JSON.parse(userInfoString || '{}');
+  const userId = userInfo.id;
+
   const [membership, setMembership] = useState({
-    status: 'active',
-    type: 'Premium',
-    startDate: '2024-01-01',
-    endDate: '2025-01-01',
-    paymentStatus: 'paid',
-    nextPayment: '2025-01-01',
-    price: '199.99',
-    benefits: [
-      'Unlimited Gym Access',
-      'Personal Trainer Sessions',
-      'Group Classes',
-      'Locker Access',
-      'Spa Access'
-    ]
+    status: 'Loading...',
+    type: 'Loading...',
+    startDate: '',
+    endDate: '',
+    paymentStatus: 'Loading...',
+    nextPayment: '',
+    price: '',
+    benefits: []
   });
 
+  const [renewalPlans, setRenewalPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showRenewalModal, setShowRenewalModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
   const navigate = useNavigate();
-
-  const renewalPlans = [
-    {
-      id: '1month',
-      name: '1 Month',
-      price: '199.99',
-      description: 'Basic monthly membership'
-    },
-    {
-      id: '6months',
-      name: '6 Months',
-      price: '999.99',
-      description: 'Save 15% on 6-month membership'
-    },
-    {
-      id: '12months',
-      name: '12 Months',
-      price: '1799.99',
-      description: 'Save 25% on annual membership'
-    }
-  ];
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -56,6 +37,92 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
       document.body.classList.remove('dark-mode');
     }
   }, [setIsDarkMode]);
+
+  // Fetch membership data
+  useEffect(() => {
+    const fetchMembershipData = async () => {
+      if (!userId) {
+        setError("User not authenticated");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:8080/api/members/${userId}/membership`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch membership: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Membership data:", data);
+
+        // Update membership state with real data
+        setMembership({
+          status: data.isFrozen ? 'frozen' : (new Date(data.endDate) > new Date() ? 'active' : 'expired'),
+          type: data.planName,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          paymentStatus: data.paymentStatus || 'paid',
+          nextPayment: data.nextPaymentDate || data.endDate,
+          price: data.price.toString(),
+          benefits: data.benefits || [
+            'Unlimited Gym Access',
+            'Personal Trainer Sessions',
+            'Group Classes',
+            'Locker Access',
+            'Spa Access'
+          ]
+        });
+
+        // Calculate renewal plan prices based on current membership price
+        const basePrice = parseFloat(data.price);
+        if (!isNaN(basePrice)) {
+          setRenewalPlans([
+            {
+              id: '1month',
+              name: '1 Month',
+              price: basePrice.toFixed(2), // No discount for 1 month
+              originalPrice: basePrice.toFixed(2),
+              discount: '0%',
+              description: 'Standard monthly membership'
+            },
+            {
+              id: '3months',
+              name: '3 Months',
+              price: (basePrice * 3 * 0.9).toFixed(2), // 10% discount
+              originalPrice: (basePrice * 3).toFixed(2),
+              discount: '10%',
+              description: 'Save 10% on 3-month membership'
+            },
+            {
+              id: '6months',
+              name: '6 Months',
+              price: (basePrice * 6 * 0.8).toFixed(2), // 20% discount
+              originalPrice: (basePrice * 6).toFixed(2),
+              discount: '20%',
+              description: 'Save 20% on 6-month membership'
+            },
+            {
+              id: '12months',
+              name: '12 Months',
+              price: (basePrice * 12 * 0.72).toFixed(2), // 28% discount
+              originalPrice: (basePrice * 12).toFixed(2),
+              discount: '28%',
+              description: 'Save 28% on annual membership'
+            }
+          ]);
+        }
+      } catch (err) {
+        console.error("Error fetching membership data:", err);
+        setError("Failed to load membership data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMembershipData();
+  }, [userId]);
 
   const toggleDarkModeMember = () => {
     const newDarkMode = !isDarkMode;
@@ -76,6 +143,8 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
         return '#e74c3c';
       case 'pending':
         return '#f1c40f';
+      case 'frozen':
+        return '#3498db';
       default:
         return '#95a5a6';
     }
@@ -102,15 +171,77 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
     setSelectedPlan(planId);
   };
 
-  const handleConfirmRenewal = () => {
+  const handleConfirmRenewal = async () => {
     if (!selectedPlan) {
-      alert('Please select a plan');
+      setError('Please select a plan');
       return;
     }
-    // Here payment process and membership renewal API call will be made
-    alert('Your membership renewal has been completed successfully!');
-    setShowRenewalModal(false);
-    setSelectedPlan('');
+
+    setIsLoading(true);
+    
+    try {
+      // Get the selected plan details
+      const plan = renewalPlans.find(p => p.id === selectedPlan);
+      
+      // Prepare renewal data
+      const renewalData = {
+        userId: userId,
+        planId: selectedPlan,
+        duration: selectedPlan === '1month' ? 1 : 
+                  (selectedPlan === '3months' ? 3 : 
+                  (selectedPlan === '6months' ? 6 : 12)),
+        price: plan.price
+      };
+      
+      // Call the API to renew membership
+      const response = await fetch(`http://localhost:8080/api/members/${userId}/renew`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify(renewalData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to renew membership: ${response.status}`);
+      }
+      
+      // Refresh membership data
+      const updatedResponse = await fetch(`http://localhost:8080/api/members/${userId}/membership`);
+      if (updatedResponse.ok) {
+        const updatedData = await updatedResponse.json();
+        setMembership({
+          status: updatedData.isFrozen ? 'frozen' : (new Date(updatedData.endDate) > new Date() ? 'active' : 'expired'),
+          type: updatedData.planName,
+          startDate: updatedData.startDate,
+          endDate: updatedData.endDate,
+          paymentStatus: updatedData.paymentStatus || 'paid',
+          nextPayment: updatedData.nextPaymentDate || updatedData.endDate,
+          price: updatedData.price.toString(),
+          benefits: updatedData.benefits || [
+            'Unlimited Gym Access',
+            'Personal Trainer Sessions',
+            'Group Classes',
+            'Locker Access',
+            'Spa Access'
+          ]
+        });
+      }
+      
+      setShowRenewalModal(false);
+      setSelectedPlan('');
+    } catch (err) {
+      console.error("Error renewing membership:", err);
+      setError("Failed to renew membership");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Format currency with Turkish Lira symbol
+  const formatCurrency = (amount) => {
+    return `₺${amount}`;
   };
 
   return (
@@ -132,90 +263,104 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
           </button>
         </div>
 
-        <div className="membership-status-card-membershipstatus card-animate stagger-1">
-          <div className="status-header-membershipstatus">
-            <h2>Membership Status</h2>
-            <div 
-              className="status-badge-membershipstatus"
-              style={{ backgroundColor: getStatusColor(membership.status) }}
-            >
-              {membership.status.charAt(0).toUpperCase() + membership.status.slice(1)}
-            </div>
+        {isLoading ? (
+          <div className="loading-container">
+            <FaSpinner className="spinner" />
+            <p>Loading membership data...</p>
           </div>
-
-          <div className="membership-details-membershipstatus">
-            <div className="detail-item-membershipstatus">
-              <FaCalendarAlt className="detail-icon-membershipstatus" />
-              <div className="detail-content-membershipstatus">
-                <label>Membership Type</label>
-                <p>{membership.type}</p>
-              </div>
-            </div>
-
-            <div className="detail-item-membershipstatus">
-              <FaCalendarAlt className="detail-icon-membershipstatus" />
-              <div className="detail-content-membershipstatus">
-                <label>Start Date</label>
-                <p>{new Date(membership.startDate).toLocaleDateString('en-US')}</p>
-              </div>
-            </div>
-
-            <div className="detail-item-membershipstatus">
-              <FaCalendarAlt className="detail-icon-membershipstatus" />
-              <div className="detail-content-membershipstatus">
-                <label>End Date</label>
-                <p>{new Date(membership.endDate).toLocaleDateString('en-US')}</p>
-              </div>
-            </div>
-
-            <div className="detail-item-membershipstatus">
-              <FaCreditCard className="detail-icon-membershipstatus" />
-              <div className="detail-content-membershipstatus">
-                <label>Payment Status</label>
-                <div className="payment-status-membershipstatus">
-                  <span 
-                    className="status-dot-membershipstatus"
-                    style={{ backgroundColor: getPaymentStatusColor(membership.paymentStatus) }}
-                  ></span>
-                  <p>{membership.paymentStatus.charAt(0).toUpperCase() + membership.paymentStatus.slice(1)}</p>
+        ) : error ? (
+          <div className="error-container">
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>Try Again</button>
+          </div>
+        ) : (
+          <>
+            <div className="membership-status-card-membershipstatus card-animate stagger-1">
+              <div className="status-header-membershipstatus">
+                <h2>Membership Status</h2>
+                <div 
+                  className="status-badge-membershipstatus"
+                  style={{ backgroundColor: getStatusColor(membership.status) }}
+                >
+                  {membership.status.charAt(0).toUpperCase() + membership.status.slice(1)}
                 </div>
               </div>
-            </div>
 
-            <div className="detail-item-membershipstatus">
-              <FaCreditCard className="detail-icon-membershipstatus" />
-              <div className="detail-content-membershipstatus">
-                <label>Next Payment</label>
-                <p>{new Date(membership.nextPayment).toLocaleDateString('en-US')}</p>
-              </div>
-            </div>
-
-            <div className="detail-item-membershipstatus">
-              <FaCreditCard className="detail-icon-membershipstatus" />
-              <div className="detail-content-membershipstatus">
-                <label>Price</label>
-                <p>${membership.price}/month</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="benefits-section-membershipstatus card-animate stagger-2">
-            <h3>Membership Benefits</h3>
-            <div className="benefits-grid-membershipstatus">
-              {membership.benefits.map((benefit, index) => (
-                <div key={index} className="benefit-item-membershipstatus">
-                  <FaCheckCircle className="benefit-icon-membershipstatus" />
-                  <span>{benefit}</span>
+              <div className="membership-details-membershipstatus">
+                <div className="detail-item-membershipstatus">
+                  <FaCalendarAlt className="detail-icon-membershipstatus" />
+                  <div className="detail-content-membershipstatus">
+                    <label>Membership Type</label>
+                    <p>{membership.type}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <button className="renew-button-membershipstatus card-animate stagger-3" onClick={handleRenewal}>
-            <FaSync />
-            <span>Renew Membership</span>
-          </button>
-        </div>
+                <div className="detail-item-membershipstatus">
+                  <FaCalendarAlt className="detail-icon-membershipstatus" />
+                  <div className="detail-content-membershipstatus">
+                    <label>Start Date</label>
+                    <p>{membership.startDate ? new Date(membership.startDate).toLocaleDateString('en-US') : 'N/A'}</p>
+                  </div>
+                </div>
+
+                <div className="detail-item-membershipstatus">
+                  <FaCalendarAlt className="detail-icon-membershipstatus" />
+                  <div className="detail-content-membershipstatus">
+                    <label>End Date</label>
+                    <p>{membership.endDate ? new Date(membership.endDate).toLocaleDateString('en-US') : 'N/A'}</p>
+                  </div>
+                </div>
+
+                <div className="detail-item-membershipstatus">
+                  <FaCreditCard className="detail-icon-membershipstatus" />
+                  <div className="detail-content-membershipstatus">
+                    <label>Payment Status</label>
+                    <div className="payment-status-membershipstatus">
+                      <span 
+                        className="status-dot-membershipstatus"
+                        style={{ backgroundColor: getPaymentStatusColor(membership.paymentStatus) }}
+                      ></span>
+                      <p>{membership.paymentStatus.charAt(0).toUpperCase() + membership.paymentStatus.slice(1)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-item-membershipstatus">
+                  <FaCreditCard className="detail-icon-membershipstatus" />
+                  <div className="detail-content-membershipstatus">
+                    <label>Next Payment</label>
+                    <p>{membership.nextPayment ? new Date(membership.nextPayment).toLocaleDateString('en-US') : 'N/A'}</p>
+                  </div>
+                </div>
+
+                <div className="detail-item-membershipstatus">
+                  <FaCreditCard className="detail-icon-membershipstatus" />
+                  <div className="detail-content-membershipstatus">
+                    <label>Price</label>
+                    <p>{formatCurrency(membership.price)}/month</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="benefits-section-membershipstatus card-animate stagger-2">
+                <h3>Membership Benefits</h3>
+                <div className="benefits-grid-membershipstatus">
+                  {membership.benefits.map((benefit, index) => (
+                    <div key={index} className="benefit-item-membershipstatus">
+                      <FaCheckCircle className="benefit-icon-membershipstatus" />
+                      <span>{benefit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button className="renew-button-membershipstatus card-animate stagger-3" onClick={handleRenewal}>
+                <FaSync />
+                <span>Renew Membership</span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {showRenewalModal && (
@@ -237,9 +382,13 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
                   >
                     <div className="plan-header-membershipstatus">
                       <h4>{plan.name}</h4>
+                      <div className="discount-badge">{plan.discount} OFF</div>
                     </div>
                     <div className="plan-content-membershipstatus">
-                      <div className="plan-price-membershipstatus">${plan.price}</div>
+                      <div className="plan-price-membershipstatus">
+                        <span className="original-price">{formatCurrency(plan.originalPrice)}</span>
+                        <span className="discounted-price">{formatCurrency(plan.price)}</span>
+                      </div>
                       <p className="plan-description-membershipstatus">{plan.description}</p>
                     </div>
                     {selectedPlan === plan.id && (
@@ -271,9 +420,16 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
               <button 
                 className="confirm-button-membershipstatus" 
                 onClick={handleConfirmRenewal}
-                disabled={!selectedPlan}
+                disabled={!selectedPlan || isLoading}
               >
-                Confirm Renewal
+                {isLoading ? (
+                  <>
+                    <FaSpinner className="spinner" />
+                    Processing...
+                  </>
+                ) : (
+                  'Confirm Renewal'
+                )}
               </button>
             </div>
           </div>
