@@ -26,6 +26,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/market/**").permitAll()
                 .requestMatchers("/api/images/**").permitAll()
+                .requestMatchers("/api/members/*/discount").permitAll()
+                .requestMatchers("/api/members/*/profile").permitAll()
+                .requestMatchers("/api/members/*/update").permitAll()
+                .requestMatchers("/api/members/*/membership").permitAll()
                 .anyRequest().authenticated()
             );
             

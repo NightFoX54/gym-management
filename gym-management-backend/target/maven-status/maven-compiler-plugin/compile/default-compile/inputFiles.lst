@@ -3,7 +3,9 @@ C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-b
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\controller\AuthController.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\controller\ImageController.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\controller\MarketController.java
+C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\controller\MemberController.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\controller\TestController.java
+C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\dto\CheckoutRequest.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\dto\LoginRequest.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\dto\LoginResponse.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\dto\SignupRequest.java
@@ -11,12 +13,16 @@ C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-b
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\GymManagementApplication.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\MarketCategory.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\MarketProduct.java
+C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\MarketProductSale.java
+C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\MarketSalesInvoice.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\Membership.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\MembershipPlan.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\PaymentMethod.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\model\User.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\repository\MarketCategoryRepository.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\repository\MarketProductRepository.java
+C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\repository\MarketProductSaleRepository.java
+C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\repository\MarketSalesInvoiceRepository.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\repository\MembershipPlanRepository.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\repository\MembershipRepository.java
 C:\Users\e1a54\OneDrive\Masaüstü\software engineering project\gym-management-backend\src\main\java\com\gymmanagement\repository\PaymentMethodRepository.java
