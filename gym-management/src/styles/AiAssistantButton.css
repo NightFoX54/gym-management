@@ -3,6 +3,7 @@
   bottom: 25px;
   left: 25px;
   z-index: 999;
+  background: none;
 }
 
 .ai-assistant-toggle {
@@ -51,6 +52,7 @@
 
 .button-icon i {
   font-size: 1.5rem;
+  margin-left: 8px;
 }
 
 .button-icon span {
@@ -191,6 +193,7 @@
 .dark-mode .ai-assistant-toggle {
   background: linear-gradient(135deg, #ff4757, #ff2940);
   box-shadow: 0 4px 15px rgba(255, 71, 87, 0.25);
+  background-color: transparent;
 }
 
 .dark-mode .ai-assistant-toggle:hover {

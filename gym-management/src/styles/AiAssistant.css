@@ -440,9 +440,225 @@
   border-color: rgba(255, 71, 87, 0.9);
 }
 
-/* Remove all body part button styles */
+/* Body part buttons */
 .body-part-button {
-  display: none;
+  position: absolute;
+  background-color: rgba(255, 71, 87, 0.3);
+  border: 2px solid rgba(255, 71, 87, 0.4);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--button-transition);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.body-part-button:hover {
+  background-color: rgba(255, 71, 87, 0.3);
+  border-color: rgba(255, 71, 87, 0.8);
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(255, 71, 87, 0.3);
+}
+
+.body-part-button.selected {
+  background-color: rgba(255, 71, 87, 0.6);
+  border-color: rgb(255, 32, 51);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
+}
+
+/* Front body buttons */
+.body-part-button.chest {
+  top: 20%;
+  left: 50%;
+  width: 50px;
+  height: 45px;
+  transform: translateX(-50%);
+}
+
+.body-part-button.biceps-left {
+  top: 25%;
+  left: 30%;
+  width: 30px;
+  height: 32px;
+}
+
+.body-part-button.biceps-right {
+  top: 25%;
+  right: 30%;
+  width: 30px;
+  height: 32px;
+}
+
+.body-part-button.abs {
+  top: 31%;
+  left: 50%;
+  width: 40px;
+  height: 50px;
+  transform: translateX(-50%);
+  border-radius: 40%;
+}
+
+.body-part-button.shoulders-left {
+  top: 17%;
+  left: 33%;
+  width: 32px;
+  height: 32px;
+}
+
+.body-part-button.shoulders-right {
+  top: 17%;
+  right: 33%;
+  width: 32px;
+  height: 32px;
+}
+
+.body-part-button.forearms-left {
+  top: 35%;
+  left: 27%;
+  width: 28px;
+  height: 30px;
+  border-radius: 40%;
+}
+
+.body-part-button.forearms-right {
+  top: 35%;
+  right: 26%;
+  width: 28px;
+  height: 30px;
+  border-radius: 40%;
+}
+
+.body-part-button.quads-left {
+  top: 50%;
+  left: 38%;
+  width: 34px;
+  height: 55px;
+  border-radius: 40%;
+}
+
+.body-part-button.quads-right {
+  top: 50%;
+  right: 38%;
+  width: 34px;
+  height: 55px;
+  border-radius: 40%;
+}
+
+.body-part-button.calves-front-left {
+  top: 74%;
+  left: 38%;
+  width: 30px;
+  height: 35px;
+  border-radius: 40%;
+}
+
+.body-part-button.calves-front-right {
+  top: 74%;
+  right: 37%;
+  width: 30px;
+  height: 35px;
+  border-radius: 40%;
+}
+
+/* Back body buttons */
+.body-part-button.back {
+  top: 21%;
+  left: 52%;
+  width: 65px;
+  height: 53px;
+  transform: translateX(-50%);
+  border-radius: 40%;
+}
+
+.body-part-button.triceps-left {
+  top: 26%;
+  left: 32%;
+  width: 31px;
+  height: 38px;
+}
+
+.body-part-button.triceps-right {
+  top: 26%;
+  right: 28%;
+  width: 31px;
+  height: 38px;
+}
+
+.body-part-button.trapezius {
+  top: 15%;
+  left: 52%;
+  width: 50px;
+  height: 23px;
+  transform: translateX(-50%);
+  border-radius: 40%;
+}
+
+.body-part-button.lower-back {
+  top: 36%;
+  left: 52%;
+  width: 40px;
+  height: 35px;
+  transform: translateX(-50%);
+  border-radius: 40%;
+}
+
+.body-part-button.glutes {
+  top: 45%;
+  left: 52%;
+  width: 68px;
+  height: 40px;
+  transform: translateX(-50%);
+  border-radius: 40%;
+}
+
+.body-part-button.hamstrings-left {
+  top: 57%;
+  left: 39%;
+  width: 34px;
+  height: 50px;
+  border-radius: 40%;
+}
+
+.body-part-button.hamstrings-right {
+  top: 57%;
+  right: 36%;
+  width: 34px;
+  height: 50px;
+  border-radius: 40%;
+}
+
+.body-part-button.calves-left {
+  top: 73%;
+  left: 39%;
+  width: 30px;
+  height: 47px;
+  border-radius: 40%;
+}
+
+.body-part-button.calves-right {
+  top: 73%;
+  right: 36%;
+  width: 30px;
+  height: 47px;
+  border-radius: 40%;
+}
+
+/* Dark mode styles for body part buttons */
+.dark-mode .body-part-button {
+  background-color: rgba(255, 71, 87, 0.15);
+  border-color: rgba(255, 71, 87, 0.4);
+}
+
+.dark-mode .body-part-button:hover {
+  background-color: rgba(255, 71, 87, 0.25);
+  border-color: rgba(255, 71, 87, 0.8);
+}
+
+.dark-mode .body-part-button.selected {
+  background-color: rgba(255, 71, 87, 0.35);
+  border-color: rgba(255, 71, 87, 1);
 }
 
 .service-recommendations {

@@ -254,6 +254,7 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
   const [inputText, setInputText] = useState('');
   const [showBackView, setShowBackView] = useState(false);
   const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [selectedButtons, setSelectedButtons] = useState([]);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   
@@ -278,10 +279,24 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
   const toggleBodyView = () => {
     setShowBackView(!showBackView);
     setSelectedMuscle(null);
+    setSelectedButtons([]);
   };
 
-  const handleMuscleClick = (muscleId) => {
+  const handleMuscleClick = (muscleId, buttonId = null) => {
     setSelectedMuscle(muscleId);
+    
+    // If clicked from legend, select both sides
+    if (!buttonId) {
+      const sides = ['left', 'right', 'front-left', 'front-right'];
+      const selectedIds = sides.map(side => `${muscleId}-${side}`).filter(id => 
+        document.querySelector(`.body-part-button.${id}`)
+      );
+      // If no sided buttons found, just use the muscleId (for single buttons like 'chest', 'back', etc.)
+      setSelectedButtons(selectedIds.length > 0 ? selectedIds : [muscleId]);
+    } else {
+      // If clicked from body diagram, select only that button
+      setSelectedButtons([buttonId]);
+    }
     
     const currentView = showBackView ? muscleGroups.back : muscleGroups.front;
     const muscleData = currentView.find(muscle => muscle.id === muscleId);
@@ -344,6 +359,134 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
     }, 500);
     
     setInputText('');
+  };
+
+  const renderBodyPartButtons = () => {
+    const currentView = showBackView ? muscleGroups.back : muscleGroups.front;
+    const buttonClasses = (muscleId, buttonId) => 
+      `body-part-button ${buttonId} ${selectedButtons.includes(buttonId) ? 'selected' : ''}`;
+
+    if (showBackView) {
+      return (
+        <>
+          <button 
+            className={buttonClasses('back', 'back')}
+            onClick={() => handleMuscleClick('back', 'back')}
+            aria-label="Back muscles"
+          />
+          <button 
+            className={buttonClasses('triceps', 'triceps-left')}
+            onClick={() => handleMuscleClick('triceps', 'triceps-left')}
+            aria-label="Left triceps"
+          />
+          <button 
+            className={buttonClasses('triceps', 'triceps-right')}
+            onClick={() => handleMuscleClick('triceps', 'triceps-right')}
+            aria-label="Right triceps"
+          />
+          <button 
+            className={buttonClasses('trapezius', 'trapezius')}
+            onClick={() => handleMuscleClick('trapezius', 'trapezius')}
+            aria-label="Trapezius"
+          />
+          <button 
+            className={buttonClasses('lower_back', 'lower-back')}
+            onClick={() => handleMuscleClick('lower_back', 'lower-back')}
+            aria-label="Lower back"
+          />
+          <button 
+            className={buttonClasses('glutes', 'glutes')}
+            onClick={() => handleMuscleClick('glutes', 'glutes')}
+            aria-label="Glutes"
+          />
+          <button 
+            className={buttonClasses('hamstrings', 'hamstrings-left')}
+            onClick={() => handleMuscleClick('hamstrings', 'hamstrings-left')}
+            aria-label="Left hamstrings"
+          />
+          <button 
+            className={buttonClasses('hamstrings', 'hamstrings-right')}
+            onClick={() => handleMuscleClick('hamstrings', 'hamstrings-right')}
+            aria-label="Right hamstrings"
+          />
+          <button 
+            className={buttonClasses('calves', 'calves-left')}
+            onClick={() => handleMuscleClick('calves', 'calves-left')}
+            aria-label="Left calf"
+          />
+          <button 
+            className={buttonClasses('calves', 'calves-right')}
+            onClick={() => handleMuscleClick('calves', 'calves-right')}
+            aria-label="Right calf"
+          />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <button 
+            className={buttonClasses('chest', 'chest')}
+            onClick={() => handleMuscleClick('chest', 'chest')}
+            aria-label="Chest"
+          />
+          <button 
+            className={buttonClasses('biceps', 'biceps-left')}
+            onClick={() => handleMuscleClick('biceps', 'biceps-left')}
+            aria-label="Left biceps"
+          />
+          <button 
+            className={buttonClasses('biceps', 'biceps-right')}
+            onClick={() => handleMuscleClick('biceps', 'biceps-right')}
+            aria-label="Right biceps"
+          />
+          <button 
+            className={buttonClasses('abs', 'abs')}
+            onClick={() => handleMuscleClick('abs', 'abs')}
+            aria-label="Abdominals"
+          />
+          <button 
+            className={buttonClasses('shoulders', 'shoulders-left')}
+            onClick={() => handleMuscleClick('shoulders', 'shoulders-left')}
+            aria-label="Left shoulder"
+          />
+          <button 
+            className={buttonClasses('shoulders', 'shoulders-right')}
+            onClick={() => handleMuscleClick('shoulders', 'shoulders-right')}
+            aria-label="Right shoulder"
+          />
+          <button 
+            className={buttonClasses('forearms', 'forearms-left')}
+            onClick={() => handleMuscleClick('forearms', 'forearms-left')}
+            aria-label="Left forearm"
+          />
+          <button 
+            className={buttonClasses('forearms', 'forearms-right')}
+            onClick={() => handleMuscleClick('forearms', 'forearms-right')}
+            aria-label="Right forearm"
+          />
+          <button 
+            className={buttonClasses('quads', 'quads-left')}
+            onClick={() => handleMuscleClick('quads', 'quads-left')}
+            aria-label="Left quadriceps"
+          />
+          <button 
+            className={buttonClasses('quads', 'quads-right')}
+            onClick={() => handleMuscleClick('quads', 'quads-right')}
+            aria-label="Right quadriceps"
+          />
+          <button 
+            className={buttonClasses('calves', 'calves-front-left')}
+            onClick={() => handleMuscleClick('calves', 'calves-front-left')}
+            aria-label="Left calf"
+          />
+          <button 
+            className={buttonClasses('calves', 'calves-front-right')}
+            onClick={() => handleMuscleClick('calves', 'calves-front-right')}
+            aria-label="Right calf"
+          />
+        </>
+      );
+    }
   };
 
   return (
@@ -434,6 +577,7 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
                         alt={showBackView ? "Back body diagram" : "Front body diagram"} 
                         className="body-diagram-image" 
                       />
+                      {renderBodyPartButtons()}
                     </motion.div>
                   </AnimatePresence>
                 </div>
