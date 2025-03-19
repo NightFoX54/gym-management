@@ -808,3 +808,10 @@
 .dark-mode .plan-card:nth-child(3) .plan-icon {
   color: #0096c7; /* Dark mode'da elite plan için daha canlı mavi */
 }
+
+.error-message {
+  color: #ff4757;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: block;
+}

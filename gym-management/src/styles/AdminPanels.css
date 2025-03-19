@@ -870,7 +870,7 @@
 }
 
 .add-button:hover {
-  background-color: #ff6b81;
+  background-color: #ff6b6b;
 }
 
 .edit-button {
@@ -1578,4 +1578,186 @@
 
 .dark-mode .custom-checkbox:hover .custom-checkbox-label {
   color: #3498db;
+}
+
+/* Market Panel Edit/Delete Mode Styles */
+.edit-mode-banner,
+.delete-mode-banner {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dark-mode .edit-mode-banner,
+.dark-mode .delete-mode-banner {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.edit-mode-banner .edit-icon,
+.delete-mode-banner .delete-icon {
+  font-size: 20px;
+}
+
+.edit-mode-banner .edit-text,
+.delete-mode-banner .delete-text {
+  font-size: 14px;
+  color: inherit;
+}
+
+.edit-mode-container .selectable-row:hover {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+  cursor: pointer;
+}
+
+.delete-mode-container .deletable-row:hover {
+  background-color: rgba(244, 67, 54, 0.1) !important;
+  cursor: pointer;
+}
+
+.dark-mode .edit-mode-container .selectable-row:hover {
+  background-color: rgba(24, 144, 255, 0.2) !important;
+}
+
+.dark-mode .delete-mode-container .deletable-row:hover {
+  background-color: rgba(244, 67, 54, 0.2) !important;
+}
+
+/* Update button styles to match customers section */
+.panel-actions .edit-button,
+.panel-actions .delete-button {
+  min-width: 80px;
+  padding: 4px 12px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.panel-actions .edit-button {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  color: white;
+}
+
+.panel-actions .edit-button:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.panel-actions .edit-button.active {
+  background-color: #096dd9;
+  border-color: #096dd9;
+}
+
+.panel-actions .delete-button {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+  color: white;
+}
+
+.panel-actions .delete-button:hover {
+  background-color: #ff7875;
+  border-color: #ff7875;
+}
+
+.panel-actions .delete-button.active {
+  background-color: #d9363e;
+  border-color: #d9363e;
+}
+
+/* Dark mode button styles */
+.dark-mode .panel-actions .edit-button,
+.dark-mode .panel-actions .delete-button {
+  color: white;
+}
+
+.dark-mode .panel-actions .edit-button {
+  background-color: #177ddc;
+  border-color: #177ddc;
+}
+
+.dark-mode .panel-actions .edit-button:hover {
+  background-color: #3c9ae8;
+  border-color: #3c9ae8;
+}
+
+.dark-mode .panel-actions .edit-button.active {
+  background-color: #0958d9;
+  border-color: #0958d9;
+}
+
+.dark-mode .panel-actions .delete-button {
+  background-color: #a61d24;
+  border-color: #a61d24;
+}
+
+.dark-mode .panel-actions .delete-button:hover {
+  background-color: #d32029;
+  border-color: #d32029;
+}
+
+.dark-mode .panel-actions .delete-button.active {
+  background-color: #791a1f;
+  border-color: #791a1f;
+}
+
+.panel-actions .ant-btn-primary {
+  background-color: #ff4757;
+  border-color: #ff4757;
+  transition: all 0.3s ease;
+}
+
+.panel-actions .ant-btn-primary:hover {
+  background-color: #ff6b6b !important;
+  border-color: #ff6b6b !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.dark-mode .panel-actions .ant-btn-primary {
+  background-color: #ff4757;
+  border-color: #ff4757;
+}
+
+.dark-mode .panel-actions .ant-btn-primary:hover {
+  background-color: #ff6b6b !important;
+  border-color: #ff6b6b !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+/* Add button styles */
+.button-group .ant-btn-primary,
+.panel-actions .ant-btn-primary {
+  background-color: #ff4757;
+  border-color: #ff4757;
+  transition: all 0.3s ease;
+}
+
+.button-group .ant-btn-primary:hover,
+.panel-actions .ant-btn-primary:hover {
+  background-color: #ff6b6b !important;
+  border-color: #ff6b6b !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.dark-mode .button-group .ant-btn-primary,
+.dark-mode .panel-actions .ant-btn-primary {
+  background-color: #ff4757;
+  border-color: #ff4757;
+}
+
+.dark-mode .button-group .ant-btn-primary:hover,
+.dark-mode .panel-actions .ant-btn-primary:hover {
+  background-color: #ff6b6b !important;
+  border-color: #ff6b6b !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
 } 

@@ -1,30 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/AdminPanels.css';
 import 'antd/dist/reset.css';
-import { Button, Table, Form, Modal, Input, Select, message, Popconfirm, Upload, Image, theme } from 'antd';
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
+import { Button, Table, message, Upload, Image } from 'antd';
+import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const MarketPanel = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [form] = Form.useForm();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    categoryId: '',
+    price: '',
+    stock: '',
+    image: undefined
+  });
   
   // Check dark mode on component mount and when body classes change
   useEffect(() => {
-    // Initial check
     setIsDarkMode(document.body.classList.contains('dark-mode'));
     
-    // Create observer to watch for class changes on body
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.attributeName === 'class') {
@@ -33,10 +37,7 @@ const MarketPanel = () => {
       });
     });
     
-    // Start observing
     observer.observe(document.body, { attributes: true });
-    
-    // Cleanup
     return () => observer.disconnect();
   }, []);
 
@@ -74,24 +75,17 @@ const MarketPanel = () => {
 
   const handleImageUpload = async (file) => {
     try {
-      console.log("Starting image upload for file:", file.name);
-      
       // Convert file to base64
       const base64Image = await new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => {
-          console.log("File converted to base64, length:", reader.result.length);
-          resolve(reader.result);
-        };
+        reader.onload = () => resolve(reader.result);
       });
       
       // Get the authentication token
       const token = localStorage.getItem('token');
-      console.log("Got authentication token");
       
       // Upload the base64 image to the server
-      console.log("Sending image to server...");
       const response = await fetch('http://localhost:8080/api/images/upload-base64', {
         method: 'POST',
         headers: {
@@ -103,12 +97,10 @@ const MarketPanel = () => {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Server response not OK:", response.status, errorText);
         throw new Error(`Failed to upload image: ${response.status} ${errorText}`);
       }
       
       const data = await response.json();
-      console.log("Image upload successful, received path:", data.imagePath);
       return data.imagePath; // Return the path to the saved image
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -120,30 +112,42 @@ const MarketPanel = () => {
   const showModal = (product = null) => {
     setEditingProduct(product);
     if (product) {
-      form.setFieldsValue({
+      setFormData({
         name: product.productName,
         description: product.description,
         categoryId: product.category?.id,
         price: product.price,
         stock: product.stock,
-        image: undefined // Reset image field for Upload component
+        image: undefined
       });
     } else {
-      form.resetFields();
+      setFormData({
+        name: '',
+        description: '',
+        categoryId: '',
+        price: '',
+        stock: '',
+        image: undefined
+      });
     }
     setIsModalVisible(true);
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
-    form.resetFields();
+    setFormData({
+      name: '',
+      description: '',
+      categoryId: '',
+      price: '',
+      stock: '',
+      image: undefined
+    });
     setEditingProduct(null);
   };
 
   const handleSubmit = async (values) => {
     try {
-      console.log("Starting form submission, values:", values);
-      
       // Get the authentication token
       const token = localStorage.getItem('token');
       const headers = {
@@ -152,23 +156,23 @@ const MarketPanel = () => {
       };
       
       let imageUrl = editingProduct?.imagePath;
-      console.log("Initial image URL:", imageUrl);
 
       // Check if there's an image to upload
-      console.log("Image value:", values.image);
       if (values.image && values.image.length > 0) {
         const fileObj = values.image[0].originFileObj;
-        console.log("File object:", fileObj);
+        
+        // Double check file type before upload
+        if (!fileObj.type.startsWith('image/')) {
+          message.error('Only image files are allowed!');
+          return;
+        }
         
         if (fileObj) {
-          console.log("New image detected, uploading...");
           const uploadedImagePath = await handleImageUpload(fileObj);
           if (uploadedImagePath) {
             imageUrl = uploadedImagePath;
-            console.log("Image uploaded successfully, new path:", imageUrl);
           } else {
             // If image upload failed, show error and return
-            console.error("Image upload failed");
             message.error('Failed to upload image. Please try again.');
             return;
           }
@@ -186,14 +190,11 @@ const MarketPanel = () => {
           id: values.categoryId
         }
       };
-      
-      console.log("Prepared product data:", productData);
 
       let response;
       
       if (editingProduct) {
         // Update existing product
-        console.log("Updating existing product ID:", editingProduct.id);
         response = await fetch(`http://localhost:8080/api/market/products/${editingProduct.id}`, {
           method: 'PUT',
           headers: headers,
@@ -204,7 +205,6 @@ const MarketPanel = () => {
         });
       } else {
         // Create new product
-        console.log("Creating new product");
         response = await fetch('http://localhost:8080/api/market/products', {
           method: 'POST',
           headers: headers,
@@ -214,12 +214,10 @@ const MarketPanel = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Server response not OK:", response.status, errorText);
         throw new Error(`Failed to save product: ${response.status} ${errorText}`);
       }
 
       // Refresh the products list
-      console.log("Product saved successfully, refreshing product list");
       const productsResponse = await fetch('http://localhost:8080/api/market/products', {
         headers: headers
       });
@@ -228,7 +226,14 @@ const MarketPanel = () => {
       
       message.success(editingProduct ? 'Product updated successfully' : 'Product added successfully');
       setIsModalVisible(false);
-      form.resetFields();
+      setFormData({
+        name: '',
+        description: '',
+        categoryId: '',
+        price: '',
+        stock: '',
+        image: undefined
+      });
       setEditingProduct(null);
     } catch (error) {
       console.error('Error saving product:', error);
@@ -273,11 +278,30 @@ const MarketPanel = () => {
     setProductToDelete(null);
   };
 
+  const handleEditClick = () => {
+    setIsEditing(!isEditing);
+    setIsDeleting(false);
+    setEditingProduct(null);
+  };
+
+  const handleDeleteClick = () => {
+    setIsDeleting(!isDeleting);
+    setIsEditing(false);
+    setEditingProduct(null);
+    setProductToDelete(null);
+  };
+
+  const handleSelectProduct = (product) => {
+    if (isEditing) {
+      showModal(product);
+    } else if (isDeleting) {
+      showDeleteConfirm(product);
+    }
+  };
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.productName.toLowerCase().includes(searchText.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || 
-                           (product.category && product.category.name === selectedCategory);
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   const columns = [
@@ -338,31 +362,6 @@ const MarketPanel = () => {
       key: 'stock',
       sorter: (a, b) => a.stock - b.stock,
     },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (_, record) => (
-        <span className="action-buttons">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-            className="edit-button"
-          >
-            Edit
-          </Button>
-          <Button 
-            type="primary" 
-            danger 
-            icon={<DeleteOutlined />}
-            onClick={() => showDeleteConfirm(record)}
-            className="delete-button"
-          >
-            Delete
-          </Button>
-        </span>
-      ),
-    },
   ];
 
   const uploadProps = {
@@ -370,15 +369,16 @@ const MarketPanel = () => {
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
         message.error('You can only upload image files!');
-        return false;
+        return Upload.LIST_IGNORE;
       }
       const isLt2M = file.size / 1024 / 1024 < 2;
       if (!isLt2M) {
         message.error('Image must be smaller than 2MB!');
-        return false;
+        return Upload.LIST_IGNORE;
       }
       return false; // Prevent automatic upload
     },
+    accept: "image/*",
     maxCount: 1,
   };
 
@@ -386,33 +386,53 @@ const MarketPanel = () => {
     <div className="panel-container">
       <div className="panel-header">
         <h2>Market Management</h2>
-        <div className="panel-actions">
-          <Input
-            placeholder="Search products..."
-            prefix={<SearchOutlined />}
-            style={{ width: 200, marginRight: 16 }}
-            value={searchText}
-            onChange={e => setSearchText(e.target.value)}
-          />
-          <Select
-            defaultValue="all"
-            style={{ width: 120, marginRight: 16 }}
-            onChange={value => setSelectedCategory(value)}
-          >
-            <Option value="all">All Categories</Option>
-            {categories.map(category => (
-              <Option key={category} value={category}>{category}</Option>
-            ))}
-          </Select>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => showModal()}
-          >
-            Add New Product
-          </Button>
+        <div className="search-and-actions">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          <div className="panel-actions">
+            <button 
+              onClick={handleDeleteClick} 
+              className={`delete-button ${isDeleting ? 'active' : ''}`}
+            >
+              <DeleteOutlined />
+            </button>
+            <button 
+              onClick={handleEditClick} 
+              className={`edit-button ${isEditing ? 'active' : ''}`}
+            >
+              ✎
+            </button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => showModal()}
+            >
+              Add New Product
+            </Button>
+          </div>
         </div>
       </div>
+
+      {isEditing && (
+        <div className="edit-mode-banner">
+          <span className="edit-icon">✏️</span>
+          <span className="edit-text">Edit Mode: Click on any product to edit its information.</span>
+        </div>
+      )}
+
+      {isDeleting && (
+        <div className="delete-mode-banner">
+          <span className="delete-icon">🗑️</span>
+          <span className="delete-text">Delete Mode: Click on any product to delete it.</span>
+        </div>
+      )}
 
       <Table
         loading={loading}
@@ -423,7 +443,7 @@ const MarketPanel = () => {
           pageSize: 10,
           className: isDarkMode ? 'dark-pagination' : 'custom-pagination'
         }}
-        className={isDarkMode ? 'dark-table' : ''}
+        className={`${isDarkMode ? 'dark-table' : ''} ${isEditing ? 'edit-mode-container' : ''} ${isDeleting ? 'delete-mode-container' : ''}`}
         style={{
           ...(isDarkMode && {
             color: '#fff',
@@ -431,154 +451,157 @@ const MarketPanel = () => {
             overflow: 'hidden'
           })
         }}
+        onRow={(record) => ({
+          onClick: () => handleSelectProduct(record),
+          className: isEditing ? 'selectable-row' : isDeleting ? 'deletable-row' : ''
+        })}
       />
 
-      <Modal
-        title={editingProduct ? 'Edit Product' : 'Add New Product'}
-        open={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-        width={600}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-        >
-          <Form.Item
-            name="image"
-            label="Product Image"
-            valuePropName="fileList"
-            getValueFromEvent={e => {
-              console.log("Upload event:", e);
-              if (Array.isArray(e)) {
-                return e;
-              }
-              return e?.fileList;
-            }}
-            extra="Supported formats: JPG, PNG. Maximum size: 2MB"
-          >
-            <Upload
-              {...uploadProps}
-              listType="picture-card"
-              showUploadList={{
-                showPreviewIcon: true,
-                showRemoveIcon: true,
-              }}
-            >
-              {(!form.getFieldValue('image') || form.getFieldValue('image').length === 0) && (
-                <div>
-                  <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Upload</div>
+      {/* Add/Edit Product Modal */}
+      {isModalVisible && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              await handleSubmit(formData);
+            }}>
+              <div className="form-grid">
+                <div className="input-group">
+                  <label htmlFor="product-image">Product Image</label>
+                  <div className="image-upload-container">
+                    <Upload
+                      {...uploadProps}
+                      listType="picture-card"
+                      showUploadList={{
+                        showPreviewIcon: true,
+                        showRemoveIcon: true,
+                      }}
+                      onChange={({ fileList }) => setFormData({...formData, image: fileList})}
+                    >
+                      {(!formData.image || formData.image.length === 0) && (
+                        <div>
+                          <PlusOutlined />
+                          <div style={{ marginTop: 8 }}>Upload</div>
+                        </div>
+                      )}
+                    </Upload>
+                    {editingProduct?.imagePath && !formData.image && (
+                      <div className="current-image">
+                        <p>Current Image:</p>
+                        <Image
+                          src={editingProduct.imagePath}
+                          alt="Current product image"
+                          width={100}
+                          height={100}
+                          style={{ 
+                            objectFit: 'contain', 
+                            background: 'transparent',
+                            padding: '4px'
+                          }}
+                        />
+                      </div>
+                    )}
+                    <small className="input-hint">Supported formats: JPG, PNG. Maximum size: 2MB</small>
+                  </div>
                 </div>
-              )}
-            </Upload>
-          </Form.Item>
-          {editingProduct?.imagePath && !form.getFieldValue('image') && (
-            <div style={{ marginBottom: 24 }}>
-              <p>Current Image:</p>
-              <Image
-                src={editingProduct.imagePath}
-                alt="Current product image"
-                width={100}
-                height={100}
-                style={{ 
-                  objectFit: 'contain', 
-                  background: 'transparent',
-                  padding: '4px'
-                }}
-              />
-            </div>
-          )}
-          <Form.Item
-            name="name"
-            label="Product Name"
-            rules={[{ required: true, message: 'Please enter product name!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[{ required: true, message: 'Please enter product description!' }]}
-          >
-            <Input.TextArea rows={4} />
-          </Form.Item>
-          <Form.Item
-            name="categoryId"
-            label="Category"
-            rules={[{ required: true, message: 'Please select a category!' }]}
-          >
-            <Select>
-              {categories.map((category, index) => (
-                <Option key={index} value={index + 1}>{category}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="price"
-            label="Price (₺)"
-            rules={[{ required: true, message: 'Please enter price!' }]}
-          >
-            <Input type="number" min={0} step={0.01} />
-          </Form.Item>
-          <Form.Item
-            name="stock"
-            label="Stock"
-            rules={[{ required: true, message: 'Please enter stock amount!' }]}
-          >
-            <Input type="number" min={0} />
-          </Form.Item>
-          <Form.Item>
-            <div className="modal-buttons">
-              <Button onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button type="primary" htmlType="submit">
-                {editingProduct ? 'Update' : 'Add'}
-              </Button>
-            </div>
-          </Form.Item>
-        </Form>
-      </Modal>
+
+                <div className="input-group">
+                  <label htmlFor="product-name">Product Name</label>
+                  <input
+                    id="product-name"
+                    type="text"
+                    placeholder="Enter product name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    required
+                  />
+                </div>
+
+                <div className="input-group full-width">
+                  <label htmlFor="product-description">Description</label>
+                  <textarea
+                    id="product-description"
+                    className="description-input"
+                    placeholder="Enter product description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    required
+                  ></textarea>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="product-category">Category</label>
+                  <select
+                    id="product-category"
+                    value={formData.categoryId}
+                    onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
+                    required
+                  >
+                    <option value="">Select a Category</option>
+                    {categories.map((category, index) => (
+                      <option key={index} value={index + 1}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="product-price">Price (₺)</label>
+                  <input
+                    id="product-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Enter price"
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    required
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="product-stock">Stock</label>
+                  <input
+                    id="product-stock"
+                    type="number"
+                    min="0"
+                    placeholder="Enter stock amount"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="modal-buttons">
+                <button type="button" onClick={handleCancel} className="cancel-button">Cancel</button>
+                <button type="submit" className="add-button">
+                  {editingProduct ? 'Update Product' : 'Add Product'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Custom Delete Confirmation Modal */}
-      <Modal
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', color: isDarkMode ? '#fff' : 'inherit' }}>
-            <ExclamationCircleOutlined style={{ color: '#ff4d4f', marginRight: '10px' }} />
-            <span>Delete Product</span>
+      {deleteModalVisible && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Confirm Deletion</h3>
+            <div className="confirmation-content">
+              <div className="warning-icon">⚠️</div>
+              <p>Are you sure you want to delete the product:</p>
+              <div className="highlighted-name">{productToDelete?.productName}</div>
+              <p className="warning-text">This action cannot be undone!</p>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={cancelDelete} className="cancel-button">Cancel</button>
+              <button onClick={() => handleDelete(productToDelete?.id)} className="delete-confirm-button">Delete</button>
+            </div>
           </div>
-        }
-        open={deleteModalVisible}
-        onCancel={cancelDelete}
-        footer={null}
-        centered
-        closable={false}
-        width={400}
-        className={isDarkMode ? 'dark-modal' : ''}
-        bodyStyle={{
-          padding: '24px',
-          backgroundColor: isDarkMode ? '#1f1f1f' : '#f5f5f5',
-          color: isDarkMode ? '#fff' : 'inherit'
-        }}
-      >
-        <p style={{ fontSize: '16px', marginBottom: '24px' }}>
-          Are you sure you want to delete this product?
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-          <Button onClick={cancelDelete}>
-            No
-          </Button>
-          <Button 
-            type="primary" 
-            danger 
-            onClick={() => handleDelete(productToDelete?.id)}
-          >
-            Yes
-          </Button>
         </div>
-      </Modal>
+      )}
 
       {/* Add custom CSS for dark mode */}
       <style jsx="true">{`
@@ -609,6 +632,11 @@ const MarketPanel = () => {
         
         .ant-table-thead > tr > th:last-child {
           border-right: none;
+        }
+
+        /* Fix for sorted column background in dark mode */
+        :where(.css-dev-only-do-not-override-1v613y0).ant-table-wrapper .ant-table-tbody > tr > td.ant-table-column-sort {
+          background-color: inherit !important;
         }
         
         /* Dark mode table styles */
@@ -657,9 +685,14 @@ const MarketPanel = () => {
           }
           
           .dark-table .ant-table-tbody > tr > td {
-            background-color: #1a1a1a;
+            background-color: #1a1a1a !important;
             color: #fff;
             border-bottom: 1px solid #333;
+          }
+
+          /* Fix for sorted column background in dark mode */
+          .dark-table .ant-table-tbody > tr > td.ant-table-column-sort {
+            background-color: #1a1a1a !important;
           }
           
           .dark-table .ant-table-tbody > tr:hover > td {
@@ -732,30 +765,66 @@ const MarketPanel = () => {
           .dark-pagination .ant-select-selection-item {
             color: #fff;
           }
-          
-          /* Dark Mode Modal Styles */
-          .dark-modal .ant-modal-content {
-            background-color: #1f1f1f;
-            box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.48), 0 6px 16px 0 rgba(0, 0, 0, 0.32), 0 9px 28px 8px rgba(0, 0, 0, 0.2);
-          }
-          
-          .dark-modal .ant-modal-header {
-            background-color: #1f1f1f;
-            border-bottom: 1px solid #303030;
-          }
-          
-          .dark-modal .ant-modal-title {
-            color: #fff;
-          }
-          
-          .dark-modal .ant-modal-close {
-            color: #999;
-          }
-          
-          .dark-modal .ant-modal-close:hover {
-            color: #fff;
-          }
         ` : ''}
+
+        /* Description input specific styles */
+        .description-input {
+          min-height: 100px !important;
+          resize: vertical !important;
+          white-space: pre-wrap !important;
+          overflow-wrap: break-word !important;
+          line-height: 1.5 !important;
+          padding: 12px !important;
+        }
+
+        .dark-mode .description-input {
+          background-color: #2c2c2c !important;
+          color: #fff !important;
+          border-color: #404040 !important;
+        }
+
+        .dark-mode .description-input:focus {
+          border-color: #177ddc !important;
+          box-shadow: 0 0 0 2px rgba(23, 125, 220, 0.2) !important;
+        }
+
+        .description-input:focus {
+          border-color: #40a9ff !important;
+          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+        }
+
+        /* Upload component icon styles */
+        .image-upload-container .ant-upload-list-item-actions {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          gap: 8px !important;
+          position: absolute !important;
+          top: 50% !important;
+          left: 50% !important;
+          transform: translate(-50%, -50%) !important;
+          background: rgba(0, 0, 0, 0.45) !important;
+          border-radius: 20px !important;
+          padding: 4px 12px !important;
+        }
+
+        .image-upload-container .ant-upload-list-item-actions .ant-upload-list-item-action {
+          opacity: 1 !important;
+        }
+
+        .image-upload-container .ant-upload-list-item:hover .ant-upload-list-item-info::before {
+          opacity: 1 !important;
+        }
+
+        .image-upload-container .ant-upload-list-item-actions .anticon {
+          color: white !important;
+          font-size: 16px !important;
+          transition: transform 0.2s !important;
+        }
+
+        .image-upload-container .ant-upload-list-item-actions .anticon:hover {
+          transform: scale(1.1) !important;
+        }
       `}</style>
     </div>
   );

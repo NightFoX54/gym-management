@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../../styles/AdminPanels.css';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 
 const EmployeesPanel = () => {
   const [employees, setEmployees] = useState([
@@ -160,9 +161,6 @@ const EmployeesPanel = () => {
             />
           </div>
           <div className="button-group">
-            <button onClick={() => setShowAddForm(true)} className="add-button">
-              Add Employee
-            </button>
             <button 
               onClick={handleDeleteClick} 
               className={`delete-button ${isDeleting ? 'active' : ''}`}
@@ -175,6 +173,14 @@ const EmployeesPanel = () => {
             >
               ✎
             </button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setShowAddForm(true)}
+              className="ant-btn-primary"
+            >
+              Add Employee
+            </Button>
           </div>
         </div>
       </div>

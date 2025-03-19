@@ -26,6 +26,10 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
     password: '',
     confirmPassword: ''
   });
+  const [errors, setErrors] = useState({
+    phone: '',
+    confirmPassword: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState(null);
 
@@ -98,10 +102,44 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    
+    if (name === 'phone') {
+      // Allow only numbers and + at the beginning
+      const phoneRegex = /^\+?\d*$/;
+      if (!phoneRegex.test(value)) {
+        return;
+      }
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+      setErrors(prevState => ({
+        ...prevState,
+        phone: ''
+      }));
+    } else if (name === 'confirmPassword') {
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+      // Check if passwords match
+      if (value !== formData.password) {
+        setErrors(prevState => ({
+          ...prevState,
+          confirmPassword: 'Passwords do not match'
+        }));
+      } else {
+        setErrors(prevState => ({
+          ...prevState,
+          confirmPassword: ''
+        }));
+      }
+    } else {
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
   };
 
   const handleCardInputChange = (e) => {
@@ -160,6 +198,16 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Check if passwords match before proceeding
+    if (formData.password !== formData.confirmPassword) {
+      setErrors(prevState => ({
+        ...prevState,
+        confirmPassword: 'Passwords do not match'
+      }));
+      return;
+    }
+    
     setStep(3);
   };
 
@@ -360,6 +408,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                   onChange={handleInputChange}
                   required
                 />
+                {errors.phone && <span className="error-message">{errors.phone}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
@@ -400,6 +449,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
+                {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
               </div>
               <button type="submit" className="next-btn">Proceed to Payment</button>
             </form>

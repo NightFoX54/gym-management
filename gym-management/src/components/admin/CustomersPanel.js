@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import '../../styles/AdminPanels.css';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { FaCrown, FaGem, FaAward } from 'react-icons/fa';
+import { Button } from 'antd';
 
 const CustomersPanel = () => {
   const [customers, setCustomers] = useState([
@@ -186,9 +187,6 @@ const CustomersPanel = () => {
             />
           </div>
           <div className="button-group">
-            <button onClick={() => setShowAddForm(true)} className="add-button">
-              Add Customer
-            </button>
             <button 
               onClick={handleDeleteClick} 
               className={`delete-button ${isDeleting ? 'active' : ''}`}
@@ -201,6 +199,14 @@ const CustomersPanel = () => {
             >
               ✎
             </button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setShowAddForm(true)}
+              className="ant-btn-primary"
+            >
+              Add Customer
+            </Button>
           </div>
         </div>
       </div>
