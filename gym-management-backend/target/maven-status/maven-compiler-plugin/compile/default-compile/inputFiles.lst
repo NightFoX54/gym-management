@@ -1,6 +1,7 @@
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\config\DatabaseInitializer.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\config\SecurityConfig.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\controller\AuthController.java
+D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\controller\FileUploadController.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\controller\ImageController.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\controller\MarketController.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\controller\MemberController.java
@@ -30,6 +31,7 @@ D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\model\TrainerClient.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\model\TrainerRegistrationRequest.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\model\TrainerSession.java
+D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\model\TrainerSettings.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\model\User.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\model\Workout.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\model\WorkoutCategory.java
@@ -45,6 +47,7 @@ D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\repository\TrainerClientRepository.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\repository\TrainerRegistrationRequestRepository.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\repository\TrainerSessionRepository.java
+D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\repository\TrainerSettingsRepository.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\repository\UserRepository.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\repository\WorkoutCategoryRepository.java
 D:\gym-management-main000\gym-management-backend\src\main\java\com\gymmanagement\repository\WorkoutExerciseRepository.java
