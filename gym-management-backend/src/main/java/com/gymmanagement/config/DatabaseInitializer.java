@@ -17,6 +17,8 @@ import com.gymmanagement.repository.WorkoutExerciseRepository;
 import com.gymmanagement.repository.WorkoutLevelRepository;
 import com.gymmanagement.repository.WorkoutRepository;
 import com.gymmanagement.service.WorkoutService;
+import com.gymmanagement.model.TrainerSettings;
+import com.gymmanagement.repository.TrainerSettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -61,6 +63,9 @@ public class DatabaseInitializer implements CommandLineRunner {
     
     @Autowired
     private WorkoutService workoutService;
+    
+    @Autowired
+    private TrainerSettingsRepository trainerSettingsRepository;
     
     @Override
     public void run(String... args) {
@@ -164,6 +169,16 @@ public class DatabaseInitializer implements CommandLineRunner {
                     }
                 }
             }
+            
+            // Check if trainer settings exist
+            if (trainerSettingsRepository.count() == 0) {
+                Optional<User> trainerOpt = userRepository.findByEmail("trainer@gymflex.com");
+                if (trainerOpt.isPresent()) {
+                    User trainer = trainerOpt.get();
+                    createTrainerSettings(trainer);
+                }
+            }
+            
         } catch (Exception e) {
             System.err.println("Error during database initialization: " + e.getMessage());
             e.printStackTrace();
@@ -322,6 +337,26 @@ public class DatabaseInitializer implements CommandLineRunner {
             System.out.println("Sample workouts created successfully!");
         } catch (Exception e) {
             System.err.println("Error creating sample workouts: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void createTrainerSettings(User trainer) {
+        try {
+            TrainerSettings settings = new TrainerSettings();
+            settings.setTrainer(trainer);
+            settings.setBio("Professional trainer with 5 years of experience in strength training and fitness coaching.");
+            settings.setSpecialization("Strength Training, Weight Loss, Nutrition");
+            settings.setNewClientNotifications(true);
+            settings.setProgressUpdateNotifications(true);
+            settings.setMobileNotifications(true);
+            settings.setDesktopNotifications(true);
+            
+            trainerSettingsRepository.save(settings);
+            
+            System.out.println("Default trainer settings created!");
+        } catch (Exception e) {
+            System.err.println("Error creating trainer settings: " + e.getMessage());
             e.printStackTrace();
         }
     }

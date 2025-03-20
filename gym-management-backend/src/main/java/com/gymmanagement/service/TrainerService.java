@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -167,6 +168,28 @@ public class TrainerService {
                     .collect(Collectors.toList());
         } catch (Exception e) {
             System.err.println("Error fetching trainer sessions: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
+    public List<TrainerSessionResponse> getTrainerSessionsForToday(Long trainerId) {
+        try {
+            LocalDate today = LocalDate.now();
+            List<TrainerSession> sessions = sessionRepository.findByTrainerIdAndSessionDate(trainerId, today);
+            
+            return sessions.stream().map(session -> TrainerSessionResponse.builder()
+                    .id(session.getId())
+                    .clientId(session.getClient().getId())
+                    .clientName(session.getClient().getFirstName() + " " + session.getClient().getLastName())
+                    .sessionDate(session.getSessionDate())
+                    .sessionTime(session.getSessionTime())
+                    .sessionType(session.getSessionType())
+                    .notes(session.getNotes())
+                    .build())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error fetching today's trainer sessions: " + e.getMessage());
             e.printStackTrace();
             return new ArrayList<>();
         }
