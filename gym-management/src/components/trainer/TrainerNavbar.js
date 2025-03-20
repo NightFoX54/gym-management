@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Drawer,
   List,
@@ -10,6 +10,7 @@ import {
   Avatar,
   Typography,
   Divider,
+  CircularProgress,
 } from '@mui/material';
 import {
   Dashboard,
@@ -28,6 +29,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styled } from '@mui/system';
 import { logout } from '../../utils/auth';
+import axios from 'axios';
 
 const StyledDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
@@ -68,10 +70,48 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   borderBottom: '1px solid #e0e0e0',
 }));
 
-const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
+const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [trainerData, setTrainerData] = useState({
+    fullName: 'Trainer',
+    firstName: 'Trainer',
+    profilePhoto: null,
+  });
+  const [navLoading, setNavLoading] = useState(true);
+  const [imageKey, setImageKey] = useState(Date.now()); // Add this state for forcing image reload
+
+  useEffect(() => {
+    fetchTrainerData();
+  }, []);
+
+  const fetchTrainerData = async () => {
+    setNavLoading(true);
+    try {
+      const trainerId = 3; // This should be retrieved from authentication context
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/profile`);
+      
+      if (response.status === 200) {
+        setTrainerData(response.data);
+        setImageKey(Date.now()); // Update the key to force image reload
+      }
+    } catch (error) {
+      console.error('Error fetching trainer data for navbar:', error);
+    } finally {
+      setNavLoading(false);
+    }
+  };
+
+  // Add a function to refresh trainer data
+  const refreshTrainerData = () => {
+    fetchTrainerData();
+  };
+  
+  // Expose the refreshTrainerData function to parent components
+  React.useImperativeHandle(ref, () => ({
+    refreshTrainerData
+  }));
 
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/trainer' },
@@ -152,6 +192,7 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
           >
             <Avatar
               className="trainer-avatar"
+              src={`${trainerData.profilePhoto}?v=${imageKey}`} // Add key as query param to force reload
               sx={{ 
                 width: 80,
                 height: 80,
@@ -163,7 +204,11 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
               }}
               onClick={() => handleNavigation('/trainer')}
             >
-              <Person sx={{ fontSize: 40 }} />
+              {navLoading ? (
+                <CircularProgress size={40} sx={{ color: 'white' }} />
+              ) : (
+                <>{!trainerData.profilePhoto && trainerData.firstName?.[0]}</>
+              )}
             </Avatar>
           </motion.div>
           <Box sx={{ textAlign: 'center' }}>
@@ -174,7 +219,7 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
                 color: isDarkMode ? '#ffffff' : '#2c3e50',
               }}
             >
-              Enes Trainer
+              {navLoading ? 'Loading...' : (trainerData.fullName || 'Trainer')}
             </Typography>
             <Typography 
               variant="body2" 
@@ -437,6 +482,6 @@ const TrainerNavbar = ({ isDarkMode, setIsDarkMode }) => {
       </Box>
     </>
   );
-};
+});
 
 export default TrainerNavbar;

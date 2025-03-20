@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -19,6 +19,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  CircularProgress,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -34,8 +35,9 @@ import {
 import { motion } from 'framer-motion';
 import { LoadingButton } from '@mui/lab';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import axios from 'axios';
 
-const SettingsPage = ({ isDarkMode }) => {
+const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
@@ -73,6 +75,44 @@ const SettingsPage = ({ isDarkMode }) => {
     saturday: { active: false, start: '09:00', end: '13:00' },
     sunday: { active: false, start: '09:00', end: '13:00' },
   });
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTrainerProfile();
+  }, []);
+
+  const fetchTrainerProfile = async () => {
+    setProfileLoading(true);
+    try {
+      const trainerId = 3; // This should come from your auth context
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/profile`);
+      
+      if (response.status === 200) {
+        const data = response.data;
+        setFormData(prev => ({
+          ...prev,
+          fullName: data.fullName || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          avatar: data.profilePhoto || null,
+          specialization: data.specialization || '',
+          bio: data.bio || '',
+          notifyEmails: data.newClientNotifications !== undefined ? data.newClientNotifications : true,
+          notifyClientProgress: data.progressUpdateNotifications !== undefined ? data.progressUpdateNotifications : true,
+          notifyMobile: data.mobileNotifications !== undefined ? data.mobileNotifications : true,
+          notifyDesktop: data.desktopNotifications !== undefined ? data.desktopNotifications : true,
+        }));
+        showAlert('Profile loaded successfully', 'success');
+      } else {
+        showAlert('Failed to load profile data', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching trainer profile:', error);
+      showAlert('Could not fetch profile information', 'error');
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const handleChange = (field) => (event) => {
     const { value } = event.target;
@@ -110,6 +150,7 @@ const SettingsPage = ({ isDarkMode }) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!value) return 'Email is required';
         if (!emailRegex.test(value)) return 'Invalid email format';
+        if (value.length > 255) return 'Email must be less than 255 characters';
         return '';
 
       case 'phone':
@@ -118,18 +159,19 @@ const SettingsPage = ({ isDarkMode }) => {
         if (!phoneRegex.test(value.replace(/\s/g, ''))) {
           return 'Invalid phone format (e.g., +90 532 123 4567)';
         }
+        if (value.length > 255) return 'Phone number must be less than 255 characters';
         return '';
 
       case 'specialization':
         if (!value) return 'Specialization is required';
         if (value.length < 3) return 'Specialization must be at least 3 characters';
-        if (value.length > 50) return 'Specialization must be less than 50 characters';
+        if (value.length > 1000) return 'Specialization must be less than 1000 characters';
         return '';
 
       case 'bio':
         if (!value) return 'Bio is required';
         if (value.length < 10) return 'Bio must be at least 10 characters';
-        if (value.length > 500) return 'Bio must be less than 500 characters';
+        if (value.length > 2000) return 'Bio must be less than 2000 characters';
         return '';
 
       default:
@@ -242,12 +284,40 @@ const SettingsPage = ({ isDarkMode }) => {
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      localStorage.setItem('trainerSettings', JSON.stringify(formData));
-      showAlert('Profile updated successfully', 'success');
-      setErrors({});
+      const trainerId = 3; // This should come from your auth context
+      
+      // Parse the full name into first and last name
+      const nameParts = formData.fullName.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+      
+      // Prepare data to send to backend
+      const profileData = {
+        firstName: firstName.substring(0, 255), // Ensure max length
+        lastName: lastName ? lastName.substring(0, 255) : '',
+        email: formData.email.substring(0, 255),
+        phoneNumber: formData.phone.substring(0, 255),
+        bio: formData.bio.substring(0, 2000),
+        specialization: formData.specialization.substring(0, 1000),
+        profilePhoto: formData.avatar
+      };
+      
+      // Send update to backend
+      const response = await axios.put(`http://localhost:8080/api/trainer/${trainerId}/profile`, profileData);
+      
+      if (response.status === 200) {
+        showAlert('Profile updated successfully', 'success');
+        
+        // Notify parent component to update the navbar
+        if (onSettingsUpdate) {
+          onSettingsUpdate(response.data);
+        }
+      } else {
+        showAlert('Failed to update profile', 'error');
+      }
     } catch (error) {
-      showAlert('Failed to update profile', 'error');
+      console.error('Error updating profile:', error);
+      showAlert('Failed to update profile: ' + (error.response?.data?.message || error.message), 'error');
     } finally {
       setLoading(false);
     }
@@ -256,15 +326,26 @@ const SettingsPage = ({ isDarkMode }) => {
   const handleNotificationUpdate = async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      localStorage.setItem('notificationSettings', JSON.stringify({
-        notifyEmails: formData.notifyEmails,
-        notifyMessages: formData.notifyMessages,
-        notifyUpdates: formData.notifyUpdates,
-      }));
-      showAlert('Notification settings updated', 'success');
+      const trainerId = 3; // This should come from your auth context
+      
+      const notificationSettings = {
+        newClientNotifications: formData.notifyEmails,
+        progressUpdateNotifications: formData.notifyClientProgress,
+        mobileNotifications: formData.notifyMobile,
+        desktopNotifications: formData.notifyDesktop
+      };
+      
+      // Update trainer profile with notification settings
+      const response = await axios.put(`http://localhost:8080/api/trainer/${trainerId}/profile`, notificationSettings);
+      
+      if (response.status === 200) {
+        showAlert('Notification settings updated successfully', 'success');
+      } else {
+        showAlert('Failed to update notification settings', 'error');
+      }
     } catch (error) {
-      showAlert('Failed to update notifications', 'error');
+      console.error('Error updating notification settings:', error);
+      showAlert('Failed to update notifications: ' + (error.response?.data?.message || error.message), 'error');
     } finally {
       setLoading(false);
     }
@@ -305,16 +386,48 @@ const SettingsPage = ({ isDarkMode }) => {
         return;
       }
 
+      // Create a preview to show immediately in the UI
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result);
-        setFormData(prev => ({
-          ...prev,
-          avatar: reader.result
-        }));
       };
       reader.readAsDataURL(file);
-      showAlert('Photo uploaded successfully', 'success');
+
+      // Upload the file to the server
+      uploadProfileImage(file);
+    }
+  };
+
+  const uploadProfileImage = async (file) => {
+    try {
+      setLoading(true);
+      
+      // Create a FormData object to send the file
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // Send the file to the server
+      const response = await axios.post('http://localhost:8080/api/upload/profile-photo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      if (response.data && response.data.filePath) {
+        // Store the path returned by the server
+        setFormData(prev => ({
+          ...prev,
+          avatar: response.data.filePath
+        }));
+        showAlert('Photo uploaded successfully', 'success');
+      } else {
+        showAlert('Error uploading photo', 'error');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      showAlert(`Upload failed: ${error.response?.data?.error || error.message}`, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -417,83 +530,89 @@ const SettingsPage = ({ isDarkMode }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
-                {renderProfileAvatar()}
-              </Grid>
-              <Grid item xs={12} md={8}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Full Name"
-                      value={formData.fullName}
-                      onChange={handleChange('fullName')}
-                      error={!!errors.fullName}
-                      helperText={errors.fullName}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '&.Mui-error': {
-                            '& fieldset': {
-                              borderColor: 'error.main',
-                              borderWidth: 2
+            {profileLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                  {renderProfileAvatar()}
+                </Grid>
+                <Grid item xs={12} md={8}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Full Name"
+                        value={formData.fullName}
+                        onChange={handleChange('fullName')}
+                        error={!!errors.fullName}
+                        helperText={errors.fullName}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '&.Mui-error': {
+                              '& fieldset': {
+                                borderColor: 'error.main',
+                                borderWidth: 2
+                              }
+                            },
+                            '&:hover fieldset': {
+                              borderColor: errors.fullName ? 'error.main' : '#ff4757',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: errors.fullName ? 'error.main' : '#ff4757',
                             }
-                          },
-                          '&:hover fieldset': {
-                            borderColor: errors.fullName ? 'error.main' : '#ff4757',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: errors.fullName ? 'error.main' : '#ff4757',
                           }
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Email"
-                      value={formData.email}
-                      onChange={handleChange('email')}
-                      error={!!errors.email}
-                      helperText={errors.email}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Phone"
-                      value={formData.phone}
-                      onChange={handleChange('phone')}
-                      error={!!errors.phone}
-                      helperText={errors.phone}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Specialization"
-                      value={formData.specialization}
-                      onChange={handleChange('specialization')}
-                      error={!!errors.specialization}
-                      helperText={errors.specialization}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={4}
-                      label="Bio"
-                      value={formData.bio}
-                      onChange={handleChange('bio')}
-                      error={!!errors.bio}
-                      helperText={errors.bio}
-                    />
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Email"
+                        value={formData.email}
+                        onChange={handleChange('email')}
+                        error={!!errors.email}
+                        helperText={errors.email}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Phone"
+                        value={formData.phone}
+                        onChange={handleChange('phone')}
+                        error={!!errors.phone}
+                        helperText={errors.phone}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Specialization"
+                        value={formData.specialization}
+                        onChange={handleChange('specialization')}
+                        error={!!errors.specialization}
+                        helperText={errors.specialization}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={4}
+                        label="Bio"
+                        value={formData.bio}
+                        onChange={handleChange('bio')}
+                        error={!!errors.bio}
+                        helperText={errors.bio}
+                      />
+                    </Grid>
                   </Grid>
                 </Grid>
               </Grid>
-            </Grid>
+            )}
           </motion.div>
         );
 

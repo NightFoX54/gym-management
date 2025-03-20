@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TrainerNavbar from './TrainerNavbar';
 import '../../styles/TrainerPage.css';
 import { 
@@ -59,6 +59,7 @@ import WorkoutsPage from './WorkoutsPage';
 import ProgressReportPage from './ProgressReportPage';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsPage from './SettingsPage';
+import axios from 'axios'; // Add the axios import
 
 const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -83,6 +84,97 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   });
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [trainerData, setTrainerData] = useState({
+    id: 3, // Default trainer ID (you should get this from auth context)
+    fullName: 'Loading...',
+    email: 'loading@example.com',
+    phone: '',
+    profilePhoto: null,
+    registrationDate: '',
+  });
+  const [dataLoading, setDataLoading] = useState(true);
+  const navbarRef = React.useRef();
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTrainerData();
+    fetchTodaySessions();
+  }, []);
+
+  // Add the showAlert function that was missing
+  const showAlert = (message, severity) => {
+    setAlert({
+      show: true,
+      message: message,
+      severity: severity
+    });
+    // Auto hide the alert after 3 seconds
+    setTimeout(() => {
+      setAlert(prev => ({ ...prev, show: false }));
+    }, 3000);
+  };
+
+  const fetchTrainerData = async () => {
+    setDataLoading(true);
+    try {
+      // Get trainer ID from auth context or hardcode for now
+      const trainerId = 3; // This should be retrieved from authentication context
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/profile`);
+      
+      if (response.status === 200) {
+        setTrainerData(response.data);
+        
+        // Also update the form data with trainer information
+        setFormData(prev => ({
+          ...prev,
+          fullName: response.data.fullName || '',
+          email: response.data.email || '',
+          phone: response.data.phone || '',
+          // Other form fields can remain as they are or be updated from response
+        }));
+      } else {
+        showAlert('Failed to load trainer data', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching trainer data:', error);
+      showAlert('Failed to load trainer profile', 'error');
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  // Add this new function to fetch today's sessions
+  const fetchTodaySessions = async () => {
+    setSessionsLoading(true);
+    try {
+      const trainerId = 3; // This should be retrieved from authentication context
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/sessions`);
+      
+      if (response.status === 200) {
+        // Filter sessions for today
+        const today = new Date();
+        const todayString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        
+        const todaySessions = response.data
+          .filter(session => session.sessionDate === todayString)
+          .map(session => ({
+            client: session.clientName,
+            time: session.sessionTime.substring(0, 5), // Format: HH:MM
+            program: session.sessionType
+          }));
+        
+        setUpcomingSessions(todaySessions);
+      } else {
+        showAlert('Failed to load today\'s sessions', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching today\'s sessions:', error);
+      showAlert('Failed to load today\'s sessions', 'error');
+    } finally {
+      setSessionsLoading(false);
+    }
+  };
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -306,12 +398,6 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     { title: 'Today\'s Sessions', value: '8', icon: <TodayIcon />, color: '#ff4757' },
     { title: 'Active Programs', value: '12', icon: <FitnessIcon />, color: '#ff4757' },
     { title: 'Hours This Week', value: '32', icon: <TimelineIcon />, color: '#ff4757' },
-  ];
-
-  const upcomingSessions = [
-    { client: 'Edin Dzeko', time: '09:00 AM', program: 'Weight Training' },
-    { client: 'Lionel Messi', time: '10:30 AM', program: 'Cardio' },
-    { client: 'Cristiano Ronaldo', time: '02:00 PM', program: 'CrossFit' },
   ];
 
   const quickActions = [
@@ -709,7 +795,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Welcome Banner */}
+      {/* Welcome Banner - Update to use trainerData */}
       <Box sx={{ 
         background: 'linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%)',
         borderRadius: '20px',
@@ -725,16 +811,22 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
           animate={{ x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
-            Welcome back, Enes!
-          </Typography>
-          <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
-            You have 3 sessions scheduled for today
-          </Typography>
+          {dataLoading ? (
+            <CircularProgress color="inherit" size={24} sx={{ mb: 1 }} />
+          ) : (
+            <>
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
+                Welcome back, {trainerData.firstName || trainerData.fullName.split(' ')[0]}!
+              </Typography>
+              <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
+                You have {upcomingSessions.length} sessions scheduled for today
+              </Typography>
+            </>
+          )}
         </motion.div>
       </Box>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - keep existing code */}
       <Grid 
         container 
         spacing={3} 
@@ -865,49 +957,80 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 }}>
                   <TodayIcon /> Today's Schedule
                 </Typography>
-                <List>
-                  {upcomingSessions.map((session, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <ListItem sx={{
-                        mb: 2,
-                        background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
-                        borderRadius: '12px',
-                        transition: 'all 0.3s ease',
+                
+                {sessionsLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                    <CircularProgress size={30} sx={{ color: '#ff4757' }} />
+                  </Box>
+                ) : upcomingSessions.length > 0 ? (
+                  <List>
+                    {upcomingSessions.map((session, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <ListItem sx={{
+                          mb: 2,
+                          background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                          borderRadius: '12px',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateX(10px)',
+                            background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.1)',
+                          }
+                        }}>
+                          <ListItemAvatar>
+                            <Avatar sx={{ 
+                              bgcolor: 'rgba(255,71,87,0.2)',
+                              color: '#ff4757'
+                            }}>
+                              <PeopleIcon />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={session.client}
+                            secondary={`${session.time} - ${session.program}`}
+                            primaryTypographyProps={{
+                              fontWeight: 600,
+                              color: isDarkMode ? '#fff' : '#2c3e50',
+                              fontSize: '1rem'
+                            }}
+                            secondaryTypographyProps={{
+                              color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#666',
+                              fontSize: '0.875rem'
+                            }}
+                          />
+                        </ListItem>
+                      </motion.div>
+                    ))}
+                  </List>
+                ) : (
+                  <Box sx={{ 
+                    p: 3, 
+                    textAlign: 'center', 
+                    color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'
+                  }}>
+                    <TodayIcon sx={{ fontSize: '3rem', mb: 2, opacity: 0.5 }} />
+                    <Typography variant="body1">No sessions scheduled for today</Typography>
+                    <Button 
+                      variant="outlined" 
+                      sx={{ 
+                        mt: 2,
+                        borderColor: '#ff4757',
+                        color: '#ff4757',
                         '&:hover': {
-                          transform: 'translateX(10px)',
-                          background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.1)',
+                          borderColor: '#ff3747',
+                          backgroundColor: 'rgba(255,71,87,0.1)',
                         }
-                      }}>
-                        <ListItemAvatar>
-                          <Avatar sx={{ 
-                            bgcolor: 'rgba(255,71,87,0.2)',
-                            color: '#ff4757'
-                          }}>
-                            <PeopleIcon />
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={session.client}
-                          secondary={`${session.time} - ${session.program}`}
-                          primaryTypographyProps={{
-                            fontWeight: 600,
-                            color: isDarkMode ? '#fff' : '#2c3e50',
-                            fontSize: '1rem'
-                          }}
-                          secondaryTypographyProps={{
-                            color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#666',
-                            fontSize: '0.875rem'
-                          }}
-                        />
-                      </ListItem>
-                    </motion.div>
-                  ))}
-                </List>
+                      }}
+                      onClick={() => navigate('/trainer/schedule')}
+                    >
+                      View Schedule
+                    </Button>
+                  </Box>
+                )}
               </Box>
             </Paper>
           </motion.div>
@@ -919,6 +1042,27 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     </motion.div>
   );
 
+  const handleSettingsUpdate = (updatedSettings) => {
+    // Update trainer data when settings are changed
+    setTrainerData(prev => ({
+      ...prev,
+      fullName: updatedSettings.fullName,
+      firstName: updatedSettings.firstName,
+      lastName: updatedSettings.lastName,
+      email: updatedSettings.email,
+      phone: updatedSettings.phone,
+      profilePhoto: updatedSettings.profilePhoto
+    }));
+    
+    // Force re-fetch data to ensure everything is in sync
+    fetchTrainerData();
+    
+    // Also refresh the navbar if the ref is available
+    if (navbarRef.current) {
+      navbarRef.current.refreshTrainerData();
+    }
+  };
+  
   const renderContent = () => {
     switch(location.pathname) {
       case '/trainer':
@@ -932,7 +1076,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       case '/trainer/reports':
         return <ProgressReportPage />;
       case '/trainer/settings':
-        return <SettingsPage isDarkMode={isDarkMode} />;
+        return <SettingsPage isDarkMode={isDarkMode} onSettingsUpdate={handleSettingsUpdate} />;
       default:
         return <Typography>Page under construction</Typography>;
     }
@@ -948,7 +1092,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
           ? 'linear-gradient(135deg, #1a1a2e 0%, #1a1a1a 100%)'
           : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
       }}>
-        <TrainerNavbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+        <TrainerNavbar ref={navbarRef} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
         <Box sx={{ 
           flexGrow: 1, 
           p: 3, 
@@ -970,7 +1114,6 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 sx: {
                   borderRadius: '16px',
                   bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
-                  color: isDarkMode ? '#fff' : 'inherit',
                   overflow: 'hidden',
                   boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
                   border: '1px solid rgba(255,71,87,0.1)',

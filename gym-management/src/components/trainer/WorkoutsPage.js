@@ -62,8 +62,10 @@ const WorkoutsPage = ({ isDarkMode }) => {
     difficulty: '',
     duration: '',
     calories: '',
-    exercises: '',
-    description: ''
+    description: '',
+    equipment: [],
+    targetMuscles: [],
+    exercises: []  // This should be an array of exercises, not a count
   });
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
@@ -226,11 +228,11 @@ const WorkoutsPage = ({ isDarkMode }) => {
         description: newWorkout.description || "",
         equipment: newWorkout.equipment || [],
         targetMuscles: newWorkout.targetMuscles || [],
-        exercises: newWorkout.exercises.map(ex => ({
+        exercises: Array.isArray(newWorkout.exercises) ? newWorkout.exercises.map(ex => ({
           exerciseName: ex.exerciseName,
           sets: parseInt(ex.sets),
           repRange: ex.repRange
-        }))
+        })) : []
       };
       
       let response;
@@ -289,8 +291,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
       setSelectedWorkout(workoutData);
       setNewWorkout({
         name: workoutData.name,
-        type: workoutData.type.toLowerCase().replace(' training', ''),
-        difficulty: workoutData.difficulty.toLowerCase(),
+        type: workoutData.type,  // Use the full type name from DB
+        difficulty: workoutData.difficulty,  // Use the full difficulty name from DB
         duration: workoutData.duration.toString(),
         calories: workoutData.calories?.toString() || '',
         description: workoutData.description || '',
@@ -519,7 +521,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Duration (minutes)"
@@ -540,7 +542,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={4}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               label="Calories Burn"
@@ -558,27 +560,6 @@ const WorkoutsPage = ({ isDarkMode }) => {
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
               error={!!errors.calories}
               helperText={errors.calories}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Number of Exercises"
-              name="exercises"
-              type="number"
-              value={newWorkout.exercises}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Speed sx={{ color: '#ff4757' }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              error={!!errors.exercises}
-              helperText={errors.exercises}
             />
           </Grid>
 
@@ -797,11 +778,10 @@ const WorkoutsPage = ({ isDarkMode }) => {
     difficulty: '',
     duration: '',
     calories: '',
-    exercises: '',
     description: '',
     equipment: [],
     targetMuscles: [],
-    completion: 0
+    exercises: [] // Reset to empty array
   });
 
   const difficultyColors = {
@@ -1134,7 +1114,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
                             <Grid item xs={4}>
                               <Box sx={{ textAlign: 'center' }}>
                                 <FitnessCenter sx={{ color: '#ff4757', mb: 0.5 }} />
-                                <Typography variant="body2">{workout.exercises} ex</Typography>
+                                <Typography variant="body2">{workout.exercises.length} ex</Typography>
                               </Box>
                             </Grid>
                           </Grid>
