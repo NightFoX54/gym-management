@@ -2,11 +2,15 @@ package com.gymmanagement.service;
 
 import com.gymmanagement.dto.TrainerClientResponse;
 import com.gymmanagement.dto.TrainerRequestResponse;
+import com.gymmanagement.dto.TrainerSessionRequest;
+import com.gymmanagement.dto.TrainerSessionResponse;
 import com.gymmanagement.model.TrainerClient;
 import com.gymmanagement.model.TrainerRegistrationRequest;
+import com.gymmanagement.model.TrainerSession;
 import com.gymmanagement.model.User;
 import com.gymmanagement.repository.TrainerClientRepository;
 import com.gymmanagement.repository.TrainerRegistrationRequestRepository;
+import com.gymmanagement.repository.TrainerSessionRepository;
 import com.gymmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,9 @@ public class TrainerService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private TrainerSessionRepository sessionRepository;
     
     public List<TrainerClientResponse> getTrainerClients(Long trainerId) {
         List<TrainerClient> clients = clientRepository.findByTrainerId(trainerId);
@@ -141,5 +148,61 @@ public class TrainerService {
                 .remainingSessions(savedClient.getRemainingSessions())
                 .status(savedClient.getRemainingSessions() > 0 ? "Active" : "Completed")
                 .build();
+    }
+    
+    // Session management methods
+    public List<TrainerSessionResponse> getTrainerSessions(Long trainerId) {
+        try {
+            List<TrainerSession> sessions = sessionRepository.findByTrainerId(trainerId);
+            
+            return sessions.stream().map(session -> TrainerSessionResponse.builder()
+                    .id(session.getId())
+                    .clientId(session.getClient().getId())
+                    .clientName(session.getClient().getFirstName() + " " + session.getClient().getLastName())
+                    .sessionDate(session.getSessionDate())
+                    .sessionTime(session.getSessionTime())
+                    .sessionType(session.getSessionType())
+                    .notes(session.getNotes())
+                    .build())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error fetching trainer sessions: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    
+    @Transactional
+    public TrainerSessionResponse createSession(Long trainerId, TrainerSessionRequest request) {
+        User trainer = userRepository.findById(trainerId)
+                .orElseThrow(() -> new RuntimeException("Trainer not found with id: " + trainerId));
+        
+        User client = userRepository.findById(request.getClientId())
+                .orElseThrow(() -> new RuntimeException("Client not found with id: " + request.getClientId()));
+        
+        TrainerSession session = new TrainerSession();
+        session.setTrainer(trainer);
+        session.setClient(client);
+        session.setSessionDate(request.getSessionDate());
+        session.setSessionTime(request.getSessionTime());
+        session.setSessionType(request.getSessionType());
+        session.setNotes(request.getNotes());
+        
+        TrainerSession savedSession = sessionRepository.save(session);
+        
+        return TrainerSessionResponse.builder()
+                .id(savedSession.getId())
+                .clientId(savedSession.getClient().getId())
+                .clientName(savedSession.getClient().getFirstName() + " " + savedSession.getClient().getLastName())
+                .sessionDate(savedSession.getSessionDate())
+                .sessionTime(savedSession.getSessionTime())
+                .sessionType(savedSession.getSessionType())
+                .notes(savedSession.getNotes())
+                .build();
+    }
+    
+    @Transactional
+    public void deleteSession(Long sessionId) {
+        sessionRepository.deleteById(sessionId);
     }
 }

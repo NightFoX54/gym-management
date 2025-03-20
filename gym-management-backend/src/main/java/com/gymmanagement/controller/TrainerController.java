@@ -2,6 +2,8 @@ package com.gymmanagement.controller;
 
 import com.gymmanagement.dto.TrainerClientResponse;
 import com.gymmanagement.dto.TrainerRequestResponse;
+import com.gymmanagement.dto.TrainerSessionRequest;
+import com.gymmanagement.dto.TrainerSessionResponse;
 import com.gymmanagement.service.TrainerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -57,5 +59,24 @@ public class TrainerController {
             @RequestBody Map<String, Integer> payload) {
         Integer sessions = payload.get("sessions");
         return ResponseEntity.ok(trainerService.updateClientSessions(clientId, sessions));
+    }
+    
+    // New endpoints for trainer sessions
+    @GetMapping("/{trainerId}/sessions")
+    public ResponseEntity<List<TrainerSessionResponse>> getTrainerSessions(@PathVariable Long trainerId) {
+        return ResponseEntity.ok(trainerService.getTrainerSessions(trainerId));
+    }
+    
+    @PostMapping("/{trainerId}/sessions")
+    public ResponseEntity<TrainerSessionResponse> createSession(
+            @PathVariable Long trainerId,
+            @RequestBody TrainerSessionRequest request) {
+        return ResponseEntity.ok(trainerService.createSession(trainerId, request));
+    }
+    
+    @DeleteMapping("/sessions/{sessionId}")
+    public ResponseEntity<Void> deleteSession(@PathVariable Long sessionId) {
+        trainerService.deleteSession(sessionId);
+        return ResponseEntity.noContent().build();
     }
 }
