@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingButton } from '@mui/lab';
+import axios from 'axios';
 
 const WorkoutsPage = ({ isDarkMode }) => {
   const [workouts, setWorkouts] = useState([]);
@@ -69,21 +70,71 @@ const WorkoutsPage = ({ isDarkMode }) => {
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState('all');
   const workoutsPerPage = 6;
+  const [workoutTypes, setWorkoutTypes] = useState([]);
+  const [workoutLevels, setWorkoutLevels] = useState([]);
 
   useEffect(() => {
     fetchWorkouts();
+    // Initialize workout categories and levels in the backend
+    initializeWorkoutData();
   }, []);
+
+  const initializeWorkoutData = async () => {
+    try {
+      console.log('Initializing workout data...');
+      await axios.post('http://localhost:8080/api/workouts/init');
+      // Fetch workout categories and levels after initialization
+      fetchWorkoutTypesAndLevels();
+      console.log('Workout categories and levels initialized');
+    } catch (error) {
+      console.error('Error initializing workout data:', error);
+    }
+  };
+
+  const fetchWorkoutTypesAndLevels = async () => {
+    try {
+      // Fetch workout types
+      const typesResponse = await axios.get('http://localhost:8080/api/workouts/types');
+      setWorkoutTypes(typesResponse.data);
+      
+      // Fetch workout levels
+      const levelsResponse = await axios.get('http://localhost:8080/api/workouts/levels');
+      setWorkoutLevels(levelsResponse.data);
+    } catch (error) {
+      console.error('Error fetching workout types and levels:', error);
+    }
+  };
 
   const fetchWorkouts = async () => {
     setLoading(true);
     try {
-      const response = await new Promise(resolve => 
-        setTimeout(() => resolve(mockWorkouts), 1000)
-      );
-      setWorkouts(response);
-      showAlert('Workouts loaded successfully', 'success');
+      console.log('Fetching workouts...');
+      // Ensure workout data is initialized first
+      await initializeWorkoutData();
+      
+      // Assuming the user is already logged in and trainer ID is 3
+      const trainerId = 3; // This should come from your auth context or state
+      const response = await axios.get(`http://localhost:8080/api/workouts?userId=${trainerId}&isTrainer=true`, {
+        // Add better error handling
+        validateStatus: function (status) {
+          return status >= 200 && status < 500; // Accept any status code less than 500 as a valid response
+        },
+      });
+      
+      console.log('Workout API response:', response);
+      
+      if (response.status === 200) {
+        setWorkouts(response.data || []);
+        showAlert('Workouts loaded successfully', 'success');
+      } else {
+        console.error('API returned non-200 status:', response.status);
+        setWorkouts([]);
+        showAlert(`Error ${response.status}: ${response.data?.message || 'Failed to load workouts'}`, 'error');
+      }
     } catch (error) {
-      showAlert('Failed to load workouts', 'error');
+      console.error('Error fetching workouts:', error);
+      setWorkouts([]);
+      showAlert('Failed to load workouts: ' + (error.response?.data?.message || error.message || 'Unknown error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -163,25 +214,53 @@ const WorkoutsPage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Assuming the user is already logged in and trainer ID is 3
+      const trainerId = 3; // This should come from your auth context or state
+      
+      const workoutRequest = {
+        name: newWorkout.name,
+        type: newWorkout.type,
+        difficulty: newWorkout.difficulty,
+        duration: parseInt(newWorkout.duration),
+        calories: parseInt(newWorkout.calories) || 0,
+        description: newWorkout.description || "",
+        equipment: newWorkout.equipment || [],
+        targetMuscles: newWorkout.targetMuscles || [],
+        exercises: newWorkout.exercises.map(ex => ({
+          exerciseName: ex.exerciseName,
+          sets: parseInt(ex.sets),
+          repRange: ex.repRange
+        }))
+      };
+      
+      let response;
       
       if (selectedWorkout) {
-        setWorkouts(prev => prev.map(workout => 
-          workout.id === selectedWorkout.id ? { ...newWorkout, id: workout.id } : workout
-        ));
+        // Update existing workout
+        response = await axios.put(
+          `http://localhost:8080/api/workouts/${selectedWorkout.id}`,
+          workoutRequest
+        );
         showAlert('Workout updated successfully!', 'success');
       } else {
-        const newWorkoutData = {
-          id: workouts.length + 1,
-          ...newWorkout,
-          completion: 0
-        };
-        setWorkouts(prev => [...prev, newWorkoutData]);
+        // Create new workout
+        response = await axios.post(
+          `http://localhost:8080/api/workouts?userId=${trainerId}`,
+          workoutRequest
+        );
         showAlert('Workout added successfully!', 'success');
       }
+      
+      // Refresh the workouts list
+      await fetchWorkouts();
       handleCloseDialog();
     } catch (error) {
-      showAlert(selectedWorkout ? 'Failed to update workout' : 'Failed to add workout', 'error');
+      console.error('Error saving workout:', error);
+      showAlert(selectedWorkout ? 
+        'Failed to update workout: ' + (error.response?.data?.message || error.message || 'Unknown error') : 
+        'Failed to add workout: ' + (error.response?.data?.message || error.message || 'Unknown error'), 
+        'error'
+      );
     } finally {
       setActionLoading(false);
     }
@@ -190,20 +269,40 @@ const WorkoutsPage = ({ isDarkMode }) => {
   const handleDeleteWorkout = async (workoutId) => {
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await axios.delete(`http://localhost:8080/api/workouts/${workoutId}`);
       setWorkouts(prev => prev.filter(workout => workout.id !== workoutId));
       showAlert('Workout deleted successfully!', 'success');
     } catch (error) {
-      showAlert('Failed to delete workout', 'error');
+      console.error('Error deleting workout:', error);
+      showAlert('Failed to delete workout: ' + (error.response?.data?.message || error.message || 'Unknown error'), 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleEditWorkout = (workout) => {
-    setSelectedWorkout(workout);
-    setNewWorkout(workout);
-    setOpenDialog(true);
+  const handleEditWorkout = async (workout) => {
+    try {
+      // Fetch detailed workout data including exercises
+      const response = await axios.get(`http://localhost:8080/api/workouts/${workout.id}`);
+      const workoutData = response.data;
+      
+      setSelectedWorkout(workoutData);
+      setNewWorkout({
+        name: workoutData.name,
+        type: workoutData.type.toLowerCase().replace(' training', ''),
+        difficulty: workoutData.difficulty.toLowerCase(),
+        duration: workoutData.duration.toString(),
+        calories: workoutData.calories?.toString() || '',
+        description: workoutData.description || '',
+        equipment: workoutData.equipment || [],
+        targetMuscles: workoutData.targetMuscles || [],
+        exercises: workoutData.exerciseList || []
+      });
+      setOpenDialog(true);
+    } catch (error) {
+      console.error('Error fetching workout details:', error);
+      showAlert('Failed to load workout details: ' + (error.response?.data?.message || error.message || 'Unknown error'), 'error');
+    }
   };
 
   const handleCloseDialog = () => {
@@ -223,6 +322,105 @@ const WorkoutsPage = ({ isDarkMode }) => {
   const showAlert = (message, severity) => {
     setAlert({ open: true, message, severity });
   };
+
+  // Add new component for exercise management
+  const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
+  const [currentExercise, setCurrentExercise] = useState({ exerciseName: '', sets: '', repRange: '' });
+  const [editingExerciseIndex, setEditingExerciseIndex] = useState(null);
+
+  const handleOpenExerciseDialog = (exercise = null, index = null) => {
+    if (exercise) {
+      setCurrentExercise(exercise);
+      setEditingExerciseIndex(index);
+    } else {
+      setCurrentExercise({ exerciseName: '', sets: '', repRange: '' });
+      setEditingExerciseIndex(null);
+    }
+    setExerciseDialogOpen(true);
+  };
+
+  const handleSaveExercise = () => {
+    if (!currentExercise.exerciseName || !currentExercise.sets || !currentExercise.repRange) {
+      showAlert('Please fill all exercise fields', 'error');
+      return;
+    }
+
+    const updatedExercises = [...(newWorkout.exercises || [])];
+    
+    if (editingExerciseIndex !== null) {
+      // Edit existing exercise
+      updatedExercises[editingExerciseIndex] = currentExercise;
+    } else {
+      // Add new exercise
+      updatedExercises.push(currentExercise);
+    }
+    
+    setNewWorkout({ ...newWorkout, exercises: updatedExercises });
+    setExerciseDialogOpen(false);
+    setCurrentExercise({ exerciseName: '', sets: '', repRange: '' });
+    setEditingExerciseIndex(null);
+  };
+
+  const handleDeleteExercise = (index) => {
+    const updatedExercises = [...newWorkout.exercises];
+    updatedExercises.splice(index, 1);
+    setNewWorkout({ ...newWorkout, exercises: updatedExercises });
+  };
+
+  const handleExerciseInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentExercise({ ...currentExercise, [name]: value });
+  };
+
+  const renderExerciseDialog = () => (
+    <Dialog
+      open={exerciseDialogOpen}
+      onClose={() => setExerciseDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle>
+        {editingExerciseIndex !== null ? 'Edit Exercise' : 'Add Exercise'}
+      </DialogTitle>
+      <DialogContent>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Exercise Name"
+              name="exerciseName"
+              value={currentExercise.exerciseName}
+              onChange={handleExerciseInputChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label="Sets"
+              name="sets"
+              type="number"
+              value={currentExercise.sets}
+              onChange={handleExerciseInputChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              fullWidth
+              label="Rep Range"
+              name="repRange"
+              value={currentExercise.repRange}
+              onChange={handleExerciseInputChange}
+              placeholder="e.g., 8-12 reps"
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setExerciseDialogOpen(false)}>Cancel</Button>
+        <Button onClick={handleSaveExercise} variant="contained">Save</Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   const renderDialog = () => (
     <Dialog 
@@ -287,11 +485,14 @@ const WorkoutsPage = ({ isDarkMode }) => {
                 label="Workout Type"
                 sx={{ borderRadius: '12px' }}
               >
-                <MenuItem value="strength">Strength Training</MenuItem>
-                <MenuItem value="cardio">Cardio</MenuItem>
-                <MenuItem value="hiit">HIIT</MenuItem>
-                <MenuItem value="flexibility">Flexibility</MenuItem>
-                <MenuItem value="crossfit">CrossFit</MenuItem>
+                {workoutTypes.map(type => (
+                  <MenuItem 
+                    key={type.id} 
+                    value={type.name}
+                  >
+                    {type.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
@@ -306,9 +507,14 @@ const WorkoutsPage = ({ isDarkMode }) => {
                 label="Difficulty Level"
                 sx={{ borderRadius: '12px' }}
               >
-                <MenuItem value="beginner">Beginner</MenuItem>
-                <MenuItem value="intermediate">Intermediate</MenuItem>
-                <MenuItem value="advanced">Advanced</MenuItem>
+                {workoutLevels.map(level => (
+                  <MenuItem 
+                    key={level.id} 
+                    value={level.name.toLowerCase()}
+                  >
+                    {level.name}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
@@ -456,6 +662,94 @@ const WorkoutsPage = ({ isDarkMode }) => {
               </Select>
             </FormControl>
           </Grid>
+
+          <Grid item xs={12}>
+            <Box sx={{ 
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2
+            }}>
+              <Typography variant="subtitle1">Exercises</Typography>
+              <Button 
+                variant="outlined" 
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenExerciseDialog()}
+                size="small"
+                sx={{
+                  borderColor: '#ff4757',
+                  color: '#ff4757',
+                  '&:hover': {
+                    borderColor: '#ff3747',
+                    backgroundColor: 'rgba(255,71,87,0.1)',
+                  }
+                }}
+              >
+                Add Exercise
+              </Button>
+            </Box>
+            
+            {/* Exercise List */}
+            {newWorkout.exercises && newWorkout.exercises.length > 0 ? (
+              <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '12px', p: 2 }}>
+                {newWorkout.exercises.map((exercise, index) => (
+                  <Box 
+                    key={index}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      p: 1,
+                      borderBottom: index < newWorkout.exercises.length - 1 ? '1px solid' : 'none',
+                      borderColor: 'divider'
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="subtitle2">{exercise.exerciseName}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {exercise.sets} sets × {exercise.repRange}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleOpenExerciseDialog(exercise, index)}
+                        sx={{ color: '#ff4757' }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleDeleteExercise(index)}
+                        sx={{ color: '#666' }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Box 
+                sx={{ 
+                  border: '1px dashed', 
+                  borderColor: 'divider', 
+                  borderRadius: '12px', 
+                  p: 3,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexDirection: 'column',
+                  gap: 1
+                }}
+              >
+                <FitnessCenter sx={{ color: 'text.disabled', fontSize: '2rem' }} />
+                <Typography variant="body2" color="text.secondary" align="center">
+                  No exercises added yet. Click "Add Exercise" to get started.
+                </Typography>
+              </Box>
+            )}
+          </Grid>
         </Grid>
       </DialogContent>
       <DialogActions 
@@ -497,7 +791,6 @@ const WorkoutsPage = ({ isDarkMode }) => {
     </Dialog>
   );
 
-  // Update initial state for new workout
   const resetNewWorkout = () => ({
     name: '',
     type: '',
@@ -517,12 +810,31 @@ const WorkoutsPage = ({ isDarkMode }) => {
     advanced: '#ff4757',
   };
 
-  const filterOptions = [
-    { value: 'all', label: 'All Workouts' },
-    { value: 'strength', label: 'Strength Training' },
-    { value: 'cardio', label: 'Cardio' },
-    { value: 'flexibility', label: 'Flexibility' },
-  ];
+  const getFilterOptions = () => {
+    // Start with the "All Workouts" option
+    const options = [{ value: 'all', label: 'All Workouts' }];
+    
+    // Add options from fetched workout types with their original names
+    if (workoutTypes.length > 0) {
+      workoutTypes.forEach(type => {
+        options.push({
+          value: type.name,
+          label: type.name
+        });
+      });
+    } else {
+      // Fallback to static options if API fails
+      options.push(
+        { value: 'Strength Training', label: 'Strength Training' },
+        { value: 'Cardio', label: 'Cardio' },
+        { value: 'HIIT', label: 'HIIT' },
+        { value: 'Flexibility', label: 'Flexibility' },
+        { value: 'CrossFit', label: 'CrossFit' }
+      );
+    }
+    
+    return options;
+  };
 
   const groupWorkoutsByType = (workouts) => {
     return workouts.reduce((acc, workout) => {
@@ -552,6 +864,33 @@ const WorkoutsPage = ({ isDarkMode }) => {
       const groupedWorkouts = groupWorkoutsByType(filteredWorkouts);
       return groupedWorkouts[activeTab] || [];
     }
+  };
+
+  const renderWorkoutTabs = () => {
+    return (
+      <Tabs 
+        value={activeTab}
+        onChange={handleTabChange}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{
+          '& .MuiTab-root': {
+            color: isDarkMode ? '#fff' : '#666',
+            '&.Mui-selected': {
+              color: '#ff4757',
+            }
+          },
+          '& .MuiTabs-indicator': {
+            backgroundColor: '#ff4757',
+          }
+        }}
+      >
+        <Tab label="All Workouts" value="all" />
+        {workoutTypes.map(type => (
+          <Tab key={type.id} label={type.name} value={type.name} />
+        ))}
+      </Tabs>
+    );
   };
 
   return (
@@ -637,7 +976,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
             }
           }}
         >
-          {filterOptions.map((option) => (
+          {getFilterOptions().map((option) => (
             <MenuItem 
               key={option.value}
               onClick={() => {
@@ -652,30 +991,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
         </Menu>
 
         <Box sx={{ mb: 4, borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs 
-            value={activeTab}
-            onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{
-              '& .MuiTab-root': {
-                color: isDarkMode ? '#fff' : '#666',
-                '&.Mui-selected': {
-                  color: '#ff4757',
-                }
-              },
-              '& .MuiTabs-indicator': {
-                backgroundColor: '#ff4757',
-              }
-            }}
-          >
-            <Tab label="All Workouts" value="all" />
-            <Tab label="Strength" value="strength" />
-            <Tab label="Cardio" value="cardio" />
-            <Tab label="HIIT" value="hiit" />
-            <Tab label="Flexibility" value="flexibility" />
-            <Tab label="CrossFit" value="crossfit" />
-          </Tabs>
+          {renderWorkoutTabs()}
         </Box>
 
         {loading ? (
@@ -684,200 +1000,227 @@ const WorkoutsPage = ({ isDarkMode }) => {
           </Box>
         ) : (
           <>
-            <Grid container spacing={3}>
-              {getFilteredWorkouts().map((workout) => (
-                <Grid item xs={12} sm={6} key={workout.id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Card sx={{
-                      display: 'flex',
-                      background: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,71,87,0.1)',
-                      transition: 'all 0.3s ease',
-                      borderRadius: '16px',
-                      overflow: 'hidden',
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 8px 32px rgba(255,71,87,0.1)',
-                      }
-                    }}>
-                      <Box sx={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        width: '100%',
-                        p: 3 
+            {workouts.length === 0 ? (
+              <Box sx={{ 
+                textAlign: 'center', 
+                p: 5, 
+                bgcolor: isDarkMode ? 'rgba(26,26,26,0.8)' : 'rgba(255,255,255,0.8)',
+                borderRadius: '16px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+              }}>
+                <FitnessCenter sx={{ fontSize: 60, color: '#ff4757', opacity: 0.5, mb: 2 }} />
+                <Typography variant="h6" sx={{ mb: 1 }}>No Workouts Found</Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  You haven't created any workout programs yet.
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  startIcon={<AddIcon />}
+                  onClick={() => setOpenDialog(true)}
+                  sx={{
+                    bgcolor: '#ff4757',
+                    '&:hover': { bgcolor: '#ff3747' }
+                  }}
+                >
+                  Create Your First Workout
+                </Button>
+              </Box>
+            ) : (
+              <Grid container spacing={3}>
+                {getFilteredWorkouts().map((workout) => (
+                  <Grid item xs={12} sm={6} key={workout.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card sx={{
+                        display: 'flex',
+                        background: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255,71,87,0.1)',
+                        transition: 'all 0.3s ease',
+                        borderRadius: '16px',
+                        overflow: 'hidden',
+                        '&:hover': {
+                          transform: 'translateY(-5px)',
+                          boxShadow: '0 8px 32px rgba(255,71,87,0.1)',
+                        }
                       }}>
-                        {/* Header */}
                         <Box sx={{ 
                           display: 'flex', 
-                          justifyContent: 'space-between',
-                          alignItems: 'flex-start',
-                          mb: 2
+                          flexDirection: 'column', 
+                          width: '100%',
+                          p: 3 
                         }}>
-                          <Typography variant="h6" sx={{ 
-                            color: '#ff4757',
-                            fontWeight: 600,
+                          {/* Header */}
+                          <Box sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            mb: 2
                           }}>
-                            {workout.name}
-                          </Typography>
-                          <Box>
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleEditWorkout(workout)}
-                              sx={{ color: '#ff4757' }}
-                            >
-                              <Edit />
-                            </IconButton>
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleDeleteWorkout(workout.id)}
-                              sx={{ color: '#666' }}
-                            >
-                              <Delete />
-                            </IconButton>
-                          </Box>
-                        </Box>
-
-                        {/* Tags */}
-                        <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                          <Chip
-                            size="small"
-                            label={workout.difficulty}
-                            sx={{
-                              bgcolor: `${difficultyColors[workout.difficulty]}15`,
-                              color: difficultyColors[workout.difficulty]
-                            }}
-                          />
-                          <Chip
-                            size="small"
-                            label={workout.type}
-                            sx={{
-                              bgcolor: 'rgba(255,71,87,0.1)',
-                              color: '#ff4757'
-                            }}
-                          />
-                        </Box>
-
-                        {/* Description */}
-                        <Typography variant="body2" sx={{ 
-                          mb: 2,
-                          color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}>
-                          {workout.description}
-                        </Typography>
-
-                        {/* Stats Grid */}
-                        <Grid container spacing={2} sx={{ mb: 2 }}>
-                          <Grid item xs={4}>
-                            <Box sx={{ textAlign: 'center' }}>
-                              <Timer sx={{ color: '#ff4757', mb: 0.5 }} />
-                              <Typography variant="body2">{workout.duration} min</Typography>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={4}>
-                            <Box sx={{ textAlign: 'center' }}>
-                              <FireIcon sx={{ color: '#ff4757', mb: 0.5 }} />
-                              <Typography variant="body2">{workout.calories} cal</Typography>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={4}>
-                            <Box sx={{ textAlign: 'center' }}>
-                              <FitnessCenter sx={{ color: '#ff4757', mb: 0.5 }} />
-                              <Typography variant="body2">{workout.exercises} ex</Typography>
-                            </Box>
-                          </Grid>
-                        </Grid>
-
-                        {/* Equipment and Muscles */}
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="caption" sx={{ 
-                            color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                            display: 'block',
-                            mb: 1
-                          }}>
-                            Equipment:
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                            {workout.equipment.map((item, index) => (
-                              <Chip
-                                key={index}
-                                label={item}
-                                size="small"
-                                sx={{
-                                  bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                                  fontSize: '0.7rem'
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="caption" sx={{ 
-                            color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                            display: 'block',
-                            mb: 1
-                          }}>
-                            Target Muscles:
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                            {workout.targetMuscles.map((muscle, index) => (
-                              <Chip
-                                key={index}
-                                label={muscle}
-                                size="small"
-                                sx={{
-                                  bgcolor: isDarkMode ? 'rgba(255,71,87,0.1)' : 'rgba(255,71,87,0.1)',
-                                  color: '#ff4757',
-                                  fontSize: '0.7rem'
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-
-                        {/* Progress Bar */}
-                        <Box sx={{ mt: 'auto' }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="caption" sx={{ 
-                              color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'
+                            <Typography variant="h6" sx={{ 
+                              color: '#ff4757',
+                              fontWeight: 600,
                             }}>
-                              Completion Rate
+                              {workout.name}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: '#ff4757' }}>
-                              {workout.completion}%
-                            </Typography>
+                            <Box>
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleEditWorkout(workout)}
+                                sx={{ color: '#ff4757' }}
+                              >
+                                <Edit />
+                              </IconButton>
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleDeleteWorkout(workout.id)}
+                                sx={{ color: '#666' }}
+                              >
+                                <Delete />
+                              </IconButton>
+                            </Box>
                           </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={workout.completion}
-                            sx={{
-                              height: 6,
-                              borderRadius: 3,
-                              bgcolor: 'rgba(255,71,87,0.1)',
-                              '& .MuiLinearProgress-bar': {
-                                bgcolor: '#ff4757',
-                              }
-                            }}
-                          />
-                        </Box>
-                      </Box>
-                    </Card>
-                  </motion.div>
-                </Grid>
-              ))}
-            </Grid>
 
+                          {/* Tags */}
+                          <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                            <Chip
+                              size="small"
+                              label={workout.difficulty}
+                              sx={{
+                                bgcolor: `${difficultyColors[workout.difficulty]}15`,
+                                color: difficultyColors[workout.difficulty]
+                              }}
+                            />
+                            <Chip
+                              size="small"
+                              label={workout.type}
+                              sx={{
+                                bgcolor: 'rgba(255,71,87,0.1)',
+                                color: '#ff4757'
+                              }}
+                            />
+                          </Box>
+
+                          {/* Description */}
+                          <Typography variant="body2" sx={{ 
+                            mb: 2,
+                            color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {workout.description}
+                          </Typography>
+
+                          {/* Stats Grid */}
+                          <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={4}>
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Timer sx={{ color: '#ff4757', mb: 0.5 }} />
+                                <Typography variant="body2">{workout.duration} min</Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={4}>
+                              <Box sx={{ textAlign: 'center' }}>
+                                <FireIcon sx={{ color: '#ff4757', mb: 0.5 }} />
+                                <Typography variant="body2">{workout.calories} cal</Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={4}>
+                              <Box sx={{ textAlign: 'center' }}>
+                                <FitnessCenter sx={{ color: '#ff4757', mb: 0.5 }} />
+                                <Typography variant="body2">{workout.exercises} ex</Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
+
+                          {/* Equipment and Muscles */}
+                          <Box sx={{ mb: 2 }}>
+                            <Typography variant="caption" sx={{ 
+                              color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                              display: 'block',
+                              mb: 1
+                            }}>
+                              Equipment:
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                              {workout.equipment.map((item, index) => (
+                                <Chip
+                                  key={index}
+                                  label={item}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                                    fontSize: '0.7rem'
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+
+                          <Box sx={{ mb: 2 }}>
+                            <Typography variant="caption" sx={{ 
+                              color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                              display: 'block',
+                              mb: 1
+                            }}>
+                              Target Muscles:
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                              {workout.targetMuscles.map((muscle, index) => (
+                                <Chip
+                                  key={index}
+                                  label={muscle}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: isDarkMode ? 'rgba(255,71,87,0.1)' : 'rgba(255,71,87,0.1)',
+                                    color: '#ff4757',
+                                    fontSize: '0.7rem'
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+
+                          {/* Progress Bar */}
+                          <Box sx={{ mt: 'auto' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography variant="caption" sx={{ 
+                                color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit'
+                              }}>
+                                Completion Rate
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#ff4757' }}>
+                                {workout.completion}%
+                              </Typography>
+                            </Box>
+                            <LinearProgress
+                              variant="determinate"
+                              value={workout.completion}
+                              sx={{
+                                height: 6,
+                                borderRadius: 3,
+                                bgcolor: 'rgba(255,71,87,0.1)',
+                                '& .MuiLinearProgress-bar': {
+                                  bgcolor: '#ff4757',
+                                }
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      </Card>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+            
             {activeTab === 'all' && (
               <Box sx={{ 
                 display: 'flex', 
@@ -925,6 +1268,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
           </Fab>
         </Tooltip>
 
+        {renderExerciseDialog()}
         {renderDialog()}
 
         <Snackbar
@@ -945,138 +1289,5 @@ const WorkoutsPage = ({ isDarkMode }) => {
     </Box>
   );
 };
-
-const mockWorkouts = [
-  {
-    id: 1,
-    name: 'Full Body Strength',
-    type: 'strength',
-    difficulty: 'intermediate',
-    duration: 60,
-    calories: 450,
-    exercises: 12,
-    completion: 85,
-    description: 'Complete full body workout focusing on major muscle groups',
-    equipment: ['Dumbbells', 'Barbell', 'Resistance Bands'],
-    targetMuscles: ['Chest', 'Back', 'Legs', 'Shoulders']
-  },
-  {
-    id: 2,
-    name: 'HIIT Cardio Blast',
-    type: 'cardio',
-    difficulty: 'advanced',
-    duration: 45,
-    calories: 600,
-    exercises: 8,
-    completion: 92,
-    description: 'High-intensity interval training for maximum calorie burn',
-    equipment: ['Kettlebell', 'Jump Rope', 'Yoga Mat'],
-    targetMuscles: ['Core', 'Legs', 'Shoulders']
-  },
-  {
-    id: 3,
-    name: 'Yoga Flow',
-    type: 'flexibility',
-    difficulty: 'beginner',
-    duration: 50,
-    calories: 200,
-    exercises: 15,
-    completion: 78,
-    description: 'Relaxing yoga session focusing on flexibility and mindfulness',
-    equipment: ['Yoga Mat', 'Resistance Bands'],
-    targetMuscles: ['Core', 'Back', 'Legs']
-  },
-  {
-    id: 4,
-    name: 'Power Lifting',
-    type: 'strength',
-    difficulty: 'advanced',
-    duration: 75,
-    calories: 500,
-    exercises: 6,
-    completion: 65,
-    description: 'Heavy lifting session focusing on compound movements',
-    equipment: ['Barbell', 'Power Rack', 'Weight Plates'],
-    targetMuscles: ['Chest', 'Back', 'Legs']
-  },
-  {
-    id: 5,
-    name: 'Core Crusher',
-    type: 'strength',
-    difficulty: 'intermediate',
-    duration: 30,
-    calories: 300,
-    exercises: 10,
-    completion: 95,
-    description: 'Intense core workout for strengthening abdominal muscles',
-    equipment: ['Yoga Mat', 'Medicine Ball'],
-    targetMuscles: ['Core', 'Back']
-  },
-  {
-    id: 6,
-    name: 'Sprint Intervals',
-    type: 'cardio',
-    difficulty: 'advanced',
-    duration: 40,
-    calories: 550,
-    exercises: 5,
-    completion: 88,
-    description: 'High-intensity sprint training for cardiovascular endurance',
-    equipment: ['Treadmill'],
-    targetMuscles: ['Legs', 'Core']
-  },
-  {
-    id: 7,
-    name: 'Upper Body Focus',
-    type: 'strength',
-    difficulty: 'intermediate',
-    duration: 55,
-    calories: 400,
-    exercises: 9,
-    completion: 72,
-    description: 'Complete upper body workout targeting all major muscle groups',
-    equipment: ['Dumbbells', 'Pull-up Bar', 'Resistance Bands'],
-    targetMuscles: ['Chest', 'Back', 'Shoulders', 'Arms']
-  },
-  {
-    id: 8,
-    name: 'Leg Day Challenge',
-    type: 'strength',
-    difficulty: 'advanced',
-    duration: 65,
-    calories: 480,
-    exercises: 8,
-    completion: 60,
-    description: 'Intense lower body workout focusing on strength and hypertrophy',
-    equipment: ['Barbell', 'Squat Rack', 'Leg Press'],
-    targetMuscles: ['Legs', 'Core']
-  },
-  {
-    id: 9,
-    name: 'Mobility Flow',
-    type: 'flexibility',
-    duration: 35,
-    difficulty: 'beginner',
-    calories: 150,
-    exercises: 12,
-    completion: 90,
-    description: 'Dynamic stretching and mobility exercises for better flexibility',
-    equipment: ['Foam Roller', 'Yoga Mat'],
-    targetMuscles: ['Full Body']
-  },
-  {
-    id: 10,
-    name: 'CrossFit WOD',
-    type: 'crossfit',
-    difficulty: 'advanced',
-    duration: 45,
-    calories: 580,
-    exercises: 6,
-    completion: 82,
-    description: 'High-intensity CrossFit workout of the day',
-    equipment: ['Kettlebell', 'Jump Rope', 'Barbell'],
-    targetMuscles: ['Full Body']
-  }
-];
 
 export default WorkoutsPage;

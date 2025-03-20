@@ -30,25 +30,26 @@ import {
   AccessTime,
   Person,
   Event,
-  Delete, // Add this import
+  Delete,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from 'date-fns';
+import axios from 'axios';
 
 const SchedulePage = ({ isDarkMode }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [openDialog, setOpenDialog] = useState(false);
   const [newSession, setNewSession] = useState({
-    client: '',
+    clientId: '',
     date: format(new Date(), 'yyyy-MM-dd'),
     time: '',
     type: '',
-    duration: 60,
     notes: ''
   });
 
   const [appointments, setAppointments] = useState([]);
+  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'success' });
@@ -59,20 +60,47 @@ const SchedulePage = ({ isDarkMode }) => {
 
   useEffect(() => {
     fetchAppointments();
+    fetchClients();
   }, []);
 
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const response = await new Promise(resolve => 
-        setTimeout(() => resolve(mockAppointments), 1000)
-      );
-      setAppointments(response);
+      // Assuming the user is already logged in and the trainer ID is 3
+      const trainerId = 3; // This should come from your auth context or state
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/sessions`);
+      
+      // Transform the data to match the expected format for the calendar
+      const formattedSessions = response.data.map(session => ({
+        id: session.id,
+        date: parseISO(session.sessionDate),
+        time: session.sessionTime.substring(0, 5), // Get HH:MM format from HH:MM:SS
+        client: session.clientName,
+        clientId: session.clientId,
+        type: session.sessionType,
+        notes: session.notes || "",
+        color: getRandomColor(),
+      }));
+      
+      setAppointments(formattedSessions);
       showAlert('Appointments loaded successfully', 'success');
     } catch (error) {
+      console.error('Error fetching appointments:', error);
       showAlert('Failed to load appointments', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      // Assuming the user is already logged in and the trainer ID is 3
+      const trainerId = 3; // This should come from your auth context or state
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/clients`);
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      showAlert('Failed to load clients', 'error');
     }
   };
 
@@ -84,13 +112,30 @@ const SchedulePage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Assuming the user is already logged in and the trainer ID is 3
+      const trainerId = 3; // This should come from your auth context or state
+      
+      const sessionRequest = {
+        clientId: parseInt(newSession.clientId),
+        sessionDate: newSession.date,
+        sessionTime: newSession.time + ":00", // Add seconds to match LocalTime format
+        sessionType: newSession.type,
+        notes: newSession.notes || ""
+      };
+      
+      const response = await axios.post(
+        `http://localhost:8080/api/trainer/${trainerId}/sessions`, 
+        sessionRequest
+      );
+      
       const newAppointment = {
-        id: appointments.length + 1,
-        date: new Date(newSession.date),
-        time: newSession.time,
-        client: newSession.client,
-        type: newSession.type,
+        id: response.data.id,
+        date: parseISO(response.data.sessionDate),
+        time: response.data.sessionTime.substring(0, 5),
+        client: response.data.clientName,
+        clientId: response.data.clientId,
+        type: response.data.sessionType,
+        notes: response.data.notes,
         color: getRandomColor(),
       };
       
@@ -99,6 +144,7 @@ const SchedulePage = ({ isDarkMode }) => {
       resetNewSession();
       showAlert('Session added successfully!', 'success');
     } catch (error) {
+      console.error('Error adding session:', error);
       showAlert('Failed to add session', 'error');
     } finally {
       setActionLoading(false);
@@ -113,10 +159,11 @@ const SchedulePage = ({ isDarkMode }) => {
     const appointmentId = deleteConfirm.appointmentId;
     setActionLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await axios.delete(`http://localhost:8080/api/trainer/sessions/${appointmentId}`);
       setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
       showAlert('Session deleted successfully!', 'success');
     } catch (error) {
+      console.error('Error deleting session:', error);
       showAlert('Failed to delete session', 'error');
     } finally {
       setActionLoading(false);
@@ -125,8 +172,8 @@ const SchedulePage = ({ isDarkMode }) => {
   };
 
   const validateSession = () => {
-    const required = ['client', 'date', 'time', 'type'];
-    return required.every(field => newSession[field].trim());
+    const required = ['clientId', 'date', 'time', 'type'];
+    return required.every(field => newSession[field].toString().trim());
   };
 
   const showAlert = (message, severity) => {
@@ -140,13 +187,13 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const resetNewSession = () => {
     setNewSession({
-      client: '',
+      clientId: '',
       date: format(new Date(), 'yyyy-MM-dd'),
       time: '',
       type: '',
-      duration: 60,
       notes: ''
     });
+    setErrors({});
   };
 
   const handleDayClick = (day, appointments) => {
@@ -160,11 +207,8 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const validateField = (name, value) => {
     switch (name) {
-      case 'client':
-        const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s]{2,50}$/;
-        if (!value) return 'Client name is required';
-        if (!nameRegex.test(value)) return 'Name should only contain letters';
-        return '';
+      case 'clientId':
+        return value ? '' : 'Client is required';
       case 'date':
         if (!value) return 'Date is required';
         const selectedDate = new Date(value);
@@ -173,7 +217,6 @@ const SchedulePage = ({ isDarkMode }) => {
         return selectedDate >= today ? '' : 'Date cannot be in the past';
       case 'time':
         if (!value) return 'Time is required';
-        // Optional: Add time range validation if needed
         return '';
       case 'type':
         return value ? '' : 'Session type is required';
@@ -184,13 +227,6 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-
-    // For client name, prevent typing numbers
-    if (name === 'client') {
-      const lastChar = value.slice(-1);
-      if (/[0-9]/.test(lastChar)) return;
-    }
-
     setNewSession(prev => ({
       ...prev,
       [name]: value
@@ -201,9 +237,10 @@ const SchedulePage = ({ isDarkMode }) => {
     setErrors(prev => ({ ...prev, [name]: error }));
 
     // Check if form is valid
-    const requiredFields = ['client', 'date', 'time', 'type'];
+    const requiredFields = ['clientId', 'date', 'time', 'type'];
+    const updatedSession = {...newSession, [name]: value};
     const isValid = requiredFields.every(field => 
-      newSession[field] && !errors[field]
+      updatedSession[field] && !errors[field]
     );
     setIsFormValid(isValid);
   };
@@ -334,22 +371,27 @@ const SchedulePage = ({ isDarkMode }) => {
       <DialogContent sx={{ mt: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Client Name"
-              name="client"
-              value={newSession.client}
-              onChange={handleInputChange}
-              InputProps={{
-                startAdornment: (
+            <FormControl fullWidth error={!!errors.clientId}>
+              <InputLabel>Client</InputLabel>
+              <Select
+                name="clientId"
+                value={newSession.clientId}
+                onChange={handleInputChange}
+                label="Client"
+                startAdornment={
                   <InputAdornment position="start">
                     <Person sx={{ color: '#ff4757' }} />
                   </InputAdornment>
-                ),
-              }}
-              error={!!errors.client}
-              helperText={errors.client}
-            />
+                }
+              >
+                {clients.map((client) => (
+                  <MenuItem key={client.clientId} value={client.clientId}>
+                    {client.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.clientId && <Typography color="error">{errors.clientId}</Typography>}
+            </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
@@ -393,6 +435,17 @@ const SchedulePage = ({ isDarkMode }) => {
               {errors.type && <Typography color="error">{errors.type}</Typography>}
             </FormControl>
           </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Notes"
+              name="notes"
+              multiline
+              rows={2}
+              value={newSession.notes}
+              onChange={handleInputChange}
+            />
+          </Grid>
         </Grid>
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
@@ -412,7 +465,7 @@ const SchedulePage = ({ isDarkMode }) => {
         </Button>
         <Button
           onClick={handleAddSession}
-          loading={actionLoading}
+          disabled={actionLoading || !isFormValid}
           variant="contained"
           sx={{
             background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
@@ -421,7 +474,7 @@ const SchedulePage = ({ isDarkMode }) => {
             }
           }}
         >
-          Add Session
+          {actionLoading ? <CircularProgress size={24} color="inherit" /> : 'Add Session'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -455,12 +508,13 @@ const SchedulePage = ({ isDarkMode }) => {
           onClick={confirmDelete}
           color="error"
           variant="contained"
+          disabled={actionLoading}
           sx={{
             bgcolor: '#ff4757',
             '&:hover': { bgcolor: '#ff3747' }
           }}
         >
-          Delete
+          {actionLoading ? <CircularProgress size={24} color="inherit" /> : 'Delete'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -723,24 +777,5 @@ const SchedulePage = ({ isDarkMode }) => {
     </Box>
   );
 };
-
-const mockAppointments = [
-  {
-    id: 1,
-    date: new Date(),
-    time: '09:00',
-    client: 'Necip Uysal',
-    type: 'Personal Training',
-    color: '#ff4757'
-  },
-  {
-    id: 2,
-    date: new Date(),
-    time: '14:30',
-    client: 'Mauro Icardi',
-    type: 'Yoga Session',
-    color: '#2ecc71'
-  },
-];
 
 export default SchedulePage;
