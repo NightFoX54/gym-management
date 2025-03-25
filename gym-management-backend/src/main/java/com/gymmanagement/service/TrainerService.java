@@ -101,6 +101,26 @@ public class TrainerService {
         
         TrainerClient savedClient = clientRepository.save(newClient);
         
+        // Also create an initial session based on the requested meeting date/time
+        if (request.getRequestedMeetingDate() != null && request.getRequestedMeetingTime() != null) {
+            System.out.println("Creating initial session for client " + request.getClient().getId() + 
+                               " on " + request.getRequestedMeetingDate() + 
+                               " at " + request.getRequestedMeetingTime());
+            
+            TrainerSession initialSession = new TrainerSession();
+            initialSession.setTrainer(request.getTrainer());
+            initialSession.setClient(request.getClient());
+            initialSession.setSessionDate(request.getRequestedMeetingDate());
+            initialSession.setSessionTime(request.getRequestedMeetingTime());
+            initialSession.setSessionType("Initial Consultation"); // Default session type for first meeting
+            initialSession.setNotes("Automatically created from registration request #" + requestId);
+            
+            TrainerSession savedSession = sessionRepository.save(initialSession);
+            System.out.println("Successfully created session with ID: " + savedSession.getId());
+        } else {
+            System.out.println("Could not create initial session - meeting date or time is null");
+        }
+        
         // Delete the request once processed
         requestRepository.delete(request);
         

@@ -137,10 +137,12 @@ public class WorkoutService {
         workout.setEquipment(String.join(",", request.getEquipment()));
         workout.setTargetMuscles(String.join(",", request.getTargetMuscles()));
         
-        // Update exercises
+        // Fix: Handle exercises properly to avoid orphan deletion issue
+        // First clear the existing exercises list without triggering orphan deletion
         List<WorkoutExercise> currentExercises = exerciseRepository.findByWorkoutId(workoutId);
         exerciseRepository.deleteAll(currentExercises);
         
+        // Now create and save new exercises
         List<WorkoutExercise> newExercises = new ArrayList<>();
         if (request.getExercises() != null) {
             for (WorkoutExerciseDTO exerciseDTO : request.getExercises()) {

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -51,6 +52,15 @@ public class Workout {
     @Column(name = "target_muscles", columnDefinition = "TEXT")
     private String targetMuscles;
     
-    @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WorkoutExercise> exercises;
+    // Fix for orphan deletion issue: Change cascade type and implement proper cleanup
+    @OneToMany(mappedBy = "workout", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
+    private List<WorkoutExercise> exercises = new ArrayList<>();
+    
+    // Helper method to safely update exercises
+    public void updateExercises(List<WorkoutExercise> newExercises) {
+        this.exercises.clear();
+        if (newExercises != null) {
+            this.exercises.addAll(newExercises);
+        }
+    }
 }

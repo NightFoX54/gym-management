@@ -50,15 +50,16 @@ public class TrainerController {
     @PostMapping("/requests/{requestId}/approve")
     public ResponseEntity<TrainerClientResponse> approveRequest(
             @PathVariable Long requestId,
-            @RequestBody Map<String, Integer> payload) {
-        Integer sessions = payload.get("initialSessions");
-        return ResponseEntity.ok(trainerService.approveRequest(requestId, sessions));
+            @RequestBody Map<String, Integer> requestBody) {
+        Integer initialSessions = requestBody.get("initialSessions");
+        TrainerClientResponse client = trainerService.approveRequest(requestId, initialSessions);
+        return ResponseEntity.ok(client);
     }
     
     @PostMapping("/requests/{requestId}/reject")
     public ResponseEntity<Void> rejectRequest(@PathVariable Long requestId) {
         trainerService.rejectRequest(requestId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
     
     @DeleteMapping("/clients/{clientId}")
@@ -85,7 +86,8 @@ public class TrainerController {
     public ResponseEntity<TrainerSessionResponse> createSession(
             @PathVariable Long trainerId,
             @RequestBody TrainerSessionRequest request) {
-        return ResponseEntity.ok(trainerService.createSession(trainerId, request));
+        TrainerSessionResponse session = trainerService.createSession(trainerId, request);
+        return ResponseEntity.ok(session);
     }
     
     @DeleteMapping("/sessions/{sessionId}")
