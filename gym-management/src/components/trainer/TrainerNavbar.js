@@ -11,6 +11,9 @@ import {
   Typography,
   Divider,
   CircularProgress,
+  Badge,
+  Tooltip,
+  Rating,
 } from '@mui/material';
 import {
   Dashboard,
@@ -24,6 +27,8 @@ import {
   Logout,
   DarkMode,
   LightMode,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -81,9 +86,14 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
   });
   const [navLoading, setNavLoading] = useState(true);
   const [imageKey, setImageKey] = useState(Date.now()); // Add this state for forcing image reload
+  const [trainerRating, setTrainerRating] = useState({
+    averageRating: 0,
+    totalRatings: 0
+  });
 
   useEffect(() => {
     fetchTrainerData();
+    fetchTrainerRatings();
   }, []);
 
   const fetchTrainerData = async () => {
@@ -112,6 +122,28 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
   React.useImperativeHandle(ref, () => ({
     refreshTrainerData
   }));
+
+  // Add a function to fetch trainer ratings for the navbar
+  const fetchTrainerRatings = async () => {
+    try {
+      const trainerId = 3; // This should be retrieved from authentication context
+      // In a real application, you would call your API endpoint
+      // For now, we'll simulate a response with mock data
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Mock data for demonstration
+      const mockRatingData = {
+        averageRating: 4.7,
+        totalRatings: 58
+      };
+      
+      setTrainerRating(mockRatingData);
+    } catch (error) {
+      console.error('Error fetching trainer ratings for navbar:', error);
+    }
+  };
 
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/trainer' },
@@ -190,26 +222,71 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Avatar
-              className="trainer-avatar"
-              src={`${trainerData.profilePhoto}?v=${imageKey}`} // Add key as query param to force reload
-              sx={{ 
-                width: 80,
-                height: 80,
-                bgcolor: '#ff4757',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                border: '3px solid',
-                borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.2)',
-              }}
-              onClick={() => handleNavigation('/trainer')}
+            <Badge
+              overlap="circular"
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              badgeContent={
+                <Tooltip 
+                  title={`${trainerRating.averageRating.toFixed(1)} stars (${trainerRating.totalRatings} reviews)`}
+                  arrow
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 20,
+                      delay: 0.5
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        bgcolor: '#ff4757',
+                        borderRadius: '50%',
+                        width: 32,
+                        height: 32,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        border: '2px solid',
+                        borderColor: isDarkMode ? '#1a1a2e' : 'white',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onClick={() => navigate('/trainer')}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'white' }}>
+                        {trainerRating.averageRating.toFixed(1)}
+                      </Typography>
+                    </Box>
+                  </motion.div>
+                </Tooltip>
+              }
             >
-              {navLoading ? (
-                <CircularProgress size={40} sx={{ color: 'white' }} />
-              ) : (
-                <>{!trainerData.profilePhoto && trainerData.firstName?.[0]}</>
-              )}
-            </Avatar>
+              <Avatar
+                className="trainer-avatar"
+                src={`${trainerData.profilePhoto}?v=${imageKey}`} // Add key as query param to force reload
+                sx={{ 
+                  width: 80,
+                  height: 80,
+                  bgcolor: '#ff4757',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  border: '3px solid',
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.2)',
+                }}
+                onClick={() => handleNavigation('/trainer')}
+              >
+                {navLoading ? (
+                  <CircularProgress size={40} sx={{ color: 'white' }} />
+                ) : (
+                  <>{!trainerData.profilePhoto && trainerData.firstName?.[0]}</>
+                )}
+              </Avatar>
+            </Badge>
           </motion.div>
           <Box sx={{ textAlign: 'center' }}>
             <Typography 
@@ -221,12 +298,39 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
             >
               {navLoading ? 'Loading...' : (trainerData.fullName || 'Trainer')}
             </Typography>
+            
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: 0.5 
+            }}>
+              <Rating 
+                value={trainerRating.averageRating} 
+                readOnly 
+                size="small"
+                precision={0.5}
+                icon={<StarIcon sx={{ color: '#ff4757', fontSize: '16px' }} />}
+                emptyIcon={<StarBorderIcon sx={{ color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)', fontSize: '16px' }} />}
+              />
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  color: isDarkMode ? 'rgba(255,255,255,0.8)' : '#666666',
+                  fontWeight: 500
+                }}
+              >
+                ({trainerRating.totalRatings})
+              </Typography>
+            </Box>
+            
             <Typography 
               variant="body2" 
               sx={{ 
                 color: isDarkMode ? 'rgba(255,255,255,0.8)' : '#666666',
                 fontSize: '0.9rem',
-                opacity: 0.8
+                opacity: 0.8,
+                mt: 0.5
               }}
             >
               Senior Trainer

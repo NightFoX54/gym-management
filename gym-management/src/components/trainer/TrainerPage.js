@@ -36,6 +36,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Rating,
+  Badge,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -51,6 +53,11 @@ import {
   LocalFireDepartment,
   Scale,
   Speed as SpeedIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
+  StarHalf as StarHalfIcon,
+  ThumbUp as ThumbUpIcon,
+  Comment as CommentIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ClientsPage from './ClientsPage';
@@ -60,6 +67,7 @@ import ProgressReportPage from './ProgressReportPage';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsPage from './SettingsPage';
 import axios from 'axios'; // Add the axios import
+import { format } from 'date-fns'; // Add date-fns import
 
 const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -96,10 +104,34 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const navbarRef = React.useRef();
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [ratingData, setRatingData] = useState({
+    averageRating: 0,
+    totalRatings: 0,
+    recentRatings: [],
+    ratingBreakdown: {
+      5: 0, 4: 0, 3: 0, 2: 0, 1: 0
+    }
+  });
+  const [ratingLoading, setRatingLoading] = useState(true);
+
+  // Add these new states needed for session scheduling
+  const [clients, setClients] = useState([]);
+  const [clientsLoading, setClientsLoading] = useState(true);
+  const [dialogSessionFormData, setDialogSessionFormData] = useState({
+    clientId: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    time: '',
+    type: '',
+    notes: ''
+  });
+  const [dialogSessionErrors, setDialogSessionErrors] = useState({});
+  const [dialogSessionValid, setDialogSessionValid] = useState(false);
 
   useEffect(() => {
     fetchTrainerData();
     fetchTodaySessions();
+    fetchTrainerRatings();
+    fetchClients(); // Add this new function call
   }, []);
 
   // Add the showAlert function that was missing
@@ -174,6 +206,157 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     } finally {
       setSessionsLoading(false);
     }
+  };
+
+  // Add function to fetch trainer ratings
+  const fetchTrainerRatings = async () => {
+    setRatingLoading(true);
+    try {
+      const trainerId = 3; // This should be retrieved from authentication context
+      // In a real application, you would call your API endpoint
+      // For now, we'll simulate a response with mock data
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock data for demonstration - Updated to be trainer-focused reviews
+      const mockRatingData = {
+        averageRating: 4.7,
+        totalRatings: 58,
+        recentRatings: [
+          { id: 1, clientName: 'Ali Yilmaz', rating: 5, comment: 'Best trainer I\'ve ever had! You helped me reach my fitness goals in just 3 months.', date: '2023-05-15' },
+          { id: 2, clientName: 'Ayse Demir', rating: 4.5, comment: 'Your training programs are very effective. I\'ve seen significant improvements in my stamina.', date: '2023-05-10' },
+          { id: 3, clientName: 'Mehmet Kaya', rating: 5, comment: 'I appreciate your professional approach and the personal attention you give during sessions.', date: '2023-05-05' },
+          { id: 4, clientName: 'Zeynep Ak', rating: 4, comment: 'Great motivator! You always know how to push me just the right amount.', date: '2023-04-28' },
+        ],
+        ratingBreakdown: {
+          5: 38,
+          4: 15,
+          3: 3,
+          2: 1,
+          1: 1
+        }
+      };
+      
+      setRatingData(mockRatingData);
+    } catch (error) {
+      console.error('Error fetching trainer ratings:', error);
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
+  // Add the fetchClients function to match SchedulePage
+  const fetchClients = async () => {
+    setClientsLoading(true);
+    try {
+      const trainerId = 3; // This should be retrieved from authentication context
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/clients`);
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      showAlert('Failed to load clients', 'error');
+    } finally {
+      setClientsLoading(false);
+    }
+  };
+  
+  // Add session validation function
+  const validateSessionField = (name, value) => {
+    switch (name) {
+      case 'clientId':
+        return value ? '' : 'Client is required';
+      case 'date':
+        if (!value) return 'Date is required';
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selectedDate >= today ? '' : 'Date cannot be in the past';
+      case 'time':
+        return value ? '' : 'Time is required';
+      case 'type':
+        return value ? '' : 'Session type is required';
+      default:
+        return '';
+    }
+  };
+
+  // Add session input change handler
+  const handleSessionInputChange = (event) => {
+    const { name, value } = event.target;
+    setDialogSessionFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Real-time validation
+    const error = validateSessionField(name, value);
+    setDialogSessionErrors(prev => ({ ...prev, [name]: error }));
+
+    // Check if form is valid
+    const requiredFields = ['clientId', 'date', 'time', 'type'];
+    const updatedSession = {...dialogSessionFormData, [name]: value};
+    const isValid = requiredFields.every(field => 
+      updatedSession[field] && !dialogSessionErrors[field]
+    );
+    setDialogSessionValid(isValid);
+  };
+
+  // Add function to handle adding a new session
+  const handleAddNewSession = async () => {
+    if (!validateSessionDialog()) {
+      showAlert('Please fill in all required fields', 'error');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Assuming the user is already logged in and the trainer ID is 3
+      const trainerId = 3; // This should come from your auth context or state
+      
+      const sessionRequest = {
+        clientId: parseInt(dialogSessionFormData.clientId),
+        sessionDate: dialogSessionFormData.date,
+        sessionTime: dialogSessionFormData.time + ":00", // Add seconds to match LocalTime format
+        sessionType: dialogSessionFormData.type,
+        notes: dialogSessionFormData.notes || ""
+      };
+      
+      const response = await axios.post(
+        `http://localhost:8080/api/trainer/${trainerId}/sessions`, 
+        sessionRequest
+      );
+      
+      // Close dialog and show success message
+      setOpenDialog(null);
+      resetSessionDialog();
+      showAlert('Session scheduled successfully!', 'success');
+      
+      // Refresh today's sessions
+      fetchTodaySessions();
+    } catch (error) {
+      console.error('Error adding session:', error);
+      showAlert('Failed to add session', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validateSessionDialog = () => {
+    const required = ['clientId', 'date', 'time', 'type'];
+    return required.every(field => dialogSessionFormData[field].toString().trim());
+  };
+
+  const resetSessionDialog = () => {
+    setDialogSessionFormData({
+      clientId: '',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      time: '',
+      type: '',
+      notes: ''
+    });
+    setDialogSessionErrors({});
+    setDialogSessionValid(false);
   };
 
   const validateEmail = (email) => {
@@ -273,6 +456,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       duration: '',
     });
     setErrors({});
+    resetSessionDialog(); // Add this line to reset session form
   };
 
   const validateField = (name, value) => {
@@ -344,6 +528,11 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const handleSubmit = async () => {
+    if (openDialog === 'session') {
+      await handleAddNewSession();
+      return;
+    }
+
     const validationErrors = validateFormData();
     
     if (Object.keys(validationErrors).length > 0) {
@@ -360,10 +549,6 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
         case 'client':
           // Add client logic
           console.log('Adding client:', formData);
-          break;
-        case 'session':
-          // Add session logic
-          console.log('Scheduling session:', formData);
           break;
         case 'workout':
           // Add workout logic
@@ -516,50 +701,177 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       </Box>
     ),
     session: (
-      <>
-        <DialogTitle sx={{ color: '#ff4757' }}>Schedule New Session</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-            <TextField
-              name="sessionDate"
-              label="Date"
-              type="date"
-              value={formData.sessionDate}
-              onChange={handleInputChange}
-              error={!!errors.sessionDate}
-              helperText={errors.sessionDate}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              name="sessionTime"
-              label="Time"
-              type="time"
-              value={formData.sessionTime}
-              onChange={handleInputChange}
-              error={!!errors.sessionTime}
-              helperText={errors.sessionTime}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <FormControl fullWidth>
-              <InputLabel>Session Type</InputLabel>
-              <Select
-                name="sessionType"
-                value={formData.sessionType}
-                onChange={handleInputChange}
-                error={!!errors.sessionType}
-                label="Session Type"
-              >
-                <MenuItem value="personal">Personal Training</MenuItem>
-                <MenuItem value="group">Group Class</MenuItem>
-                <MenuItem value="assessment">Assessment</MenuItem>
-              </Select>
-              {errors.sessionType && <Typography color="error">{errors.sessionType}</Typography>}
-            </FormControl>
-          </Box>
+      <Box>
+        <DialogTitle sx={{ 
+          background: 'linear-gradient(135deg, #ff4757 0%, #ff6b81 100%)',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <TodayIcon /> Schedule New Session
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <FormControl fullWidth error={!!dialogSessionErrors.clientId}>
+                <InputLabel id="client-select-label">Client</InputLabel>
+                <Select
+                  labelId="client-select-label"
+                  name="clientId"
+                  value={dialogSessionFormData.clientId}
+                  onChange={handleSessionInputChange}
+                  label="Client"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <Person sx={{ color: '#ff4757' }} />
+                    </InputAdornment>
+                  }
+                  sx={{
+                    '& .MuiSelect-select': {
+                      color: isDarkMode ? '#fff' : 'inherit',
+                    }
+                  }}
+                >
+                  {clientsLoading ? (
+                    <MenuItem disabled>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      Loading clients...
+                    </MenuItem>
+                  ) : clients.length ? (
+                    clients.map((client) => (
+                      <MenuItem key={client.clientId} value={client.clientId}>
+                        {client.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No clients available</MenuItem>
+                  )}
+                </Select>
+                {dialogSessionErrors.clientId && <Typography color="error" variant="caption">{dialogSessionErrors.clientId}</Typography>}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Date"
+                type="date"
+                name="date"
+                value={dialogSessionFormData.date}
+                onChange={handleSessionInputChange}
+                InputLabelProps={{ shrink: true }}
+                error={!!dialogSessionErrors.date}
+                helperText={dialogSessionErrors.date}
+                sx={{
+                  '& .MuiInputBase-input': {
+                    color: isDarkMode ? '#fff' : 'inherit',
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit',
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.23)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.23)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ff4757',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Time"
+                type="time"
+                name="time"
+                value={dialogSessionFormData.time}
+                onChange={handleSessionInputChange}
+                InputLabelProps={{ shrink: true }}
+                error={!!dialogSessionErrors.time}
+                helperText={dialogSessionErrors.time}
+                sx={{
+                  '& .MuiInputBase-input': {
+                    color: isDarkMode ? '#fff' : 'inherit',
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit',
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.23)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.23)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ff4757',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl fullWidth error={!!dialogSessionErrors.type}>
+                <InputLabel id="session-type-label">Session Type</InputLabel>
+                <Select
+                  labelId="session-type-label"
+                  name="type"
+                  value={dialogSessionFormData.type}
+                  onChange={handleSessionInputChange}
+                  label="Session Type"
+                  sx={{
+                    '& .MuiSelect-select': {
+                      color: isDarkMode ? '#fff' : 'inherit',
+                    }
+                  }}
+                >
+                  <MenuItem value="Personal Training">Personal Training</MenuItem>
+                  <MenuItem value="Yoga Session">Yoga Session</MenuItem>
+                  <MenuItem value="Strength Training">Strength Training</MenuItem>
+                  <MenuItem value="Assessment">Assessment</MenuItem>
+                  <MenuItem value="Group Class">Group Class</MenuItem>
+                </Select>
+                {dialogSessionErrors.type && <Typography color="error" variant="caption">{dialogSessionErrors.type}</Typography>}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Notes"
+                name="notes"
+                multiline
+                rows={2}
+                value={dialogSessionFormData.notes}
+                onChange={handleSessionInputChange}
+                sx={{
+                  '& .MuiInputBase-input': {
+                    color: isDarkMode ? '#fff' : 'inherit',
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'inherit',
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.23)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.23)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#ff4757',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
-      </>
+      </Box>
     ),
     workout: (
       <>
@@ -783,6 +1095,247 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                 </TableBody>
               </Table>
             </TableContainer>
+          </Box>
+        </Paper>
+      </motion.div>
+    </Grid>
+  );
+
+  // Add a rating section component to display in dashboard - Updated for trainer perspective
+  const renderRatingSection = () => (
+    <Grid item xs={12}>
+      <motion.div 
+        whileHover={{ y: -5 }} 
+        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <Paper sx={{
+          borderRadius: '16px',
+          background: isDarkMode ? 'rgba(44,62,80,0.3)' : 'white',
+          backdropFilter: 'blur(10px)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }}>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ 
+              color: '#ff4757',
+              fontWeight: 600,
+              mb: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              <StarIcon /> Your Client Feedback
+            </Typography>
+
+            {ratingLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress size={30} sx={{ color: '#ff4757' }} />
+              </Box>
+            ) : (
+              <Grid container spacing={3}>
+                {/* Rating Summary */}
+                <Grid item xs={12} md={4}>
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    p: 2,
+                    height: '100%',
+                    borderRadius: '12px',
+                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                  }}>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 20,
+                        delay: 0.2
+                      }}
+                    >
+                      <Typography variant="h1" sx={{ 
+                        color: '#ff4757',
+                        fontWeight: 700,
+                        fontSize: '4rem',
+                        mb: 1
+                      }}>
+                        {ratingData.averageRating.toFixed(1)}
+                      </Typography>
+                    </motion.div>
+                    
+                    <Rating 
+                      value={ratingData.averageRating} 
+                      precision={0.5} 
+                      readOnly
+                      icon={<StarIcon fontSize="large" sx={{ color: '#ff4757' }} />}
+                      emptyIcon={<StarBorderIcon fontSize="large" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }} />}
+                      sx={{ mb: 2 }}
+                    />
+                    
+                    <Typography variant="body1" sx={{ 
+                      color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                      fontWeight: 500
+                    }}>
+                      Your rating from {ratingData.totalRatings} client reviews
+                    </Typography>
+                    
+                    <Box sx={{ 
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: 2,
+                      mt: 2
+                    }}>
+                      <Chip 
+                        icon={<ThumbUpIcon />} 
+                        label={`${Math.round((ratingData.ratingBreakdown[5] + ratingData.ratingBreakdown[4]) / ratingData.totalRatings * 100)}% Client Satisfaction`}
+                        sx={{
+                          bgcolor: isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.1)',
+                          color: '#ff4757',
+                          fontWeight: 500
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Grid>
+                
+                {/* Rating Breakdown */}
+                <Grid item xs={12} md={3}>
+                  <Box sx={{ p: 2 }}>
+                    <Typography variant="subtitle2" sx={{ 
+                      mb: 2,
+                      color: isDarkMode ? '#fff' : '#666',
+                      fontWeight: 500
+                    }}>
+                      Your Rating Breakdown
+                    </Typography>
+                    
+                    {[5, 4, 3, 2, 1].map((star) => (
+                      <Box key={star} sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 1,
+                        gap: 1
+                      }}>
+                        <Typography variant="body2" sx={{ minWidth: '25px', color: isDarkMode ? '#fff' : '#666' }}>
+                          {star}
+                        </Typography>
+                        <StarIcon sx={{ color: '#ff4757', fontSize: '18px' }} />
+                        <LinearProgress
+                          variant="determinate"
+                          value={(ratingData.ratingBreakdown[star] / ratingData.totalRatings) * 100}
+                          sx={{
+                            width: '100%',
+                            height: 8,
+                            borderRadius: 3,
+                            bgcolor: 'rgba(255,71,87,0.1)',
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: '#ff4757',
+                            }
+                          }}
+                        />
+                        <Typography variant="body2" sx={{ 
+                          minWidth: '35px',
+                          textAlign: 'right',
+                          color: isDarkMode ? '#fff' : '#666'
+                        }}>
+                          {ratingData.ratingBreakdown[star]}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </Grid>
+                
+                {/* Recent Reviews */}
+                <Grid item xs={12} md={5}>
+                  <Box sx={{ p: 2 }}>
+                    <Typography variant="subtitle2" sx={{ 
+                      mb: 2,
+                      color: isDarkMode ? '#fff' : '#666',
+                      fontWeight: 500,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}>
+                      <CommentIcon fontSize="small" /> Latest Client Feedback
+                    </Typography>
+                    
+                    <List sx={{ maxHeight: '280px', overflow: 'auto' }}>
+                      {ratingData.recentRatings.map((review, index) => (
+                        <motion.div
+                          key={review.id}
+                          initial={{ x: 50, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <ListItem sx={{
+                            mb: 1,
+                            background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                            borderRadius: '12px',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,71,87,0.1)',
+                            },
+                            flexDirection: 'column',
+                            alignItems: 'flex-start'
+                          }}>
+                            <Box sx={{ display: 'flex', width: '100%', alignItems: 'center', mb: 1 }}>
+                              <ListItemAvatar>
+                                <Avatar sx={{ 
+                                  bgcolor: 'rgba(255,71,87,0.2)',
+                                  color: '#ff4757'
+                                }}>
+                                  {review.clientName.charAt(0)}
+                                </Avatar>
+                              </ListItemAvatar>
+                              <Box>
+                                <Typography variant="body2" sx={{ 
+                                  fontWeight: 600,
+                                  color: isDarkMode ? '#fff' : '#2c3e50',
+                                }}>
+                                  From: {review.clientName}
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <Rating 
+                                    value={review.rating} 
+                                    readOnly 
+                                    size="small"
+                                    precision={0.5}
+                                    icon={<StarIcon sx={{ color: '#ff4757', fontSize: '16px' }} />}
+                                    emptyIcon={<StarBorderIcon sx={{ color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)', fontSize: '16px' }} />}
+                                  />
+                                  <Typography variant="caption" sx={{ 
+                                    ml: 1,
+                                    color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' 
+                                  }}>
+                                    {new Date(review.date).toLocaleDateString()}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+                            <Typography variant="body2" sx={{ 
+                              pl: 7,
+                              pr: 2,
+                              pb: 1,
+                              color: isDarkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
+                              fontStyle: 'italic'
+                            }}>
+                              "{review.comment}"
+                            </Typography>
+                          </ListItem>
+                        </motion.div>
+                      ))}
+                    </List>
+                  </Box>
+                </Grid>
+              </Grid>
+            )}
           </Box>
         </Paper>
       </motion.div>
@@ -1039,6 +1592,13 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
         {/* Progress Section */}
         {renderProgressSection()}
       </Grid>
+
+      {/* Add the new Rating Section below */}
+      <Box sx={{ mt: 4 }}>
+        <Grid container spacing={3}>
+          {renderRatingSection()}
+        </Grid>
+      </Box>
     </motion.div>
   );
 
@@ -1142,13 +1702,13 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                       onClick={handleDialogClose}
                       variant="outlined"
                       sx={{
-                        borderColor: '#bdbdbd',
-                        color: '#757575',
+                        borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : '#bdbdbd',
+                        color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#757575',
                         borderRadius: '8px',
                         px: 3,
                         '&:hover': {
-                          borderColor: '#9e9e9e',
-                          bgcolor: 'rgba(158, 158, 158, 0.1)',
+                          borderColor: isDarkMode ? 'rgba(255,255,255,0.5)' : '#9e9e9e',
+                          bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(158, 158, 158, 0.1)',
                         }
                       }}
                     >
@@ -1159,17 +1719,21 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
                     <Button 
                       onClick={handleSubmit}
                       variant="contained"
-                      disabled={!isFormValid}
+                      disabled={loading || (openDialog === 'session' ? !dialogSessionValid : !isFormValid)}
                       sx={{
-                        bgcolor: isFormValid ? '#ff4757' : '#9e9e9e',
+                        background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
                         borderRadius: '8px',
                         px: 3,
                         '&:hover': {
-                          bgcolor: isFormValid ? '#ff3747' : '#757575',
+                          background: 'linear-gradient(45deg, #ff6b81, #ff4757)',
+                        },
+                        '&.Mui-disabled': {
+                          background: isDarkMode ? 'rgba(255,255,255,0.1)' : '#9e9e9e',
+                          color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)',
                         }
                       }}
                     >
-                      Save
+                      {loading ? <CircularProgress size={24} color="inherit" /> : 'Save'}
                     </Button>
                   </motion.div>
                 </DialogActions>
