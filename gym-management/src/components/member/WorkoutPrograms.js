@@ -15,10 +15,14 @@ import {
   FaEye,
   FaCheck,
   FaUserFriends,
-  FaList
+  FaList,
+  FaSpinner,
+  FaSave
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../../styles/WorkoutPrograms.css';
+import { toast } from 'react-hot-toast';
 
 const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -26,121 +30,200 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [myPrograms, setMyPrograms] = useState([]);
+  const [trainerPrograms, setTrainerPrograms] = useState([]);
+  const [programTypes, setProgramTypes] = useState([]);
+  const [programLevels, setProgramLevels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const [newProgram, setNewProgram] = useState({
-    title: '',
-    description: '',
-    exercises: [{ name: '', sets: '', reps: '', weight: '' }],
+    name: '',
+    type: '',
+    difficulty: '',
     duration: '',
-    frequency: '',
+    description: '',
+    calories: 0,
+    equipment: [],
+    targetMuscles: [],
+    exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }]
   });
 
-  // My workout programs
-  const [myPrograms, setMyPrograms] = useState([
-    {
-      id: 1,
-      title: 'Upper Body Strength',
-      description: 'Focus on building upper body strength with compound movements',
-      duration: '45-60 min',
-      frequency: '2x per week',
-      createdAt: '2024-01-15',
-      exercises: [
-        { name: 'Bench Press', sets: 4, reps: '8-10', weight: '70kg' },
-        { name: 'Pull-ups', sets: 3, reps: '8-12', weight: 'Body weight' },
-        { name: 'Shoulder Press', sets: 3, reps: '10-12', weight: '20kg' },
-        { name: 'Barbell Rows', sets: 3, reps: '10-12', weight: '60kg' },
-        { name: 'Tricep Extensions', sets: 3, reps: '12-15', weight: '15kg' }
-      ],
-      image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-      type: 'Strength',
-    },
-    {
-      id: 2,
-      title: 'HIIT Cardio',
-      description: 'High-intensity interval training to improve cardiovascular fitness',
-      duration: '25-30 min',
-      frequency: '3x per week',
-      createdAt: '2024-02-20',
-      exercises: [
-        { name: 'Jumping Jacks', sets: 3, reps: '45 sec', weight: 'N/A' },
-        { name: 'Burpees', sets: 3, reps: '30 sec', weight: 'N/A' },
-        { name: 'Mountain Climbers', sets: 3, reps: '45 sec', weight: 'N/A' },
-        { name: 'High Knees', sets: 3, reps: '45 sec', weight: 'N/A' },
-        { name: 'Rest', sets: 3, reps: '15 sec', weight: 'N/A' }
-      ],
-      image: 'https://images.unsplash.com/photo-1434682881908-b43d0467b798?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-      type: 'Cardio',
-    }
-  ]);
-
-  // Trainer workout programs
-  const [trainerPrograms, setTrainerPrograms] = useState([
-    {
-      id: 1,
-      title: 'Full Body Transformation',
-      description: 'Complete program targeting all major muscle groups for overall strength and fitness',
-      duration: '60 min',
-      frequency: '3x per week',
-      trainer: 'Berkay Mustafa Arıkan',
-      level: 'Intermediate',
-      exercises: [
-        { name: 'Squats', sets: 4, reps: '10-12', weight: 'Varied' },
-        { name: 'Deadlifts', sets: 4, reps: '8-10', weight: 'Varied' },
-        { name: 'Bench Press', sets: 3, reps: '10-12', weight: 'Varied' },
-        { name: 'Bent-over Rows', sets: 3, reps: '10-12', weight: 'Varied' },
-        { name: 'Shoulder Press', sets: 3, reps: '10-12', weight: 'Varied' },
-        { name: 'Lunges', sets: 3, reps: '12 each leg', weight: 'Varied' }
-      ],
-      image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-      type: 'Full Body',
-    },
-    {
-      id: 2,
-      title: 'Functional Fitness',
-      description: 'Improve daily movement patterns and overall functional strength',
-      duration: '45 min',
-      frequency: '2-3x per week',
-      trainer: 'Nurettin Enes Karakulak',
-      level: 'All Levels',
-      exercises: [
-        { name: 'Kettlebell Swings', sets: 3, reps: '15', weight: '16kg' },
-        { name: 'TRX Rows', sets: 3, reps: '12', weight: 'Body weight' },
-        { name: 'Medicine Ball Slams', sets: 3, reps: '12', weight: '8kg' },
-        { name: 'Battle Ropes', sets: 3, reps: '30 sec', weight: 'N/A' },
-        { name: 'Goblet Squats', sets: 3, reps: '15', weight: '12kg' }
-      ],
-      image: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-      type: 'Functional',
-    },
-    {
-      id: 3,
-      title: 'Strength and Conditioning',
-      description: 'Build strength while improving cardiovascular endurance',
-      duration: '50 min',
-      frequency: '3x per week',
-      trainer: 'Mehmet Enes Oy',
-      level: 'Advanced',
-      exercises: [
-        { name: 'Back Squats', sets: 5, reps: '5', weight: 'Heavy' },
-        { name: 'Pull-ups', sets: 4, reps: '8-10', weight: 'Body weight' },
-        { name: 'Box Jumps', sets: 3, reps: '10', weight: 'N/A' },
-        { name: 'Farmers Walks', sets: 3, reps: '40m', weight: 'Heavy' },
-        { name: 'Assault Bike', sets: 3, reps: '1 min', weight: 'N/A' }
-      ],
-      image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-      type: 'Strength',
-    }
-  ]);
-
-  // Program types for filtering
-  const programTypes = [
-    { id: 'all', name: 'All Types', icon: <FaDumbbell /> },
-    { id: 'strength', name: 'Strength', icon: <FaDumbbell /> },
-    { id: 'cardio', name: 'Cardio', icon: <FaRunning /> },
-    { id: 'full-body', name: 'Full Body', icon: <FaUserFriends /> },
-    { id: 'functional', name: 'Functional', icon: <FaList /> }
-  ];
-
   const [selectedType, setSelectedType] = useState('all');
+  
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProgram, setEditingProgram] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    description: '',
+    duration: '',
+    exercises: '',
+    type: '',
+    difficulty: '',
+    equipment: '',
+    targetMuscles: '',
+    calories: ''
+  });
+
+  // Get user ID from localStorage correctly
+  const getUserId = () => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    
+    try {
+      const userObj = JSON.parse(userStr);
+      return userObj.id;
+    } catch (err) {
+      console.error("Error parsing user data:", err);
+      return null;
+    }
+  };
+  
+  const userId = getUserId();
+
+  // Get workout types and levels on component mount
+  useEffect(() => {
+    const fetchWorkoutData = async () => {
+      try {
+        setLoading(true);
+        setError(null); // Reset any previous errors
+        
+        // Define API base URL with fallback
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+        console.log("Using API base URL:", API_BASE_URL);
+        
+        // Initialize workout data if needed
+        try {
+          console.log("Initializing workout data...");
+          await axios.post(`${API_BASE_URL}/api/workouts/init`);
+          console.log("Workout data initialized successfully");
+        } catch (initErr) {
+          console.error("Error initializing workout data:", initErr);
+          setError(`Failed to initialize workout data: ${initErr.message}`);
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch workout types (categories)
+        let typesList = [];
+        try {
+          console.log("Fetching workout types...");
+          const typesResponse = await axios.get(`${API_BASE_URL}/api/workouts/types`);
+          console.log("Workout types fetched:", typesResponse.data);
+          
+          // Add "All Types" option to the beginning
+          typesList = [
+            { id: 'all', name: 'All Types', icon: <FaDumbbell /> },
+            ...typesResponse.data.map(type => ({
+              id: type.name.toLowerCase().replace(/\s+/g, '-'),
+              name: type.name,
+              icon: getIconForType(type.name)
+            }))
+          ];
+          setProgramTypes(typesList);
+        } catch (typesErr) {
+          console.error("Error fetching workout types:", typesErr);
+          setError(`Failed to fetch workout types: ${typesErr.message}`);
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch workout difficulty levels
+        try {
+          console.log("Fetching workout levels...");
+          const levelsResponse = await axios.get(`${API_BASE_URL}/api/workouts/levels`);
+          console.log("Workout levels fetched:", levelsResponse.data);
+          setProgramLevels(levelsResponse.data);
+        } catch (levelsErr) {
+          console.error("Error fetching workout levels:", levelsErr);
+          setError(`Failed to fetch workout levels: ${levelsErr.message}`);
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch user workouts
+        try {
+          console.log("Fetching user workouts...");
+          await fetchUserWorkouts(API_BASE_URL);
+          console.log("User workouts fetched successfully");
+        } catch (workoutsErr) {
+          console.error("Error fetching user workouts:", workoutsErr);
+          setError(`Failed to fetch user workouts: ${workoutsErr.message}`);
+          setLoading(false);
+          return;
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching workout data:", err);
+        setError(`Failed to load workout data: ${err.message}`);
+        setLoading(false);
+      }
+    };
+    
+    fetchWorkoutData();
+  }, [userId]);
+
+  // Function to get icon based on workout type
+  const getIconForType = (typeName) => {
+    switch(typeName.toLowerCase()) {
+      case 'strength training':
+        return <FaDumbbell />;
+      case 'cardio':
+        return <FaRunning />;
+      case 'hiit':
+        return <FaRunning />;
+      case 'flexibility':
+        return <FaUserFriends />;
+      case 'crossfit':
+        return <FaList />;
+      default:
+        return <FaDumbbell />;
+    }
+  };
+  
+  // Fetch user workouts (both personal and trainer workouts)
+  const fetchUserWorkouts = async (apiBaseUrl) => {
+    const API_BASE_URL = apiBaseUrl || process.env.REACT_APP_API_URL || 'http://localhost:8080';
+    
+    const currentUserId = getUserId(); // Get the latest userId in case it was updated
+    
+    if (!currentUserId) {
+      throw new Error("User ID not found. Please log in again.");
+    }
+    
+    try {
+      // Fetch user's own workouts
+      console.log(`Fetching user's own workouts for userId=${currentUserId}...`);
+      const myWorkoutsResponse = await axios.get(
+        `${API_BASE_URL}/api/workouts?userId=${currentUserId}&isTrainer=false`
+      );
+      console.log("User's own workouts:", myWorkoutsResponse.data);
+      setMyPrograms(myWorkoutsResponse.data);
+      
+      // Try to fetch ALL trainer workouts using the new endpoint
+      try {
+        console.log("Fetching all trainer workouts...");
+        const trainerWorkoutsResponse = await axios.get(
+          `${API_BASE_URL}/api/workouts/trainer`
+        );
+        console.log("All trainer workouts:", trainerWorkoutsResponse.data);
+        setTrainerPrograms(trainerWorkoutsResponse.data);
+      } catch (trainerErr) {
+        console.error("Error fetching trainer workouts, falling back to user's trainer workouts:", trainerErr);
+        
+        // Fallback: Just use the user's trainer workouts if the /trainer endpoint fails
+        const fallbackTrainerResponse = await axios.get(
+          `${API_BASE_URL}/api/workouts?userId=${currentUserId}&isTrainer=true`
+        );
+        console.log("Fallback trainer workouts:", fallbackTrainerResponse.data);
+        setTrainerPrograms(fallbackTrainerResponse.data);
+      }
+    } catch (err) {
+      console.error("Error in fetchUserWorkouts:", err);
+      throw err; // Rethrow to be caught by the parent function
+    }
+  };
 
   // Dark mode toggle
   useEffect(() => {
@@ -167,20 +250,39 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   // Filter programs based on selected type
   const filteredMyPrograms = selectedType === 'all'
     ? myPrograms
-    : myPrograms.filter(program => program.type.toLowerCase() === selectedType);
+    : myPrograms.filter(program => program.type.toLowerCase().replace(/\s+/g, '-') === selectedType);
 
   const filteredTrainerPrograms = selectedType === 'all'
     ? trainerPrograms
-    : trainerPrograms.filter(program => program.type.toLowerCase() === selectedType);
+    : trainerPrograms.filter(program => program.type.toLowerCase().replace(/\s+/g, '-') === selectedType);
 
   // Handle program view details
-  const handleViewDetails = (program, isTrainerProgram = false) => {
-    setSelectedProgram({...program, isTrainerProgram});
-    setShowDetailsModal(true);
+  const handleViewDetails = async (programId, isTrainerProgram = false) => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/workouts/${programId}`);
+      setSelectedProgram({...response.data, isTrainerProgram});
+      setShowDetailsModal(true);
+    } catch (err) {
+      console.error("Error fetching workout details:", err);
+      setError("Failed to load workout details. Please try again later.");
+    }
   };
 
   // Handle create new program
   const handleCreateProgram = () => {
+    // Reset form first
+    setNewProgram({
+      name: '',
+      type: programTypes.length > 1 ? programTypes[1].name : '', // First real type (skip "All Types")
+      difficulty: programLevels.length > 0 ? programLevels[0].name : 'Beginner',
+      duration: 30,
+      description: '',
+      calories: 0,
+      equipment: [],
+      targetMuscles: [],
+      exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }]
+    });
     setShowCreateModal(true);
   };
 
@@ -188,7 +290,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   const handleAddExercise = () => {
     setNewProgram({
       ...newProgram,
-      exercises: [...newProgram.exercises, { name: '', sets: '', reps: '', weight: '' }]
+      exercises: [...newProgram.exercises, { exerciseName: '', sets: 3, repRange: '8-12' }]
     });
   };
 
@@ -205,10 +307,20 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   // Handle input change for new program
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewProgram({
-      ...newProgram,
-      [name]: value
-    });
+    
+    if (name === 'equipment' || name === 'targetMuscles') {
+      // Handle comma-separated input for arrays
+      const valueArray = value.split(',').map(item => item.trim()).filter(item => item);
+      setNewProgram({
+        ...newProgram,
+        [name]: valueArray
+      });
+    } else {
+      setNewProgram({
+        ...newProgram,
+        [name]: value
+      });
+    }
   };
 
   // Handle exercise input change
@@ -222,49 +334,167 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   // Handle submit new program
-  const handleSubmitProgram = () => {
+  const handleSubmitProgram = async () => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+    const currentUserId = getUserId();
+    
     // Validate form
-    if (!newProgram.title || !newProgram.description || !newProgram.duration || !newProgram.frequency) {
+    if (!newProgram.name || !newProgram.description || !newProgram.duration || !newProgram.type || !newProgram.difficulty) {
       alert('Please fill in all required fields');
       return;
     }
 
-    // Check if all exercises have at least name and sets/reps
-    const validExercises = newProgram.exercises.every(ex => ex.name && ex.sets && ex.reps);
+    // Check if all exercises have at least name, sets and repRange
+    const validExercises = newProgram.exercises.every(ex => ex.exerciseName && ex.sets && ex.repRange);
     if (!validExercises) {
       alert('Please complete all exercise information');
       return;
     }
 
-    // Create new program
-    const createdProgram = {
-      id: myPrograms.length + 1,
-      ...newProgram,
-      createdAt: new Date().toISOString().split('T')[0],
-      image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-      type: newProgram.title.includes('Cardio') ? 'Cardio' : 'Strength', // Simple logic for demo
-    };
-
-    // Add to my programs
-    setMyPrograms([...myPrograms, createdProgram]);
-    
-    // Reset form and close modal
-    setNewProgram({
-      title: '',
-      description: '',
-      exercises: [{ name: '', sets: '', reps: '', weight: '' }],
-      duration: '',
-      frequency: '',
-    });
-    setShowCreateModal(false);
+    try {
+      // Create the workout in the database
+      const response = await axios.post(
+        `${API_BASE_URL}/api/workouts?userId=${currentUserId}`, 
+        newProgram
+      );
+      
+      // Refresh workouts list
+      await fetchUserWorkouts(API_BASE_URL);
+      
+      // Reset form and close modal
+      setNewProgram({
+        name: '',
+        type: '',
+        difficulty: '',
+        duration: 30,
+        description: '',
+        calories: 0,
+        equipment: [],
+        targetMuscles: [],
+        exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }]
+      });
+      setShowCreateModal(false);
+    } catch (err) {
+      console.error("Error creating workout:", err);
+      alert("Failed to create workout. Please try again.");
+    }
   };
 
   // Handle delete program
-  const handleDeleteProgram = (id) => {
+  const handleDeleteProgram = async (id) => {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
     if (window.confirm('Are you sure you want to delete this program?')) {
-      setMyPrograms(myPrograms.filter(program => program.id !== id));
+      try {
+        await axios.delete(`${API_BASE_URL}/api/workouts/${id}`);
+        // Refresh workouts after deletion
+        await fetchUserWorkouts(API_BASE_URL);
+      } catch (err) {
+        console.error("Error deleting workout:", err);
+        alert("Failed to delete workout. Please try again.");
+      }
     }
   };
+
+  // Add this function to handle edit button click
+  const handleEditProgram = (program) => {
+    setEditingProgram(program);
+    setEditFormData({
+      name: program.name || '',
+      description: program.description || '',
+      duration: program.duration || '',
+      exercises: program.exercises || '',
+      type: program.type || '',
+      difficulty: program.difficulty || '',
+      equipment: program.equipment || '',
+      targetMuscles: program.targetMuscles || '',
+      calories: program.calories || ''
+    });
+    setShowEditModal(true);
+  };
+
+  // Add this function to handle edit form input changes
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  // Add this function to handle edit form submission
+  const handleEditFormSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!editingProgram || !editingProgram.id) {
+      setError("Cannot edit program: Program ID is missing");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Prepare equipment and targetMuscles as arrays if they're strings
+      const equipmentArray = typeof editFormData.equipment === 'string' 
+        ? editFormData.equipment.split(',').map(item => item.trim()) 
+        : editFormData.equipment || [];
+        
+      const targetMusclesArray = typeof editFormData.targetMuscles === 'string' 
+        ? editFormData.targetMuscles.split(',').map(item => item.trim()) 
+        : editFormData.targetMuscles || [];
+      
+      const updatedProgram = {
+        id: editingProgram.id,
+        name: editFormData.name,
+        description: editFormData.description,
+        duration: parseInt(editFormData.duration, 10) || 0,
+        // Keep the original exercises list instead of converting to a number
+        exerciseList: editingProgram.exerciseList || [],
+        type: editFormData.type,
+        difficulty: editFormData.difficulty,
+        equipment: equipmentArray,
+        targetMuscles: targetMusclesArray,
+        calories: parseInt(editFormData.calories, 10) || 0,
+        isTrainer: editingProgram.isTrainer
+      };
+      
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+      await axios.put(`${API_BASE_URL}/api/workouts/${editingProgram.id}`, updatedProgram);
+      
+      // Refresh workout programs data
+      await fetchUserWorkouts(API_BASE_URL);
+      
+      // Close the edit modal
+      setShowEditModal(false);
+      setEditingProgram(null);
+      setEditFormData({
+        name: '',
+        description: '',
+        duration: '',
+        exercises: '', 
+        type: '',
+        difficulty: '',
+        equipment: '',
+        targetMuscles: '',
+        calories: ''
+      });
+      
+      toast.success("Workout program updated successfully!");
+    } catch (error) {
+      console.error("Error updating workout program:", error);
+      setError("Failed to update workout program. Please try again.");
+      toast.error("Failed to update workout program. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="loading-container">Loading workout programs...</div>;
+  }
+
+  if (error) {
+    return <div className="error-container">{error}</div>;
+  }
 
   return (
     <div className={`workout-programs-container-workout ${isDarkMode ? 'dark-mode' : ''}`}>
@@ -331,27 +561,26 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
               {filteredMyPrograms.map(program => (
                 <div key={program.id} className="program-card-workout my-program-card-workout">
                   <div className="program-image-workout">
-                    <img src={program.image} alt={program.title} />
+                    <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt={program.name} />
                     <div className="program-type-badge-workout">{program.type}</div>
                   </div>
                   <div className="program-content-workout">
-                    <h3>{program.title}</h3>
-                    <p className="created-date-workout">Created: {program.createdAt}</p>
+                    <h3>{program.name}</h3>
                     <div className="program-meta-workout">
                       <div className="meta-item-workout">
                         <FaClock />
-                        <span>{program.duration}</span>
+                        <span>{program.duration} min</span>
                       </div>
                       <div className="meta-item-workout">
                         <FaCalendarAlt />
-                        <span>{program.frequency}</span>
+                        <span>{program.exercises} exercises</span>
                       </div>
                     </div>
                     <div className="program-actions-workout">
-                      <button className="action-button-workout view-button-workout" onClick={() => handleViewDetails(program)}>
+                      <button className="action-button-workout view-button-workout" onClick={() => handleViewDetails(program.id)}>
                         <FaEye /> View
                       </button>
-                      <button className="action-button-workout edit-button-workout">
+                      <button className="action-button-workout edit-button-workout" onClick={() => handleEditProgram(program)}>
                         <FaEdit /> Edit
                       </button>
                       <button className="action-button-workout delete-button-workout" onClick={() => handleDeleteProgram(program.id)}>
@@ -377,29 +606,29 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
             {filteredTrainerPrograms.map(program => (
               <div key={program.id} className="program-card-workout trainer-program-card-workout">
                 <div className="program-image-workout">
-                  <img src={program.image} alt={program.title} />
+                  <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt={program.name} />
                   <div className="program-type-badge-workout">{program.type}</div>
-                  <div className="program-level-badge-workout">{program.level}</div>
+                  <div className="program-level-badge-workout">{program.difficulty}</div>
                 </div>
                 <div className="program-content-workout">
-                  <h3>{program.title}</h3>
+                  <h3>{program.name}</h3>
                   <div className="trainer-info-workout">
                     <FaUser />
-                    <span>{program.trainer}</span>
+                    <span>{program.user ? program.user.name : 'Trainer'}</span>
                   </div>
                   <div className="program-meta-workout">
                     <div className="meta-item-workout">
                       <FaClock />
-                      <span>{program.duration}</span>
+                      <span>{program.duration} min</span>
                     </div>
                     <div className="meta-item-workout">
                       <FaCalendarAlt />
-                      <span>{program.frequency}</span>
+                      <span>{program.exercises} exercises</span>
                     </div>
                   </div>
                   <button 
                     className="view-details-button-workout"
-                    onClick={() => handleViewDetails(program, true)}
+                    onClick={() => handleViewDetails(program.id, true)}
                   >
                     <FaEye /> View Details
                   </button>
@@ -410,7 +639,6 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
         </>
       )}
 
-      {/* Program Details Modal */}
       {showDetailsModal && selectedProgram && (
         <div className="modal-overlay-workout">
           <div className="program-details-modal-workout">
@@ -418,7 +646,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
               <FaTimes />
             </button>
             <div className="modal-header-workout">
-              <h2>{selectedProgram.title}</h2>
+              <h2>{selectedProgram.name}</h2>
               <div className="program-type-badge-workout modal-badge-workout">
                 {selectedProgram.type}
               </div>
@@ -432,35 +660,55 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                   <FaClock />
                   <div>
                     <h4>Duration</h4>
-                    <p>{selectedProgram.duration}</p>
+                    <p>{selectedProgram.duration} minutes</p>
                   </div>
                 </div>
                 <div className="detail-item-workout">
                   <FaCalendarAlt />
                   <div>
-                    <h4>Frequency</h4>
-                    <p>{selectedProgram.frequency}</p>
+                    <h4>Exercises</h4>
+                    <p>{selectedProgram.exercises} exercises</p>
                   </div>
                 </div>
-                {selectedProgram.isTrainerProgram && (
-                  <>
-                    <div className="detail-item-workout">
-                      <FaUser />
-                      <div>
-                        <h4>Trainer</h4>
-                        <p>{selectedProgram.trainer}</p>
-                      </div>
+                <div className="detail-item-workout">
+                  <FaDumbbell />
+                  <div>
+                    <h4>Level</h4>
+                    <p>{selectedProgram.difficulty}</p>
+                  </div>
+                </div>
+                {selectedProgram.calories && (
+                  <div className="detail-item-workout">
+                    <FaRunning />
+                    <div>
+                      <h4>Calories</h4>
+                      <p>{selectedProgram.calories} kcal</p>
                     </div>
-                    <div className="detail-item-workout">
-                      <FaDumbbell />
-                      <div>
-                        <h4>Level</h4>
-                        <p>{selectedProgram.level}</p>
-                      </div>
-                    </div>
-                  </>
+                  </div>
                 )}
               </div>
+              
+              {selectedProgram.equipment && selectedProgram.equipment.length > 0 && (
+                <div className="equipment-section-workout">
+                  <h3>Equipment Needed</h3>
+                  <div className="tags-container-workout">
+                    {selectedProgram.equipment.map((item, index) => (
+                      <span key={index} className="tag-workout">{item}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {selectedProgram.targetMuscles && selectedProgram.targetMuscles.length > 0 && (
+                <div className="muscles-section-workout">
+                  <h3>Target Muscles</h3>
+                  <div className="tags-container-workout">
+                    {selectedProgram.targetMuscles.map((muscle, index) => (
+                      <span key={index} className="tag-workout muscle-tag-workout">{muscle}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="exercises-section-workout">
                 <h3>Exercises</h3>
@@ -469,14 +717,12 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                     <div className="header-cell-workout">Exercise</div>
                     <div className="header-cell-workout">Sets</div>
                     <div className="header-cell-workout">Reps</div>
-                    <div className="header-cell-workout">Weight</div>
                   </div>
-                  {selectedProgram.exercises.map((exercise, index) => (
+                  {selectedProgram.exerciseList && selectedProgram.exerciseList.map((exercise, index) => (
                     <div key={index} className="table-row-workout">
-                      <div className="row-cell-workout exercise-name-workout">{exercise.name}</div>
+                      <div className="row-cell-workout exercise-name-workout">{exercise.exerciseName}</div>
                       <div className="row-cell-workout">{exercise.sets}</div>
-                      <div className="row-cell-workout">{exercise.reps}</div>
-                      <div className="row-cell-workout">{exercise.weight}</div>
+                      <div className="row-cell-workout">{exercise.repRange}</div>
                     </div>
                   ))}
                 </div>
@@ -498,7 +744,6 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
         </div>
       )}
 
-      {/* Create Program Modal */}
       {showCreateModal && (
         <div className="modal-overlay-workout">
           <div className="create-program-modal-workout">
@@ -512,12 +757,12 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
             
             <div className="modal-content-workout">
               <div className="form-group-workout">
-                <label htmlFor="title">Program Title</label>
+                <label htmlFor="name">Program Title</label>
                 <input 
                   type="text" 
-                  id="title" 
-                  name="title" 
-                  value={newProgram.title}
+                  id="name" 
+                  name="name" 
+                  value={newProgram.name}
                   onChange={handleInputChange}
                   placeholder="e.g., Full Body Strength"
                   required
@@ -538,30 +783,94 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
               
               <div className="form-row-workout">
                 <div className="form-group-workout">
-                  <label htmlFor="duration">Duration</label>
+                  <label htmlFor="type">Workout Type</label>
+                  <select 
+                    id="type" 
+                    name="type" 
+                    value={newProgram.type}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select Type</option>
+                    {programTypes
+                      .filter(type => type.id !== 'all') // Exclude "All Types" option
+                      .map(type => (
+                        <option key={type.id} value={type.name}>
+                          {type.name}
+                        </option>
+                      ))
+                    }
+                  </select>
+                </div>
+                
+                <div className="form-group-workout">
+                  <label htmlFor="difficulty">Difficulty Level</label>
+                  <select 
+                    id="difficulty" 
+                    name="difficulty" 
+                    value={newProgram.difficulty}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select Level</option>
+                    {programLevels.map(level => (
+                      <option key={level.id} value={level.name}>
+                        {level.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="form-row-workout">
+                <div className="form-group-workout">
+                  <label htmlFor="duration">Duration (minutes)</label>
                   <input 
-                    type="text" 
+                    type="number" 
                     id="duration" 
                     name="duration" 
                     value={newProgram.duration}
                     onChange={handleInputChange}
-                    placeholder="e.g., 45-60 min"
+                    min="1"
                     required
                   />
                 </div>
                 
                 <div className="form-group-workout">
-                  <label htmlFor="frequency">Frequency</label>
+                  <label htmlFor="calories">Calories (optional)</label>
                   <input 
-                    type="text" 
-                    id="frequency" 
-                    name="frequency" 
-                    value={newProgram.frequency}
+                    type="number" 
+                    id="calories" 
+                    name="calories" 
+                    value={newProgram.calories}
                     onChange={handleInputChange}
-                    placeholder="e.g., 3x per week"
-                    required
+                    min="0"
                   />
                 </div>
+              </div>
+              
+              <div className="form-group-workout">
+                <label htmlFor="equipment">Equipment (comma-separated)</label>
+                <input 
+                  type="text" 
+                  id="equipment" 
+                  name="equipment" 
+                  value={newProgram.equipment.join(', ')}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Dumbbells, Barbell, Yoga Mat"
+                />
+              </div>
+              
+              <div className="form-group-workout">
+                <label htmlFor="targetMuscles">Target Muscles (comma-separated)</label>
+                <input 
+                  type="text" 
+                  id="targetMuscles" 
+                  name="targetMuscles" 
+                  value={newProgram.targetMuscles.join(', ')}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Chest, Back, Legs"
+                />
               </div>
               
               <div className="exercises-section-workout">
@@ -597,47 +906,37 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                         <input 
                           type="text" 
                           id={`exercise-name-${index}`}
-                          value={exercise.name}
-                          onChange={(e) => handleExerciseChange(index, 'name', e.target.value)}
+                          value={exercise.exerciseName}
+                          onChange={(e) => handleExerciseChange(index, 'exerciseName', e.target.value)}
                           placeholder="e.g., Bench Press"
                           required
                         />
                       </div>
                     </div>
                     
-                    <div className="exercise-form-row-workout three-columns-workout">
+                    <div className="exercise-form-row-workout two-columns-workout">
                       <div className="form-group-workout">
                         <label htmlFor={`exercise-sets-${index}`}>Sets</label>
                         <input 
-                          type="text" 
+                          type="number" 
                           id={`exercise-sets-${index}`}
                           value={exercise.sets}
-                          onChange={(e) => handleExerciseChange(index, 'sets', e.target.value)}
+                          onChange={(e) => handleExerciseChange(index, 'sets', parseInt(e.target.value))}
                           placeholder="e.g., 3"
+                          min="1"
                           required
                         />
                       </div>
                       
                       <div className="form-group-workout">
-                        <label htmlFor={`exercise-reps-${index}`}>Reps</label>
+                        <label htmlFor={`exercise-reps-${index}`}>Rep Range</label>
                         <input 
                           type="text" 
                           id={`exercise-reps-${index}`}
-                          value={exercise.reps}
-                          onChange={(e) => handleExerciseChange(index, 'reps', e.target.value)}
-                          placeholder="e.g., 8-12"
+                          value={exercise.repRange}
+                          onChange={(e) => handleExerciseChange(index, 'repRange', e.target.value)}
+                          placeholder="e.g., 8-12 reps"
                           required
-                        />
-                      </div>
-                      
-                      <div className="form-group-workout">
-                        <label htmlFor={`exercise-weight-${index}`}>Weight</label>
-                        <input 
-                          type="text" 
-                          id={`exercise-weight-${index}`}
-                          value={exercise.weight}
-                          onChange={(e) => handleExerciseChange(index, 'weight', e.target.value)}
-                          placeholder="e.g., 60kg or N/A"
                         />
                       </div>
                     </div>
@@ -661,6 +960,152 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
               >
                 <FaCheck /> Create Program
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editingProgram && (
+        <div className="modal-overlay-workout">
+          <div className="program-details-modal-workout edit-modal-workout">
+            <button className="close-modal-button-workout" onClick={() => setShowEditModal(false)}>
+              <FaTimes />
+            </button>
+            <div className="modal-header-workout">
+              <h2>Edit Workout Program</h2>
+            </div>
+            
+            <div className="modal-content-workout">
+              <form onSubmit={handleEditFormSubmit} className="create-program-form-workout">
+                <div className="form-group-workout">
+                  <label htmlFor="edit-name">Program Name</label>
+                  <input
+                    type="text"
+                    id="edit-name"
+                    name="name"
+                    value={editFormData.name}
+                    onChange={handleEditFormChange}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group-workout">
+                  <label htmlFor="edit-type">Workout Type</label>
+                  <select
+                    id="edit-type"
+                    name="type"
+                    value={editFormData.type}
+                    onChange={handleEditFormChange}
+                    required
+                  >
+                    <option value="">Select workout type</option>
+                    {programTypes.map(type => (
+                      <option key={type.id} value={type.name}>{type.name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group-workout">
+                  <label htmlFor="edit-difficulty">Difficulty Level</label>
+                  <select
+                    id="edit-difficulty"
+                    name="difficulty"
+                    value={editFormData.difficulty}
+                    onChange={handleEditFormChange}
+                    required
+                  >
+                    <option value="">Select difficulty level</option>
+                    {programLevels.map(level => (
+                      <option key={level.id} value={level.name}>{level.name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-row-workout">
+                  <div className="form-group-workout">
+                    <label htmlFor="edit-duration">Duration (minutes)</label>
+                    <input
+                      type="number"
+                      id="edit-duration"
+                      name="duration"
+                      value={editFormData.duration}
+                      onChange={handleEditFormChange}
+                      required
+                      min="1"
+                    />
+                  </div>
+                  
+                  <div className="form-group-workout">
+                    <label htmlFor="edit-exercises">Number of Exercises</label>
+                    <input
+                      type="number"
+                      id="edit-exercises"
+                      name="exercises"
+                      value={editFormData.exercises}
+                      onChange={handleEditFormChange}
+                      required
+                      min="1"
+                    />
+                  </div>
+                  
+                  <div className="form-group-workout">
+                    <label htmlFor="edit-calories">Calories</label>
+                    <input
+                      type="number"
+                      id="edit-calories"
+                      name="calories"
+                      value={editFormData.calories}
+                      onChange={handleEditFormChange}
+                      min="0"
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-group-workout">
+                  <label htmlFor="edit-equipment">Equipment Needed</label>
+                  <input
+                    type="text"
+                    id="edit-equipment"
+                    name="equipment"
+                    value={editFormData.equipment}
+                    onChange={handleEditFormChange}
+                    placeholder="e.g., Dumbbells, Resistance Bands, None"
+                  />
+                </div>
+                
+                <div className="form-group-workout">
+                  <label htmlFor="edit-targetMuscles">Target Muscle Groups</label>
+                  <input
+                    type="text"
+                    id="edit-targetMuscles"
+                    name="targetMuscles"
+                    value={editFormData.targetMuscles}
+                    onChange={handleEditFormChange}
+                    placeholder="e.g., Chest, Back, Legs"
+                  />
+                </div>
+                
+                <div className="form-group-workout">
+                  <label htmlFor="edit-description">Description</label>
+                  <textarea
+                    id="edit-description"
+                    name="description"
+                    value={editFormData.description}
+                    onChange={handleEditFormChange}
+                    rows="4"
+                    required
+                  ></textarea>
+                </div>
+                
+                <div className="form-actions-workout">
+                  <button type="button" className="cancel-button-workout" onClick={() => setShowEditModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="submit-button-workout" disabled={loading}>
+                    {loading ? <FaSpinner className="spinner-icon-workout" /> : <FaSave />} Save Changes
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

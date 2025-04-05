@@ -624,7 +624,7 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
         PaperProps={{
           sx: {
             width: { xs: '100%', sm: 400 },
-            bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+            bgcolor: isDarkMode ? '#1a1a1a !important' : '#fff !important',
             color: isDarkMode ? '#fff' : 'inherit',
           }
         }}

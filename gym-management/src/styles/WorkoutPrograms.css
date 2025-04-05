@@ -790,7 +790,8 @@
 }
 
 .form-group-workout input,
-.form-group-workout textarea {
+.form-group-workout textarea,
+.form-group-workout select {
   width: 100%;
   padding: 12px 15px;
   border: 1px solid #ddd;
@@ -802,14 +803,16 @@
 }
 
 .dark-mode .form-group-workout input,
-.dark-mode .form-group-workout textarea {
+.dark-mode .form-group-workout textarea,
+.dark-mode .form-group-workout select {
   border-color: #444;
   background-color: #333;
   color: #fff;
 }
 
 .form-group-workout input:focus,
-.form-group-workout textarea:focus {
+.form-group-workout textarea:focus,
+.form-group-workout select:focus {
   border-color: #4CAF50;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
   outline: none;
@@ -1000,5 +1003,90 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* Add these styles for the edit modal */
+.edit-modal-workout {
+  max-width: 800px;
+  width: 90%;
+}
+
+.form-actions-workout {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.form-actions-workout button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-button-workout {
+  background-color: #f5f5f5;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.submit-button-workout {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+
+.dark-mode .cancel-button-workout {
+  background-color: #333;
+  color: #ddd;
+  border-color: #444;
+}
+
+.dark-mode .submit-button-workout {
+  background-color: #388E3C;
+}
+
+.cancel-button-workout:hover {
+  background-color: #e5e5e5;
+}
+
+.submit-button-workout:hover {
+  background-color: #388E3C;
+}
+
+.dark-mode .cancel-button-workout:hover {
+  background-color: #444;
+}
+
+.dark-mode .submit-button-workout:hover {
+  background-color: #2E7D32;
+}
+
+.submit-button-workout:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+.dark-mode .submit-button-workout:disabled {
+  background-color: #1b5e20;
+  opacity: 0.7;
+}
+
+.spinner-icon-workout {
+  animation: spin-workout 1s linear infinite;
+}
+
+@keyframes spin-workout {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 } 
