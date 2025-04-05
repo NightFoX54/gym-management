@@ -113,53 +113,60 @@ public class WorkoutService {
     
     @Transactional
     public WorkoutDTO updateWorkout(Long workoutId, WorkoutRequest request) {
-        Workout workout = workoutRepository.findById(workoutId)
-                .orElseThrow(() -> new RuntimeException("Workout not found with id: " + workoutId));
-        
-        // Use the exact category name from the request, don't normalize it
-        WorkoutCategory category = categoryRepository.findByName(request.getType());
-        if (category == null) {
-            throw new RuntimeException("Invalid workout type: " + request.getType());
-        }
-        
-        // Use the exact level name from the request, don't normalize it
-        WorkoutLevel level = levelRepository.findByName(request.getDifficulty());
-        if (level == null) {
-            throw new RuntimeException("Invalid difficulty level: " + request.getDifficulty());
-        }
-        
-        workout.setLevel(level);
-        workout.setCategory(category);
-        workout.setDuration(request.getDuration());
-        workout.setName(request.getName());
-        workout.setDescription(request.getDescription());
-        workout.setCalories(request.getCalories());
-        workout.setEquipment(String.join(",", request.getEquipment()));
-        workout.setTargetMuscles(String.join(",", request.getTargetMuscles()));
-        
-        // Fix: Handle exercises properly to avoid orphan deletion issue
-        // First clear the existing exercises list without triggering orphan deletion
-        List<WorkoutExercise> currentExercises = exerciseRepository.findByWorkoutId(workoutId);
-        exerciseRepository.deleteAll(currentExercises);
-        
-        // Now create and save new exercises
-        List<WorkoutExercise> newExercises = new ArrayList<>();
-        if (request.getExercises() != null) {
-            for (WorkoutExerciseDTO exerciseDTO : request.getExercises()) {
-                WorkoutExercise exercise = new WorkoutExercise();
-                exercise.setWorkout(workout);
-                exercise.setExerciseName(exerciseDTO.getExerciseName());
-                exercise.setSets(exerciseDTO.getSets());
-                exercise.setRepRange(exerciseDTO.getRepRange());
-                newExercises.add(exercise);
+        System.out.println("Service: Updating workout with ID: " + workoutId);
+        try {
+            Optional<Workout> existingWorkoutOpt = workoutRepository.findById(workoutId);
+            
+            if (existingWorkoutOpt.isEmpty()) {
+                throw new RuntimeException("Workout not found with ID: " + workoutId);
             }
-            exerciseRepository.saveAll(newExercises);
+            
+            Workout existingWorkout = existingWorkoutOpt.get();
+            
+            // Update fields
+            existingWorkout.setName(request.getName());
+            existingWorkout.setDescription(request.getDescription());
+            existingWorkout.setDuration(request.getDuration());
+            
+            // Update category if provided
+            String categoryName = request.getType();
+            if (categoryName != null && !categoryName.isEmpty()) {
+                WorkoutCategory category = categoryRepository.findByName(categoryName);
+                if (category != null) {
+                    existingWorkout.setCategory(category);
+                }
+            }
+            
+            // Update level if provided
+            String levelName = request.getDifficulty();
+            if (levelName != null && !levelName.isEmpty()) {
+                WorkoutLevel level = levelRepository.findByName(levelName);
+                if (level != null) {
+                    existingWorkout.setLevel(level);
+                }
+            }
+            
+            // Update equipment and targetMuscles
+            if (request.getEquipment() != null) {
+                existingWorkout.setEquipment(String.join(",", request.getEquipment()));
+            }
+            
+            if (request.getTargetMuscles() != null) {
+                existingWorkout.setTargetMuscles(String.join(",", request.getTargetMuscles()));
+            }
+            
+            existingWorkout.setCalories(request.getCalories());
+            
+            // Save the updated workout
+            Workout updatedWorkout = workoutRepository.save(existingWorkout);
+            System.out.println("Service: Workout updated successfully");
+            
+            return convertToDTO(updatedWorkout);
+        } catch (Exception e) {
+            System.err.println("Service error in updateWorkout: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        
-        workout.setExercises(newExercises);
-        Workout savedWorkout = workoutRepository.save(workout);
-        
-        return convertToDTO(savedWorkout);
     }
     
     @Transactional
@@ -309,5 +316,21 @@ public class WorkoutService {
     @Transactional(readOnly = true)
     public List<WorkoutLevel> getAllWorkoutLevels() {
         return levelRepository.findAll();
+    }
+    
+    @Transactional(readOnly = true)
+    public List<WorkoutDTO> getAllTrainerWorkouts() {
+        System.out.println("Fetching all trainer workouts");
+        try {
+            // Find all workouts where isTrainer = true
+            List<Workout> workouts = workoutRepository.findByIsTrainer(true);
+            System.out.println("Found " + workouts.size() + " trainer workouts");
+            return workouts.stream().map(this::convertToDTO).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error in getAllTrainerWorkouts: " + e.getMessage());
+            e.printStackTrace();
+            // Return an empty list instead of throwing exception
+            return new ArrayList<>();
+        }
     }
 }

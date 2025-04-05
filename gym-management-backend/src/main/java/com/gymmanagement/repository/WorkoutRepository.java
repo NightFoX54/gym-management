@@ -10,4 +10,5 @@ import java.util.List;
 public interface WorkoutRepository extends JpaRepository<Workout, Long> {
     List<Workout> findByUserId(Long userId);
     List<Workout> findByUserIdAndIsTrainer(Long userId, Boolean isTrainer);
+    List<Workout> findByIsTrainer(Boolean isTrainer);
 }

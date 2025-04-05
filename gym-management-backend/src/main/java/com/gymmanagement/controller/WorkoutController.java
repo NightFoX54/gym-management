@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/workouts")
@@ -51,7 +52,16 @@ public class WorkoutController {
     public ResponseEntity<WorkoutDTO> updateWorkout(
             @PathVariable Long workoutId,
             @RequestBody WorkoutRequest request) {
-        return ResponseEntity.ok(workoutService.updateWorkout(workoutId, request));
+        System.out.println("Controller: Updating workout with ID: " + workoutId);
+        try {
+            WorkoutDTO updatedWorkout = workoutService.updateWorkout(workoutId, request);
+            System.out.println("Controller: Workout updated successfully");
+            return ResponseEntity.ok(updatedWorkout);
+        } catch (Exception e) {
+            System.err.println("Controller error in updateWorkout: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
     
     @DeleteMapping("/{workoutId}")
@@ -96,6 +106,20 @@ public class WorkoutController {
             System.err.println("Controller error in getWorkoutLevels: " + e.getMessage());
             e.printStackTrace();
             throw e;
+        }
+    }
+
+    @GetMapping("/trainer")
+    public ResponseEntity<List<WorkoutDTO>> getAllTrainerWorkouts() {
+        System.out.println("Controller: Getting all trainer workouts");
+        try {
+            List<WorkoutDTO> workouts = workoutService.getAllTrainerWorkouts();
+            System.out.println("Controller: Found " + workouts.size() + " trainer workouts");
+            return ResponseEntity.ok(workouts);
+        } catch (Exception e) {
+            System.err.println("Controller error in getAllTrainerWorkouts: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(new ArrayList<>());
         }
     }
 }
