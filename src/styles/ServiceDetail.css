@@ -1,0 +1,361 @@
+.service-detail-page {
+  padding-top: 80px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.service-detail-header {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+              url('../../public/4.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  margin-bottom: 3rem;
+}
+
+.service-detail-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.service-detail-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.service-overview {
+  background-color: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 3rem;
+}
+
+.service-overview h2 {
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+}
+
+.service-overview p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.trainer-profiles {
+  margin: 3rem 0;
+}
+
+.trainer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.trainer-card {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+}
+
+.trainer-img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  object-fit: cover;
+}
+
+.trainer-card h4 {
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.service-benefits ul {
+  list-style: none;
+  padding: 0;
+}
+
+.service-benefits li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #666;
+}
+
+.service-benefits li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #ff4757;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.pricing-card {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.pricing-card.featured {
+  background-color: #ff4757;
+  color: white;
+  transform: scale(1.05);
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+}
+
+.pricing-card h4 {
+  margin-bottom: 1rem;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #ff4757;
+}
+
+.featured .price {
+  color: white;
+}
+
+.pricing-card ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.pricing-card li {
+  padding: 0.5rem 0;
+  color: #666;
+}
+
+.featured li {
+  color: white;
+}
+
+.book-now-btn {
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.featured .book-now-btn {
+  background-color: white;
+  color: #ff4757;
+}
+
+.book-now-btn:hover {
+  background-color: #ff3747;
+}
+
+.featured .book-now-btn:hover {
+  background-color: #f8f9fa;
+}
+
+.booking-section {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #1a1a1a;
+  color: white;
+  border-radius: 10px;
+  margin-top: 3rem;
+}
+
+.consultation-btn {
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 2rem;
+}
+
+.consultation-btn:hover {
+  background-color: #ff3747;
+}
+
+.package-note {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+.featured .package-note {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .service-detail-content {
+    padding: 1rem;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricing-card.featured {
+    transform: none;
+  }
+}
+
+.dark-mode {
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+.dark-mode .service-overview {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+.dark-mode .service-card,
+.dark-mode .pricing-card:not(.featured),
+.dark-mode .trainer-card,
+.dark-mode .equipment-card,
+.dark-mode .program-card {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+.dark-mode .service-card h3,
+.dark-mode .pricing-card h4,
+.dark-mode .trainer-card h4 {
+  color: #ffffff;
+}
+
+.dark-mode .service-description,
+.dark-mode .pricing-card li,
+.dark-mode .service-benefits li {
+  color: #dddddd;
+}
+
+.dark-mode .package-note {
+  color: #bbbbbb;
+}
+
+.dark-mode-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+/* Dark Mode Styles */
+.dark-mode .service-detail-page {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .service-detail-header {
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+              url('../../public/4.jpg');
+}
+
+.dark-mode h2,
+.dark-mode h3 {
+  color: #ffffff;
+}
+
+.dark-mode p {
+  color: #dddddd;
+}
+
+/* Hover effects in dark mode */
+.dark-mode .program-card:hover,
+.dark-mode .class-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(255, 71, 87, 0.2);
+}
+
+/* Remove box styling from descriptions only */
+.service-overview p,
+.service-description p,
+.class-card p,
+.program-card p,
+.equipment-card p {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Dark mode adjustments */
+.dark-mode .service-overview p,
+.dark-mode .service-description p,
+.dark-mode .class-card p,
+.dark-mode .program-card p,
+.dark-mode .equipment-card p {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.dark-mode .booking-section {
+  background-color: #2d2d2d;
+  color: white;
+  border-radius: 10px;
+}
+
+/* New styles for standalone featured pricing card */
+.pricing-section .pricing-card.featured {
+  max-width: 800px;
+  margin: 0 auto;
+  transform: none;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  border-radius: 12px;
+  padding: 2.5rem;
+}
+
+.dark-mode .pricing-section .pricing-card.featured {
+  border-color: rgba(255, 71, 87, 0.5);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.pricing-section .pricing-card.featured:hover {
+  transform: translateY(-5px);
+}
+
+.pricing-section h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #1a1a1a;
+}
+
+.dark-mode .pricing-section h3 {
+  color: #f8f9fa;
+}
+
+.pricing-section .package-note {
+  margin-top: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+} 

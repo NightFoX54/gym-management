@@ -1,0 +1,817 @@
+.signup-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f8f9fa;
+}
+
+.progress-bar1 {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+.progress-step1 {
+  padding: 0.5rem 1rem;
+  margin: 0 1rem;
+  background-color: #ddd;
+  border-radius: 20px;
+  position: relative;
+  color: #1a1a1a;
+  user-select: none;
+}
+
+.progress-step1.active {
+  background-color: #ff4757;
+  color: white;
+}
+
+.progress-step1:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -2rem;
+  top: 50%;
+  width: 1rem;
+  height: 2px;
+  background-color: #ddd;
+}
+
+/* Add a hover effect for the progress steps */
+.progress-step1:hover {
+  opacity: 0.9;
+}
+
+/* Plans Section */
+.plans-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.plan-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;  /* ensure card takes full height */
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.plan-card.selected {
+  border: 2px solid #ff4757;
+}
+
+.plan-card h3 {
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-icon {
+  color: #ff4757;
+  font-size: 1.3rem;
+}
+
+/* Farklı planlar için farklı ikon renkleri */
+.plan-card:nth-child(1) .plan-icon {
+  color: #6c757d; /* Basic plan için gri renk */
+}
+
+.plan-card:nth-child(2) .plan-icon {
+  color: #ffc107; /* Premium plan için altın renk */
+}
+
+.plan-card:nth-child(3) .plan-icon {
+  color: #00b4d8; /* Elite plan için mavi renk */
+}
+
+.price {
+  margin-bottom: 1.5rem;
+}
+
+.amount {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff4757;
+}
+
+.duration {
+  color: #666;
+}
+
+.features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;  /* allow the features list to grow and take available space */
+  margin-bottom: 15px;
+}
+
+.features-list li {
+  padding: 0.5rem 0;
+  color: #666;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.features-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #ff4757;
+}
+
+.plan-button-container {
+  margin-top: auto;  /* push the button container to the bottom */
+  padding-top: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.select-plan-btn {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.select-plan-btn:hover {
+  background-color: #ff3747;
+}
+
+/* Personal Info Section */
+.personal-info-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.form-group input {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.next-btn {
+  padding: 1rem;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.next-btn:hover {
+  background-color: #ff3747;
+}
+
+/* Payment Section */
+.payment-container {
+  max-width: 1000px; /* Genişliği artırdım çünkü yan yana yerleşim için daha fazla alan gerekecek */
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #2d2d2d;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.payment-container h2 {
+  color: #ffffff;
+  margin-bottom: 2rem;
+}
+
+.order-summary {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+}
+
+.order-summary h3 {
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+/* Yan yana yerleşim için yeni container */
+.payment-flex-container {
+  display: flex;
+  flex-direction: row; /* Yan yana yerleşim */
+  gap: 2rem;
+  align-items: flex-start;
+  margin-top: 2rem;
+}
+
+/* Form ve kredi kartı için genişlik tanımları */
+.payment-form-container {
+  flex: 1; /* Sol taraf (form kısmı) için alan */
+  min-width: 300px;
+}
+
+.credit-card-preview {
+  flex: 1; /* Sağ taraf (kredi kartı) için alan */
+  perspective: 1000px;
+  min-width: 300px;
+  margin: 0; /* Üstteki margin'i kaldırdık çünkü artık yan yana */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1rem;
+}
+
+.credit-card {
+  width: 100%;
+  max-width: 350px;
+  height: 220px;
+  position: relative;
+  border-radius: 15px;
+  transform-style: preserve-3d;
+  transition: transform 0.8s;
+}
+
+.credit-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.credit-card-front,
+.credit-card-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  overflow: hidden;
+  padding: 25px;
+  box-sizing: border-box;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #ff4757, #ff6b81);
+}
+
+.credit-card-back {
+  transform: rotateY(180deg);
+}
+
+.card-chip {
+  width: 50px;
+  height: 40px;
+  background: linear-gradient(to bottom, #bbb, #ddd);
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.card-logo {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-number {
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: white;
+  font-family: monospace;
+  margin-bottom: 25px;
+  word-spacing: 8px;
+}
+
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+}
+
+.card-holder, .card-expiry {
+  text-transform: uppercase;
+}
+
+.card-holder span, .card-expiry span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 5px;
+}
+
+.card-holder div, .card-expiry div {
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.card-stripe {
+  height: 50px;
+  background-color: #333;
+  margin: 25px 0;
+  width: calc(100% + 50px);
+  margin-left: -25px;
+}
+
+.card-cvv {
+  position: relative;
+  background-color: #fff;
+  width: 65%;
+  padding: 12px;
+  border-radius: 5px;
+  text-align: right;
+  float: right;
+}
+
+.card-cvv span {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.cvv-band {
+  background: white;
+  color: #333;
+  font-family: monospace;
+  font-size: 16px;
+}
+
+/* Kredi kartı dark mode */
+.dark-mode .credit-card-front,
+.dark-mode .credit-card-back {
+  background: linear-gradient(135deg, #ff4757, #a83844);
+}
+
+.dark-mode .card-cvv,
+.dark-mode .cvv-band {
+  background-color: #eee;
+}
+
+.dark-mode .progress-step1:not(:last-child)::after {
+  background-color: #444;
+}
+
+/* Responsive tasarım için medya sorgusu */
+@media (max-width: 768px) {
+  .payment-flex-container {
+    flex-direction: column-reverse; /* Mobilde kredi kartı üstte, form altta */
+  }
+  
+  .credit-card-preview {
+    margin-bottom: 2rem;
+  }
+  
+  .payment-container {
+    padding: 1.5rem;
+  }
+  
+  .order-summary {
+    padding: 1rem;
+  }
+}
+
+.payment-form {
+  margin-top: 0; /* Üstteki margin'i kaldırdık çünkü artık yan yana */
+}
+
+.plan-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #2d2d2d;
+  border-radius: 5px;
+  margin: 1rem 0;
+}
+
+.plan-name-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-name-container .plan-icon {
+  font-size: 1.2rem;
+}
+
+/* Farklı planlar için farklı ikon renkleri - payment kısmında */
+.plan-name-container .plan-icon[class*="FaGem"] {
+  color: #6c757d; /* Basic plan için gri renk */
+}
+
+.plan-name-container .plan-icon[class*="FaCrown"] {
+  color: #ffc107; /* Premium plan için altın renk */
+}
+
+.plan-name-container .plan-icon[class*="FaAward"] {
+  color: #00b4d8; /* Elite plan için mavi renk */
+}
+
+.plan-name {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Dark mode için ikon renkleri - payment kısmında */
+.dark-mode .plan-name-container .plan-icon[class*="FaGem"] {
+  color: #adb5bd; /* Dark mode'da basic plan için açık gri */
+}
+
+.dark-mode .plan-name-container .plan-icon[class*="FaCrown"] {
+  color: #ffd43b; /* Dark mode'da premium plan için daha parlak altın */
+}
+
+.dark-mode .plan-name-container .plan-icon[class*="FaAward"] {
+  color: #0096c7; /* Dark mode'da elite plan için daha canlı mavi */
+}
+
+.plan-price {
+  font-weight: bold;
+  margin: 0;
+}
+
+.payment-form label {
+  display: block;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.payment-form input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1.5rem;
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 5px;
+  color: #ffffff;
+}
+
+.payment-form input::placeholder {
+  color: #666;
+}
+
+.payment-form input:focus {
+  border-color: #ff4757;
+  outline: none;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #ff3747;
+}
+
+/* Light mode overrides */
+.payment-container {
+  background-color: white;
+}
+
+.payment-container h2 {
+  color: #1a1a1a;
+}
+
+.order-summary {
+  background-color: #f8f9fa;
+}
+
+.order-summary h3 {
+  color: #1a1a1a;
+}
+
+.plan-details {
+  background-color: white;
+}
+
+.payment-form label {
+  color: #1a1a1a;
+}
+
+.payment-form input {
+  background-color: white;
+  border-color: #ddd;
+  color: #1a1a1a;
+}
+
+/* Dark mode styles */
+.dark-mode .payment-container {
+  background-color: #2d2d2d;
+}
+
+.dark-mode .payment-container h2 {
+  color: #ffffff;
+}
+
+.dark-mode .order-summary {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .order-summary h3 {
+  color: #ffffff;
+}
+
+.dark-mode .plan-details {
+  background-color: #2d2d2d;
+}
+
+.dark-mode .payment-form label {
+  color: #ffffff;
+}
+
+.dark-mode .payment-form input {
+  background-color: #1a1a1a;
+  border-color: #444;
+  color: #ffffff;
+}
+
+.dark-mode .payment-form input::placeholder {
+  color: #666;
+}
+
+.back-arrow {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  color: #1a1a1a;
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.back-arrow:hover {
+  color: #ff4757;
+}
+
+/* Dark Mode Styles */
+.dark-mode .signup-container {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .plan-card {
+  background-color: #2d2d2d;
+  color: #ffffff;
+  border-color: #444;
+}
+
+.dark-mode .plan-card:hover {
+  border-color: #ff4757;
+}
+
+.dark-mode .plan-card.selected {
+  border-color: #ff4757;
+  background-color: #3d3d3d;
+}
+
+.dark-mode .price .amount {
+  color: #ff4757;
+}
+
+.dark-mode .price .duration {
+  color: #dddddd;
+}
+
+.dark-mode .features-list li {
+  color: #dddddd;
+}
+
+.dark-mode .select-plan-btn,
+.dark-mode .next-btn,
+.dark-mode .submit-btn {
+  background-color: #ff4757;
+  color: #ffffff;
+}
+
+.dark-mode .select-plan-btn:hover,
+.dark-mode .next-btn:hover,
+.dark-mode .submit-btn:hover {
+  background-color: #ff3747;
+}
+
+.dark-mode .personal-info-container,
+.dark-mode .payment-container {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+.dark-mode .form-group label {
+  color: #ffffff;
+}
+
+.dark-mode .form-group input {
+  background-color: #1a1a1a;
+  border-color: #444;
+  color: #ffffff;
+}
+
+.dark-mode .form-group input:focus {
+  border-color: #ff4757;
+}
+
+.dark-mode .progress-bar1 {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .progress-step1 {
+  background-color: #444;
+  color: #dddddd;
+}
+
+.dark-mode .progress-step1.active {
+  background-color: #ff4757;
+  color: white;
+}
+
+.dark-mode .progress-step1:not(:last-child)::after {
+  background-color: #444;
+}
+
+.dark-mode .back-arrow {
+  color: #ffffff;
+}
+
+.dark-mode .order-summary {
+  background-color: #1a1a1a;
+  border-color: #444;
+}
+
+.dark-mode .plan-details {
+  color: #dddddd;
+}
+
+.dark-mode .plan-name {
+  color: #ffffff;
+}
+
+.dark-mode .plan-price {
+  color: #ff4757;
+}
+
+
+.duration-selector {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.duration-btn {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.duration-btn.selected {
+  background: #ff4757;
+  color: white;
+  border-color: #ff4757;
+}
+
+.duration-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.monthly-price {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Dark mode styles */
+.dark-mode .duration-btn {
+  background: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+.dark-mode .duration-btn.selected {
+  background: #ff4757;
+  border-color: #ff4757;
+}
+
+.dark-mode .monthly-price {
+  color: #999;
+}
+
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-container input {
+  width: 100%;
+  padding-right: 40px; /* Make room for the eye icon */
+}
+
+.toggle-password-visibility {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.toggle-password-visibility:hover {
+  color: #333;
+}
+
+.dark-mode .plan-card h3 {
+  color: #fff;
+}
+
+.dark-mode .plan-card:nth-child(1) .plan-icon {
+  color: #adb5bd; /* Dark mode'da basic plan için açık gri */
+}
+
+.dark-mode .plan-card:nth-child(2) .plan-icon {
+  color: #ffd43b; /* Dark mode'da premium plan için daha parlak altın */
+}
+
+.dark-mode .plan-card:nth-child(3) .plan-icon {
+  color: #0096c7; /* Dark mode'da elite plan için daha canlı mavi */
+}
+
+.error-message {
+  color: #ff4757;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: block;
+}
