@@ -370,4 +370,60 @@
     display: flex;
     justify-content: center;
   }
+}
+
+/* Add these styles to your PersonalTrainers.css file */
+
+.booking-form-pt {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.form-group-pt {
+  margin-bottom: 15px;
+}
+
+.form-group-pt label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.date-input-pt, .time-input-pt {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.booking-error-message {
+  color: #e53e3e;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.loading-container, .error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  width: 100%;
+}
+
+.error-container {
+  color: #e53e3e;
+}
+
+/* Dark mode adjustments */
+.dark-mode .booking-form-pt {
+  background-color: #2d3748;
+}
+
+.dark-mode .date-input-pt, .dark-mode .time-input-pt {
+  background-color: #1a202c;
+  color: #e2e8f0;
+  border-color: #4a5568;
 } 
