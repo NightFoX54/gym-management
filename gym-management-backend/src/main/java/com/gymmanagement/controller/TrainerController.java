@@ -16,9 +16,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import com.gymmanagement.model.TrainerSettings;
 import com.gymmanagement.repository.TrainerSettingsRepository;
+import com.gymmanagement.model.TrainerRegistrationRequest;
+import com.gymmanagement.repository.TrainerRegistrationRequestRepository;
 
 @RestController
 @RequestMapping("/api/trainer")
@@ -33,6 +37,9 @@ public class TrainerController {
     
     @Autowired
     private TrainerSettingsRepository trainerSettingsRepository;
+
+    @Autowired
+    private TrainerRegistrationRequestRepository requestRepository;
 
     @GetMapping("/{trainerId}/clients")
     public ResponseEntity<List<TrainerClientResponse>> getTrainerClients(@PathVariable Long trainerId) {
@@ -282,6 +289,41 @@ public class TrainerController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Failed to update trainer profile: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/requests")
+    public ResponseEntity<?> createTrainerRequest(@RequestBody Map<String, Object> requestData) {
+        try {
+            Long trainerId = Long.parseLong(requestData.get("trainerId").toString());
+            Long clientId = Long.parseLong(requestData.get("clientId").toString());
+            String requestMessage = (String) requestData.get("requestMessage");
+            LocalDate requestedMeetingDate = LocalDate.parse((String) requestData.get("requestedMeetingDate"));
+            LocalTime requestedMeetingTime = LocalTime.parse((String) requestData.get("requestedMeetingTime"));
+            
+            User trainer = userRepository.findById(trainerId)
+                    .orElseThrow(() -> new RuntimeException("Trainer not found with id: " + trainerId));
+            
+            User client = userRepository.findById(clientId)
+                    .orElseThrow(() -> new RuntimeException("Client not found with id: " + clientId));
+            
+            TrainerRegistrationRequest request = new TrainerRegistrationRequest();
+            request.setTrainer(trainer);
+            request.setClient(client);
+            request.setRequestMessage(requestMessage);
+            request.setRequestedMeetingDate(requestedMeetingDate);
+            request.setRequestedMeetingTime(requestedMeetingTime);
+            request.setIsModifiedByTrainer(false);
+            
+            TrainerRegistrationRequest savedRequest = requestRepository.save(request);
+            
+            return ResponseEntity.ok(Map.of(
+                "id", savedRequest.getId(),
+                "message", "Request sent successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to create training request: " + e.getMessage()));
         }
     }
 }

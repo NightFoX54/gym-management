@@ -2,6 +2,7 @@ package com.gymmanagement.controller;
 
 import com.gymmanagement.dto.WorkoutDTO;
 import com.gymmanagement.dto.WorkoutRequest;
+import com.gymmanagement.dto.WorkoutExerciseDTO;
 import com.gymmanagement.service.WorkoutService;
 import com.gymmanagement.model.WorkoutCategory;
 import com.gymmanagement.model.WorkoutLevel;
@@ -121,5 +122,11 @@ public class WorkoutController {
             e.printStackTrace();
             return ResponseEntity.ok(new ArrayList<>());
         }
+    }
+
+    @GetMapping("/{workoutId}/exercises")
+    public ResponseEntity<List<WorkoutExerciseDTO>> getWorkoutExercises(@PathVariable Long workoutId) {
+        List<WorkoutExerciseDTO> exercises = workoutService.getExercisesByWorkoutId(workoutId);
+        return ResponseEntity.ok(exercises);
     }
 }

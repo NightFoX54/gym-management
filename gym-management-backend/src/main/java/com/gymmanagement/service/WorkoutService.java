@@ -159,8 +159,28 @@ public class WorkoutService {
             
             // Save the updated workout
             Workout updatedWorkout = workoutRepository.save(existingWorkout);
-            System.out.println("Service: Workout updated successfully");
             
+            // Update exercises if provided
+            if (request.getExercises() != null && !request.getExercises().isEmpty()) {
+                // Delete existing exercises
+                List<WorkoutExercise> existingExercises = exerciseRepository.findByWorkoutId(workoutId);
+                exerciseRepository.deleteAll(existingExercises);
+                
+                // Add new exercises
+                List<WorkoutExercise> newExercises = new ArrayList<>();
+                for (WorkoutExerciseDTO exerciseDTO : request.getExercises()) {
+                    WorkoutExercise exercise = new WorkoutExercise();
+                    exercise.setWorkout(updatedWorkout);
+                    exercise.setExerciseName(exerciseDTO.getExerciseName());
+                    exercise.setSets(exerciseDTO.getSets());
+                    exercise.setRepRange(exerciseDTO.getRepRange());
+                    newExercises.add(exercise);
+                }
+                exerciseRepository.saveAll(newExercises);
+                updatedWorkout.setExercises(newExercises);
+            }
+            
+            System.out.println("Service: Workout updated successfully");
             return convertToDTO(updatedWorkout);
         } catch (Exception e) {
             System.err.println("Service error in updateWorkout: " + e.getMessage());
@@ -332,5 +352,21 @@ public class WorkoutService {
             // Return an empty list instead of throwing exception
             return new ArrayList<>();
         }
+    }
+    
+    public List<WorkoutExerciseDTO> getExercisesByWorkoutId(Long workoutId) {
+        List<WorkoutExercise> exercises = exerciseRepository.findByWorkoutId(workoutId);
+        return exercises.stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+    
+    private WorkoutExerciseDTO convertToDTO(WorkoutExercise exercise) {
+        return WorkoutExerciseDTO.builder()
+            .id(exercise.getId())
+            .exerciseName(exercise.getExerciseName())
+            .sets(exercise.getSets())
+            .repRange(exercise.getRepRange())
+            .build();
     }
 }
