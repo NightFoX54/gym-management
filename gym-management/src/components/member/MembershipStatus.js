@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCalendarAlt, FaCreditCard, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaSun, FaMoon, FaSync, FaSpinner } from 'react-icons/fa';
+import { FaCalendarAlt, FaCreditCard, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaSun, FaMoon, FaSync, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import '../../styles/MembershipStatus.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +29,14 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+
+  // Add these states for payment form
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvc, setCvc] = useState('');
+
+  // Add a separate state for renewal form errors
+  const [renewalError, setRenewalError] = useState('');
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -174,11 +182,53 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const handleRenewalConfirm = async () => {
+    // Clear any previous errors
+    setRenewalError('');
+    
+    // 1. Validate plan selection
     if (!selectedPlan) {
-      setError("Please select a renewal plan");
-      return;
+      setRenewalError("Please select a renewal plan");
+      return; // Stop execution here
+    }
+    
+    // 2. Validate card number (should be 16 digits, or 19 chars with spaces)
+    const cleanedCardNumber = cardNumber.replace(/\s/g, '');
+    if (cleanedCardNumber.length !== 16) {
+      setRenewalError("Please enter a valid 16-digit card number");
+      return; // Stop execution here
+    }
+    
+    // 3. Validate expiry date (should be in MM/YY format)
+    if (expiryDate.length !== 5 || !expiryDate.includes('/')) {
+      setRenewalError("Please enter a valid expiry date (MM/YY)");
+      return; // Stop execution here
+    }
+    
+    // 4. Parse month and year to validate further
+    const [month, year] = expiryDate.split('/');
+    const monthNum = parseInt(month, 10);
+    const yearNum = parseInt(year, 10);
+    const currentYear = new Date().getFullYear() % 100; // Get last 2 digits of current year
+    
+    // 5. Check if month is valid (1-12)
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      setRenewalError("Please enter a valid month (01-12)");
+      return; // Stop execution here
+    }
+    
+    // 6. Check if expiry date is in the future
+    if (yearNum < currentYear || (yearNum === currentYear && monthNum < new Date().getMonth() + 1)) {
+      setRenewalError("Your card has expired. Please use a valid card");
+      return; // Stop execution here
+    }
+    
+    // 7. Validate CVC (should be 3 or 4 digits)
+    if (cvc.length < 3 || cvc.length > 4 || !/^\d+$/.test(cvc)) {
+      setRenewalError("Please enter a valid CVC code (3 or 4 digits)");
+      return; // Stop execution here
     }
 
+    // All validations passed, now proceed with the API call
     try {
       setIsLoading(true);
       
@@ -199,18 +249,25 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          durationMonths: durationMonths
+          durationMonths: durationMonths,
+          paymentDetails: {
+            cardNumber: cleanedCardNumber.slice(-4), // Only send last 4 digits for security
+            expiryDate: expiryDate,
+            cvc: "***" // Don't send actual CVC for security
+          }
         }),
       });
 
+      // Check for API errors
       if (!response.ok) {
-        throw new Error(`Failed to renew membership: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to renew membership: ${response.status}`);
       }
 
       const data = await response.json();
       console.log("Renewal response:", data);
 
-      // Update the membership state with new data
+      // Only update membership state if API call was successful
       setMembership(prevState => ({
         ...prevState,
         endDate: data.endDate,
@@ -219,6 +276,11 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
         nextPayment: data.endDate
       }));
 
+      // Reset form fields
+      setCardNumber('');
+      setExpiryDate('');
+      setCvc('');
+      
       // Show success message
       setSuccessMessage(`Your membership has been renewed until ${new Date(data.endDate).toLocaleDateString()}. Thank you!`);
       setShowRenewalModal(false);
@@ -228,7 +290,7 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
       setSelectedPlan('');
     } catch (err) {
       console.error("Error renewing membership:", err);
-      setError("Failed to renew membership. Please try again later.");
+      setRenewalError(err.message || "Failed to renew membership. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -237,6 +299,50 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   // Format currency with Turkish Lira symbol
   const formatCurrency = (amount) => {
     return `₺${amount}`;
+  };
+
+  // Add these formatter functions
+  const formatCardNumber = (value) => {
+    // Remove all non-digit characters
+    const cleaned = value.replace(/\D/g, '');
+    // Limit to 16 digits
+    const limited = cleaned.slice(0, 16);
+    // Format as XXXX XXXX XXXX XXXX
+    const formatted = limited.replace(/(\d{4})(?=\d)/g, '$1 ');
+    return formatted;
+  };
+
+  const formatExpiryDate = (value) => {
+    // Remove all non-digit characters
+    const cleaned = value.replace(/\D/g, '');
+    // Limit to 4 digits (MM/YY)
+    const limited = cleaned.slice(0, 4);
+    
+    // Format as MM/YY
+    if (limited.length > 2) {
+      return `${limited.slice(0, 2)}/${limited.slice(2)}`;
+    }
+    return limited;
+  };
+
+  const formatCvc = (value) => {
+    // Remove all non-digit characters
+    const cleaned = value.replace(/\D/g, '');
+    // Limit to 4 digits (some cards have 4-digit CVC)
+    return cleaned.slice(0, 4);
+  };
+
+  // Add these handlers
+  const handleCardNumberChange = (e) => {
+    setCardNumber(formatCardNumber(e.target.value));
+  };
+
+  const handleExpiryDateChange = (e) => {
+    setExpiryDate(formatExpiryDate(e.target.value));
+  };
+
+  const handleCvcChange = (e) => {
+    setCvc(formatCvc(e.target.value));
   };
 
   return (
@@ -363,7 +469,10 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
           <div className="renewal-modal-membershipstatus card-animate">
             <div className="modal-header-membershipstatus">
               <h3>Renew Your Membership</h3>
-              <button className="close-button-membershipstatus" onClick={() => setShowRenewalModal(false)}>
+              <button className="close-button-membershipstatus" onClick={() => {
+                setShowRenewalModal(false);
+                setRenewalError(''); // Clear any errors when closing
+              }}>
                 <FaTimesCircle />
               </button>
             </div>
@@ -400,16 +509,54 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
                   <h4>Payment Details</h4>
                 </div>
                 <div className="payment-form-membershipstatus">
-                  <input type="text" placeholder="Card Number" />
+                  <div className="form-group-membershipstatus">
+                    <label htmlFor="cardNumber">Card Number <span className="required">*</span></label>
+                    <input 
+                      id="cardNumber"
+                      type="text" 
+                      placeholder="XXXX XXXX XXXX XXXX" 
+                      value={cardNumber}
+                      onChange={handleCardNumberChange}
+                      maxLength={19} // 16 digits + 3 spaces
+                    />
+                  </div>
                   <div className="card-details-membershipstatus">
-                    <input type="text" placeholder="MM/YY" />
-                    <input type="text" placeholder="CVC" />
+                    <div className="form-group-membershipstatus">
+                      <label htmlFor="expiryDate">Expiry Date <span className="required">*</span></label>
+                      <input 
+                        id="expiryDate"
+                        type="text" 
+                        placeholder="MM/YY" 
+                        value={expiryDate}
+                        onChange={handleExpiryDateChange}
+                        maxLength={5} // MM/YY format
+                      />
+                    </div>
+                    <div className="form-group-membershipstatus">
+                      <label htmlFor="cvc">CVC <span className="required">*</span></label>
+                      <input 
+                        id="cvc"
+                        type="text" 
+                        placeholder="CVC" 
+                        value={cvc}
+                        onChange={handleCvcChange}
+                        maxLength={4}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
+              {renewalError && (
+                <div className="error-message-membershipstatus">
+                  <FaExclamationCircle /> {renewalError}
+                </div>
+              )}
             </div>
             <div className="modal-footer-membershipstatus">
-              <button className="cancel-button-membershipstatus" onClick={() => setShowRenewalModal(false)}>
+              <button className="cancel-button-membershipstatus" onClick={() => {
+                setShowRenewalModal(false);
+                setRenewalError(''); // Clear any errors when canceling
+              }}>
                 Cancel
               </button>
               <button 
