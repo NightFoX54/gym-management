@@ -26,6 +26,8 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   const [error, setError] = useState(null);
   const [showRenewalModal, setShowRenewalModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -171,69 +173,62 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
     setSelectedPlan(planId);
   };
 
-  const handleConfirmRenewal = async () => {
+  const handleRenewalConfirm = async () => {
     if (!selectedPlan) {
-      setError('Please select a plan');
+      setError("Please select a renewal plan");
       return;
     }
 
-    setIsLoading(true);
-    
     try {
-      // Get the selected plan details
-      const plan = renewalPlans.find(p => p.id === selectedPlan);
+      setIsLoading(true);
       
-      // Prepare renewal data
-      const renewalData = {
-        userId: userId,
-        planId: selectedPlan,
-        duration: selectedPlan === '1month' ? 1 : 
-                  (selectedPlan === '3months' ? 3 : 
-                  (selectedPlan === '6months' ? 6 : 12)),
-        price: plan.price
+      // Get duration months from selected plan
+      const planDuration = {
+        '1month': 1,
+        '3months': 3,
+        '6months': 6,
+        '12months': 12
       };
       
-      // Call the API to renew membership
+      const durationMonths = planDuration[selectedPlan];
+      
+      // Call the renewal endpoint
       const response = await fetch(`http://localhost:8080/api/members/${userId}/renew`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userInfo.token}`
         },
-        body: JSON.stringify(renewalData)
+        body: JSON.stringify({
+          durationMonths: durationMonths
+        }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to renew membership: ${response.status}`);
       }
-      
-      // Refresh membership data
-      const updatedResponse = await fetch(`http://localhost:8080/api/members/${userId}/membership`);
-      if (updatedResponse.ok) {
-        const updatedData = await updatedResponse.json();
-        setMembership({
-          status: updatedData.isFrozen ? 'frozen' : (new Date(updatedData.endDate) > new Date() ? 'active' : 'expired'),
-          type: updatedData.planName,
-          startDate: updatedData.startDate,
-          endDate: updatedData.endDate,
-          paymentStatus: updatedData.paymentStatus || 'paid',
-          nextPayment: updatedData.nextPaymentDate || updatedData.endDate,
-          price: updatedData.price.toString(),
-          benefits: updatedData.benefits || [
-            'Unlimited Gym Access',
-            'Personal Trainer Sessions',
-            'Group Classes',
-            'Locker Access',
-            'Spa Access'
-          ]
-        });
-      }
-      
+
+      const data = await response.json();
+      console.log("Renewal response:", data);
+
+      // Update the membership state with new data
+      setMembership(prevState => ({
+        ...prevState,
+        endDate: data.endDate,
+        status: 'active',
+        paymentStatus: 'paid',
+        nextPayment: data.endDate
+      }));
+
+      // Show success message
+      setSuccessMessage(`Your membership has been renewed until ${new Date(data.endDate).toLocaleDateString()}. Thank you!`);
       setShowRenewalModal(false);
+      setShowSuccessModal(true);
+      
+      // Reset selected plan
       setSelectedPlan('');
     } catch (err) {
       console.error("Error renewing membership:", err);
-      setError("Failed to renew membership");
+      setError("Failed to renew membership. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -419,7 +414,7 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
               </button>
               <button 
                 className="confirm-button-membershipstatus" 
-                onClick={handleConfirmRenewal}
+                onClick={handleRenewalConfirm}
                 disabled={!selectedPlan || isLoading}
               >
                 {isLoading ? (
@@ -430,6 +425,30 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
                 ) : (
                   'Confirm Renewal'
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSuccessModal && (
+        <div className="success-modal-overlay-membershipstatus">
+          <div className="success-modal-membershipstatus card-animate">
+            <div className="modal-header-membershipstatus">
+              <h3>Renewal Successful</h3>
+              <button className="close-button-membershipstatus" onClick={() => setShowSuccessModal(false)}>
+                <FaTimesCircle />
+              </button>
+            </div>
+            <div className="modal-content-membershipstatus">
+              <div className="success-icon-container-membershipstatus">
+                <FaCheckCircle className="success-icon-membershipstatus" />
+              </div>
+              <p className="success-message-membershipstatus">{successMessage}</p>
+            </div>
+            <div className="modal-footer-membershipstatus">
+              <button className="confirm-button-membershipstatus" onClick={() => setShowSuccessModal(false)}>
+                Close
               </button>
             </div>
           </div>
