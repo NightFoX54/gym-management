@@ -833,37 +833,42 @@
 
 /* Dark Mode Adjustments */
 .dark-mode .workout-day-column {
-  background-color: #2a2d34;
+  background-color: #363636;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  border: 1px solid #444;
 }
 
 .dark-mode .day-header {
-  color: #ff6b6b;
-  border-bottom-color: #3a3f48;
+  color: #ff4757;
+  border-bottom-color: #444;
 }
 
 .dark-mode .workout-card {
-  background-color: #1c1e24;
+  background-color: #2d2d2d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .dark-mode .workout-name {
-  color: #e1e5ee;
-  border-bottom-color: #2c303a;
+  color: #ffffff;
+  border-bottom-color: #444;
 }
 
 .dark-mode .exercise-item {
-  background-color: #262930;
+  background-color: #363636;
+  border: 1px solid #444;
 }
 
 .dark-mode .exercise-name {
-  color: #d0d6e1;
+  color: #ffffff;
 }
 
 .dark-mode .exercise-details {
-  color: #b0b8c4;
+  color: #9ca3af;
 }
 
 .dark-mode .exercise-details span {
-  background-color: #2c303a;
+  background-color: #2d2d2d;
+  border: 1px solid #444;
 }
 
 /* Add only these minimal styles for exercises */
