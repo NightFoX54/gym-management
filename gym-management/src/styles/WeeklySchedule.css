@@ -579,4 +579,87 @@
 
 .dark-mode .selected-date-details-weeklyschedule:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Add these styles to support session display without changing original styling */
+.session-dot {
+  display: inline-block;
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+  margin-right: 3px;
+}
+
+.session-count {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.trainer-sessions-indicator, 
+.group-sessions-indicator {
+  display: flex;
+  align-items: center;
+  margin-right: 5px;
+  font-size: 10px;
+}
+
+.day-notifications {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-icon-container {
+  margin-right: 10px;
+}
+
+.session-details {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #666;
+}
+
+.dark-mode .session-details {
+  color: #aaa;
+}
+
+.session-detail-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.detail-icon {
+  margin-right: 5px;
+  font-size: 10px;
+}
+
+.session-notes {
+  font-style: italic;
+}
+
+.workout-thumbnail {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.no-sessions-message,
+.loading-message {
+  text-align: center;
+  padding: 15px;
+  color: #666;
+  font-style: italic;
+}
+
+.dark-mode .no-sessions-message,
+.dark-mode .loading-message {
+  color: #aaa;
 } 
