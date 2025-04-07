@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -203,6 +205,84 @@ public class MemberController {
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Failed to fetch membership details");
+            errorResponse.put("message", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/{memberId}/renew")
+    public ResponseEntity<Map<String, Object>> renewMembership(
+            @PathVariable Long memberId,
+            @RequestBody Map<String, Object> renewalData) {
+        try {
+            // Get the user by ID
+            User user = userRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + memberId));
+            
+            // Get the user's active membership
+            Optional<Membership> membershipOpt = membershipRepository.findByUser(user);
+            
+            if (membershipOpt.isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("error", "No active membership found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+            
+            Membership membership = membershipOpt.get();
+            MembershipPlan plan = membership.getPlan();
+            
+            // Get renewal duration from request
+            Integer durationMonths = Integer.parseInt(renewalData.get("durationMonths").toString());
+            
+            // Calculate new end date
+            LocalDate currentEndDate = membership.getEndDate();
+            LocalDate newEndDate = currentEndDate.plusMonths(durationMonths);
+            
+            // Calculate discount based on duration
+            BigDecimal basePrice = plan.getPlanPrice();
+            BigDecimal totalPrice = basePrice.multiply(BigDecimal.valueOf(durationMonths));
+            BigDecimal discountAmount = BigDecimal.ZERO;
+            
+            // Apply discount based on duration (same logic as in UserService)
+            if (durationMonths == 3) {
+                discountAmount = totalPrice.multiply(BigDecimal.valueOf(0.10)); // 10% discount
+            } else if (durationMonths == 6) {
+                discountAmount = totalPrice.multiply(BigDecimal.valueOf(0.20)); // 20% discount
+            } else if (durationMonths == 12) {
+                discountAmount = totalPrice.multiply(BigDecimal.valueOf(0.28)); // 28% discount
+            }
+            
+            BigDecimal finalAmount = totalPrice.subtract(discountAmount);
+            
+            // Update membership
+            membership.setEndDate(newEndDate);
+            
+            // Add to existing amounts
+            membership.setDiscountAmount(membership.getDiscountAmount().add(discountAmount));
+            membership.setPaidAmount(membership.getPaidAmount().add(finalAmount));
+            
+            // Save updated membership
+            membershipRepository.save(membership);
+            
+            // Prepare response
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", membership.getId());
+            response.put("planName", plan.getPlanName());
+            response.put("startDate", membership.getStartDate().toString());
+            response.put("endDate", newEndDate.toString());
+            response.put("isFrozen", membership.getIsFrozen());
+            response.put("renewalMonths", durationMonths);
+            response.put("discountAmount", discountAmount);
+            response.put("paidAmount", finalAmount);
+            response.put("totalDiscountAmount", membership.getDiscountAmount());
+            response.put("totalPaidAmount", membership.getPaidAmount());
+            response.put("message", "Membership renewed successfully");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to renew membership");
             errorResponse.put("message", e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
