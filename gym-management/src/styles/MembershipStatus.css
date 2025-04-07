@@ -789,3 +789,72 @@
   font-weight: bold;
   color: #e74c3c;
 }
+
+/* Success Modal Styles */
+.success-modal-overlay-membershipstatus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.success-modal-membershipstatus {
+  background-color: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.dark-mode .success-modal-membershipstatus {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.success-icon-container-membershipstatus {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.success-icon-membershipstatus {
+  color: #2ecc71;
+  font-size: 64px;
+}
+
+.success-message-membershipstatus {
+  text-align: center;
+  font-size: 18px;
+  color: #2d3436;
+  margin: 0 0 20px 0;
+  padding: 0 20px;
+}
+
+.dark-mode .success-message-membershipstatus {
+  color: #f5f5f5;
+}
+
+/* Animation for success modal */
+.card-animate {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
