@@ -11,6 +11,27 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
   const [loading, setLoading] = useState(true);
   const [workoutExercises, setWorkoutExercises] = useState({});
 
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [setIsDarkMode]);
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  };
+
   // Sample data for program overview (you can replace this with actual data from API later)
   const programOverview = {
     name: "Advanced Strength Training",
@@ -159,10 +180,6 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
     }
   }, [workoutExercises]);
 
-  const toggleDarkModeMember = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
   // Only show days that have exercises
   const daysWithExercises = userTrainingPlan ? 
     userTrainingPlan.filter(day => day.exercises.length > 0) : [];
@@ -178,7 +195,7 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
 
           <button 
             className={`dark-mode-toggle-trainingplan ${isDarkMode ? 'active' : ''}`} 
-            onClick={toggleDarkModeMember}
+            onClick={toggleDarkMode}
           >
             <FaSun className="toggle-icon-trainingplan sun-trainingplan" />
             <div className="toggle-circle-trainingplan"></div>
