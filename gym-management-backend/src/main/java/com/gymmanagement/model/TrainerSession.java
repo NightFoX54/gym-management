@@ -19,11 +19,11 @@ public class TrainerSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
     
@@ -32,10 +32,4 @@ public class TrainerSession {
     
     @Column(name = "session_time", nullable = false)
     private LocalTime sessionTime;
-    
-    @Column(name = "session_type", nullable = false)
-    private String sessionType;
-    
-    @Column(name = "notes")
-    private String notes;
 }

@@ -44,7 +44,6 @@ public class AuthService {
         
         // Build and return response
         return LoginResponse.builder()
-                .id(user.getId())
                 .token(token)
                 .role(user.getRole())
                 .name(user.getName())

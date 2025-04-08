@@ -16,25 +16,25 @@ public class TrainerSettings {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
     
-    @Column(name = "bio", columnDefinition = "TEXT", length = 2000)
+    @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
     
-    @Column(name = "specialization", columnDefinition = "TEXT", length = 1000)
+    @Column(name = "specialization", columnDefinition = "TEXT")
     private String specialization;
     
-    @Column(name = "new_client_notifications")
+    @Column(name = "new_client_notifications", nullable = false)
     private Boolean newClientNotifications = true;
     
-    @Column(name = "progress_update_notifications")
+    @Column(name = "progress_update_notifications", nullable = false)
     private Boolean progressUpdateNotifications = true;
     
-    @Column(name = "mobile_notifications")
+    @Column(name = "mobile_notifications", nullable = false)
     private Boolean mobileNotifications = true;
     
-    @Column(name = "desktop_notifications")
+    @Column(name = "desktop_notifications", nullable = false)
     private Boolean desktopNotifications = true;
 }

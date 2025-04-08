@@ -20,7 +20,5 @@ public class SignupRequest {
     private LocalDate startDate;    // When the membership should start
     private String paymentMethod;   // Payment method information
     private String cardNumber;      // Last 4 digits for reference
-    private String cardHolderName;  // Name on card
-    private String expiryDate;      // Expiry date of the card
-    private Integer cvv;           // CVV of the card
+    private String cardholderName;  // Name on card
 } 
