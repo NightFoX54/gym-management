@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 08 Nis 2025, 00:17:18
+-- Üretim Zamanı: 08 Nis 2025, 23:16:26
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -35,6 +35,20 @@ CREATE TABLE `club_visits` (
   `check_out_date` date DEFAULT NULL,
   `check_out_time` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `club_visits`
+--
+
+INSERT INTO `club_visits` (`id`, `user_id`, `check_in_date`, `check_in_time`, `check_out_date`, `check_out_time`) VALUES
+(1, 13, '2025-04-08', '23:43:22', '2025-04-08', '23:43:31'),
+(2, 13, '2025-04-08', '23:47:00', '2025-04-08', '23:47:02'),
+(3, 13, '2025-04-08', '23:47:09', '2025-04-08', '23:47:10'),
+(4, 13, '2025-04-08', '23:47:57', '2025-04-08', '23:48:08'),
+(5, 13, '2025-04-08', '23:54:39', '2025-04-08', '23:54:39'),
+(6, 13, '2025-04-08', '23:56:15', '2025-04-08', '23:56:15'),
+(7, 13, '2025-04-08', '23:59:37', '2025-04-08', '23:59:38'),
+(8, 13, '2025-04-08', '23:59:40', '2025-04-08', '23:59:40');
 
 -- --------------------------------------------------------
 
@@ -89,14 +103,30 @@ CREATE TABLE `group_workouts` (
 --
 
 INSERT INTO `group_workouts` (`id`, `name`, `description`, `capacity`, `duration`, `level_id`, `trainer_id`, `category_id`, `image_path`) VALUES
-(1, 'Morning Yoga Flow', 'Start your day with a calming yoga session.', 20, 60, 1, 3, 1, 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
+(1, 'Morning Yoga Flow', 'Start your day with a calming yoga session.', 21, 60, 1, 3, 1, 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (2, 'Power HIIT', 'High intensity interval training for fat burning.', 15, 45, 2, 3, 2, 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (3, 'Pilates Core Strength', 'Build core strength with Pilates basics.', 18, 50, 1, 3, 3, 'https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (4, 'Evening Cardio Blast', 'Boost your energy with fast-paced cardio.', 25, 40, 2, 3, 4, 'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (5, 'Strength Bootcamp', 'Full-body strength training for endurance.', 12, 60, 3, 3, 5, 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (6, 'Zumba Dance Party', 'Dance and burn calories to upbeat music.', 30, 55, 1, 3, 6, 'https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (7, 'Advanced Yoga Flow', 'Challenging yoga poses for experienced practitioners.', 10, 75, 3, 3, 1, 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
-(8, 'Beginner Cardio Kickstart', 'Light cardio for beginners to get moving.', 20, 35, 1, 3, 4, 'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80');
+(8, 'Beginner Cardio Kickstart', 'Light cardio for beginners to get moving.', 20, 35, 1, 3, 4, 'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
+(9, 'deneme', 'deneme', 18, 123, 1, 3, 1, 'https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
+(14, 'denemeasd', 'asdf', 12, 123, 3, 3, 5, 'https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `group_workouts_ratings`
+--
+
+CREATE TABLE `group_workouts_ratings` (
+  `id` int NOT NULL,
+  `member_id` bigint NOT NULL,
+  `session_id` int NOT NULL,
+  `rating` tinyint DEFAULT NULL,
+  `comment` text COLLATE utf8mb4_general_ci
+) ;
 
 -- --------------------------------------------------------
 
@@ -106,20 +136,21 @@ INSERT INTO `group_workouts` (`id`, `name`, `description`, `capacity`, `duration
 
 CREATE TABLE `group_workout_categories` (
   `id` int NOT NULL,
-  `category_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
+  `category_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Tablo döküm verisi `group_workout_categories`
 --
 
-INSERT INTO `group_workout_categories` (`id`, `category_name`) VALUES
-(1, 'Yoga'),
-(2, 'HIIT'),
-(3, 'Pilates'),
-(4, 'Cardio'),
-(5, 'Strength Training'),
-(6, 'Dance Fitness');
+INSERT INTO `group_workout_categories` (`id`, `category_name`, `description`) VALUES
+(1, 'Yoga', NULL),
+(2, 'HIIT', NULL),
+(3, 'Pilates', NULL),
+(4, 'Cardio', NULL),
+(5, 'Strength Training', NULL),
+(6, 'Dance Fitness', NULL);
 
 -- --------------------------------------------------------
 
@@ -130,16 +161,18 @@ INSERT INTO `group_workout_categories` (`id`, `category_name`) VALUES
 CREATE TABLE `group_workout_enrolls` (
   `id` int NOT NULL,
   `session_id` int DEFAULT NULL,
-  `member_id` bigint DEFAULT NULL
+  `member_id` bigint DEFAULT NULL,
+  `enrollment_date` datetime(6) DEFAULT NULL,
+  `status` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Tablo döküm verisi `group_workout_enrolls`
 --
 
-INSERT INTO `group_workout_enrolls` (`id`, `session_id`, `member_id`) VALUES
-(1, 1, 13),
-(2, 2, 13);
+INSERT INTO `group_workout_enrolls` (`id`, `session_id`, `member_id`, `enrollment_date`, `status`) VALUES
+(1, 1, 13, NULL, NULL),
+(2, 2, 13, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -149,17 +182,18 @@ INSERT INTO `group_workout_enrolls` (`id`, `session_id`, `member_id`) VALUES
 
 CREATE TABLE `group_workout_levels` (
   `id` int NOT NULL,
-  `level_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
+  `level_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Tablo döküm verisi `group_workout_levels`
 --
 
-INSERT INTO `group_workout_levels` (`id`, `level_name`) VALUES
-(1, 'Beginner'),
-(2, 'Intermediate'),
-(3, 'Advanced');
+INSERT INTO `group_workout_levels` (`id`, `level_name`, `description`) VALUES
+(1, 'Beginner', NULL),
+(2, 'Intermediate', NULL),
+(3, 'Advanced', NULL);
 
 -- --------------------------------------------------------
 
@@ -171,16 +205,17 @@ CREATE TABLE `group_workout_sessions` (
   `id` int NOT NULL,
   `group_workout_id` int DEFAULT NULL,
   `date` date DEFAULT NULL,
-  `time` time DEFAULT NULL
+  `time` time DEFAULT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Tablo döküm verisi `group_workout_sessions`
 --
 
-INSERT INTO `group_workout_sessions` (`id`, `group_workout_id`, `date`, `time`) VALUES
-(1, 1, '2025-04-23', '13:28:40'),
-(2, 1, '2025-04-25', '15:29:33');
+INSERT INTO `group_workout_sessions` (`id`, `group_workout_id`, `date`, `time`, `notes`) VALUES
+(1, 1, '2025-04-23', '13:28:40', NULL),
+(2, 1, '2025-04-25', '15:29:33', NULL);
 
 -- --------------------------------------------------------
 
@@ -224,7 +259,7 @@ CREATE TABLE `market_products` (
 --
 
 INSERT INTO `market_products` (`id`, `image_path`, `product_name`, `category_id`, `price`, `stock`, `description`) VALUES
-(1, '/protein.png', 'Whey Protein Powder', 1, 599.99, 42, 'High-quality whey protein powder for muscle recovery - 2000g'),
+(1, '/protein.png', 'Whey Protein Powder', 1, 599.99, 41, 'High-quality whey protein powder for muscle recovery - 2000g'),
 (2, '/bcaa.png', 'BCAA Amino Acids', 1, 299.99, 60, 'Essential amino acids for muscle growth and recovery - 400g'),
 (3, '/preworkout.png', 'Pre-Workout Energy', 1, 349.99, 38, 'Advanced pre-workout formula for maximum performance - 300g'),
 (4, '/yoga-mat.png', 'Premium Yoga Mat', 2, 199.99, 25, 'Non-slip, eco-friendly yoga mat with alignment lines'),
@@ -259,7 +294,8 @@ INSERT INTO `market_product_sales` (`id`, `invoice_id`, `product_id`, `quantity`
 (1, 1, 1, 1),
 (2, 2, 1, 1),
 (3, 3, 1, 1),
-(4, 4, 20, 1);
+(4, 4, 20, 1),
+(5, 5, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -296,7 +332,8 @@ INSERT INTO `market_sales_invoices` (`id`, `user_id`, `total_items`, `total_pric
 (1, 2, 1, 509.99, '2025-03-16 21:57:11'),
 (2, 16, 1, 509.99, '2025-03-16 22:53:19'),
 (3, 13, 1, 539.99, '2025-04-05 20:22:06'),
-(4, 13, 1, 99.90, '2025-04-05 20:22:42');
+(4, 13, 1, 99.90, '2025-04-05 20:22:42'),
+(5, 13, 1, 539.99, '2025-04-08 19:05:35');
 
 -- --------------------------------------------------------
 
@@ -322,10 +359,12 @@ CREATE TABLE `memberships` (
 --
 
 INSERT INTO `memberships` (`id`, `user_id`, `plan_id`, `discount_amount`, `paid_amount`, `start_date`, `end_date`, `is_frozen`, `freeze_start_date`, `freeze_end_date`) VALUES
-(9, 13, 2, 5148.00, 24752.00, '2025-03-16', '2027-02-16', 0, NULL, NULL),
+(9, 13, 2, 5148.00, 27352.00, '2025-03-16', '2027-04-16', 0, NULL, NULL),
 (10, 14, 3, 2400.00, 9600.00, '2025-03-16', '2025-09-16', 0, NULL, NULL),
 (11, 15, 3, 2400.00, 9600.00, '2025-03-16', '2025-09-16', 0, NULL, NULL),
-(12, 16, 3, 2400.00, 9600.00, '2025-03-16', '2025-09-16', 0, NULL, NULL);
+(12, 16, 3, 2400.00, 9600.00, '2025-03-16', '2025-09-16', 0, NULL, NULL),
+(13, 27, 1, 240.00, 2160.00, '2025-04-08', '2025-07-08', 0, NULL, NULL),
+(14, 55, 1, 0.00, 800.00, '2025-04-08', '2025-05-08', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -399,7 +438,23 @@ CREATE TABLE `payment_method` (
 
 INSERT INTO `payment_method` (`id`, `user_id`, `card_holder_name`, `card_number`, `expiry_date`, `cvv`) VALUES
 (1, 15, 'berkay arıkan', '4623', '12/25', 123),
-(2, 16, 'berkay arıkan', '1243234561234123', '12/35', 123);
+(2, 16, 'berkay arıkan', '1243234561234123', '12/35', 123),
+(3, 27, 'berkay arıkan', '1234567891234123', '11/28', 123),
+(4, 55, 'berkay arıkan', '1243576124134124', '11/25', 123);
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `personal_training_ratings`
+--
+
+CREATE TABLE `personal_training_ratings` (
+  `id` int NOT NULL,
+  `member_id` bigint NOT NULL,
+  `session_id` bigint NOT NULL,
+  `rating` tinyint DEFAULT NULL,
+  `comment` text COLLATE utf8mb4_general_ci
+) ;
 
 -- --------------------------------------------------------
 
@@ -499,6 +554,13 @@ CREATE TABLE `trainer_registration_requests` (
   `is_modified_by_trainer` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Tablo döküm verisi `trainer_registration_requests`
+--
+
+INSERT INTO `trainer_registration_requests` (`id`, `trainer_id`, `client_id`, `request_message`, `requested_meeting_date`, `requested_meeting_time`, `is_modified_by_trainer`) VALUES
+(4, 3, 13, 'I\'d like to book a training session', '2025-04-09', '09:07:00', 0);
+
 -- --------------------------------------------------------
 
 --
@@ -578,7 +640,9 @@ INSERT INTO `users` (`id`, `first_name`, `last_name`, `profile_photo_path`, `ema
 (13, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkayyy5445@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$3DE8aEsYovh4i5x3osK3.eFYt725cCGRUZzTFfcTGA/hqQUr2RDhu'),
 (14, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$wHy72hXdOg6nxTrDyceFSezZm17bqSfxcMA3/Pr.Er.atZ9zbipqO'),
 (15, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay112233@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:24:37', '$2a$10$LIWsqpC/CqIIfqDmnFJUpuZvGbyvPPlU8hklt2JofubVYFrMX2ts.'),
-(16, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay123123@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:26:01', '$2a$10$/Z7JudNXYosrwAR7J2w9rOBR5xXJ7B/jOsh9Us7oyBJo85MTP79ou');
+(16, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay123123@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:26:01', '$2a$10$/Z7JudNXYosrwAR7J2w9rOBR5xXJ7B/jOsh9Us7oyBJo85MTP79ou'),
+(27, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'deneme@gmail.com', '05397837419', 'MEMBER', '2025-04-08 12:08:41', '$2a$10$fnhRBNHd9FkiEXs33JFvDOo9YWhwQrmEQXWjUnJy7PuB5C.1cSGg.'),
+(55, 'deneme', 'deneme', '/uploads/images/default-avatar.jpg', 'denem123e@gmail.com', '05397837419', 'MEMBER', '2025-04-08 12:40:32', '$2a$10$BQmZZu5DAWhah8V5SGRucu18cwutvdbJYs8Rwtl3vQxnFQ5G3iD5i');
 
 -- --------------------------------------------------------
 
@@ -663,14 +727,14 @@ CREATE TABLE `workout_exercises` (
 --
 
 INSERT INTO `workout_exercises` (`id`, `workout_id`, `exercise_name`, `sets`, `rep_range`) VALUES
-(4, 2, 'Burpees', 5, '45 seconds'),
-(5, 2, 'Mountain Climbers', 5, '45 seconds'),
-(6, 2, 'Jump Rope', 5, '60 seconds'),
-(135, 1, 'Barbell Squat', 4, '8-12 reps'),
-(136, 1, 'Bench Press', 4, '8-12 reps'),
-(137, 1, 'Deadlift', 3, '8-10 reps'),
 (139, 6, 'Bench Press', 3, '8-12'),
-(140, 6, 'deneme', 3, '8-12');
+(140, 6, 'deneme', 3, '8-12'),
+(148, 2, 'Burpees', 5, '45 seconds'),
+(149, 2, 'Mountain Climbers', 5, '45 seconds'),
+(150, 2, 'Jump Rope', 5, '60 seconds'),
+(154, 1, 'Barbell Squat', 4, '8-12 reps'),
+(155, 1, 'Bench Press', 4, '8-12 reps'),
+(156, 1, 'Deadlift', 3, '8-10 reps');
 
 -- --------------------------------------------------------
 
@@ -724,6 +788,14 @@ ALTER TABLE `group_workouts`
   ADD KEY `level_id` (`level_id`),
   ADD KEY `trainer_id` (`trainer_id`),
   ADD KEY `category_id` (`category_id`);
+
+--
+-- Tablo için indeksler `group_workouts_ratings`
+--
+ALTER TABLE `group_workouts_ratings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`),
+  ADD KEY `session_id` (`session_id`);
 
 --
 -- Tablo için indeksler `group_workout_categories`
@@ -815,6 +887,14 @@ ALTER TABLE `member_training_plans`
 ALTER TABLE `payment_method`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id_payment_method` (`user_id`);
+
+--
+-- Tablo için indeksler `personal_training_ratings`
+--
+ALTER TABLE `personal_training_ratings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`),
+  ADD KEY `session_id` (`session_id`);
 
 --
 -- Tablo için indeksler `salary_payments`
@@ -921,7 +1001,7 @@ ALTER TABLE `workout_levels`
 -- Tablo için AUTO_INCREMENT değeri `club_visits`
 --
 ALTER TABLE `club_visits`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `contact_requests`
@@ -939,13 +1019,19 @@ ALTER TABLE `employee_info`
 -- Tablo için AUTO_INCREMENT değeri `group_workouts`
 --
 ALTER TABLE `group_workouts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `group_workouts_ratings`
+--
+ALTER TABLE `group_workouts_ratings`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `group_workout_categories`
 --
 ALTER TABLE `group_workout_categories`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `group_workout_enrolls`
@@ -981,7 +1067,7 @@ ALTER TABLE `market_products`
 -- Tablo için AUTO_INCREMENT değeri `market_product_sales`
 --
 ALTER TABLE `market_product_sales`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `market_purchases`
@@ -993,13 +1079,13 @@ ALTER TABLE `market_purchases`
 -- Tablo için AUTO_INCREMENT değeri `market_sales_invoices`
 --
 ALTER TABLE `market_sales_invoices`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `memberships`
 --
 ALTER TABLE `memberships`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `membership_plans`
@@ -1017,7 +1103,13 @@ ALTER TABLE `member_training_plans`
 -- Tablo için AUTO_INCREMENT değeri `payment_method`
 --
 ALTER TABLE `payment_method`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `personal_training_ratings`
+--
+ALTER TABLE `personal_training_ratings`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `salary_payments`
@@ -1053,7 +1145,7 @@ ALTER TABLE `trainer_clients`
 -- Tablo için AUTO_INCREMENT değeri `trainer_registration_requests`
 --
 ALTER TABLE `trainer_registration_requests`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_sessions`
@@ -1071,7 +1163,7 @@ ALTER TABLE `trainer_settings`
 -- Tablo için AUTO_INCREMENT değeri `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `why_choose_us`
@@ -1083,19 +1175,19 @@ ALTER TABLE `why_choose_us`
 -- Tablo için AUTO_INCREMENT değeri `workouts`
 --
 ALTER TABLE `workouts`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workout_categories`
 --
 ALTER TABLE `workout_categories`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workout_exercises`
 --
 ALTER TABLE `workout_exercises`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workout_levels`
@@ -1126,6 +1218,13 @@ ALTER TABLE `group_workouts`
   ADD CONSTRAINT `group_workouts_ibfk_1` FOREIGN KEY (`level_id`) REFERENCES `group_workout_levels` (`id`),
   ADD CONSTRAINT `group_workouts_ibfk_2` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `group_workouts_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `group_workout_categories` (`id`);
+
+--
+-- Tablo kısıtlamaları `group_workouts_ratings`
+--
+ALTER TABLE `group_workouts_ratings`
+  ADD CONSTRAINT `group_workouts_ratings_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `group_workouts_ratings_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `group_workout_sessions` (`id`);
 
 --
 -- Tablo kısıtlamaları `group_workout_enrolls`
@@ -1184,6 +1283,13 @@ ALTER TABLE `member_training_plans`
 --
 ALTER TABLE `payment_method`
   ADD CONSTRAINT `user_id_payment_method` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Tablo kısıtlamaları `personal_training_ratings`
+--
+ALTER TABLE `personal_training_ratings`
+  ADD CONSTRAINT `personal_training_ratings_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `personal_training_ratings_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `trainer_sessions` (`id`);
 
 --
 -- Tablo kısıtlamaları `salary_payments`
