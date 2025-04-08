@@ -78,6 +78,11 @@ public class UserService {
             membership.setPlan(plan);
             membership.setStartDate(startDate);
             membership.setEndDate(endDate);
+            
+            // Initialize discount amount to zero by default
+            membership.setDiscountAmount(BigDecimal.ZERO);
+            
+            // Calculate discount based on duration
             if(durationMonths == 3){
                 membership.setDiscountAmount(plan.getPlanPrice().multiply(BigDecimal.valueOf(0.10)).multiply(BigDecimal.valueOf(durationMonths)));
             }
@@ -87,7 +92,11 @@ public class UserService {
             else if(durationMonths == 12){
                 membership.setDiscountAmount(plan.getPlanPrice().multiply(BigDecimal.valueOf(0.28)).multiply(BigDecimal.valueOf(durationMonths)));
             }
-            membership.setPaidAmount(plan.getPlanPrice().multiply(BigDecimal.valueOf(durationMonths)).subtract(membership.getDiscountAmount()));
+            // For monthly (durationMonths == 1), discount remains zero
+            
+            // Calculate paid amount after discount
+            BigDecimal totalPrice = plan.getPlanPrice().multiply(BigDecimal.valueOf(durationMonths));
+            membership.setPaidAmount(totalPrice.subtract(membership.getDiscountAmount()));
             membership.setIsFrozen(false);
             
             Membership savedMembership = membershipRepository.save(membership);
