@@ -12,4 +12,5 @@ public interface TrainerSessionRepository extends JpaRepository<TrainerSession, 
     List<TrainerSession> findByTrainerId(Long trainerId);
     List<TrainerSession> findByClientId(Long clientId);
     List<TrainerSession> findByTrainerIdAndSessionDate(Long trainerId, LocalDate sessionDate);
+    List<TrainerSession> findByTrainerIdAndClientId(Long trainerId, Long clientId);
 }
