@@ -92,7 +92,8 @@ const SchedulePage = ({ isDarkMode }) => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const trainerId = 3;
+      // Get current logged in trainer ID from localStorage or context
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
       const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/sessions`);
       const formattedSessions = response.data.map(session => ({
         id: session.id,
@@ -116,7 +117,8 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const fetchClients = async () => {
     try {
-      const trainerId = 3;
+      // Get current logged in trainer ID from localStorage or context
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
       const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/clients`);
       setClients(response.data);
     } catch (error) {
@@ -127,7 +129,8 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const fetchGroupWorkouts = async () => {
     try {
-      const trainerId = 3;
+      // Get current logged in trainer ID from localStorage or context
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
       const response = await axios.get(`http://localhost:8080/api/group-workouts?trainerId=${trainerId}`);
       setGroupWorkouts(response.data);
     } catch (error) {
@@ -138,7 +141,8 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const fetchGroupWorkoutSessions = async () => {
     try {
-      const trainerId = 3;
+      // Get current logged in trainer ID from localStorage or context
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
       const response = await axios.get(`http://localhost:8080/api/group-workout-sessions?trainerId=${trainerId}`);
       
       if (response.status === 200 && response.data) {
@@ -182,7 +186,8 @@ const SchedulePage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
-      const trainerId = 3;
+      // Get current logged in trainer ID from localStorage or context
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
       const sessionRequest = {
         clientId: parseInt(newSession.clientId),
         sessionDate: newSession.date,

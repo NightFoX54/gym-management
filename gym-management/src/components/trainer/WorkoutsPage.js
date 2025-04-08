@@ -28,6 +28,7 @@ import {
   Pagination,
   Tabs,
   Tab,
+  FormHelperText,
 } from '@mui/material';
 import {
   Search,
@@ -69,7 +70,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
     description: '',
     equipment: [],
     targetMuscles: [],
-    exercises: [],
+    exercises: []
   });
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
@@ -82,14 +83,13 @@ const WorkoutsPage = ({ isDarkMode }) => {
   const [groupWorkouts, setGroupWorkouts] = useState([]);
   const [selectedGroupWorkout, setSelectedGroupWorkout] = useState(null);
   const [newGroupWorkout, setNewGroupWorkout] = useState({
-    name: '',
+    title: '',
     description: '',
-    capacity: '',
-    duration: '',
-    level_id: '',
-    trainer_id: 3, // Default trainer ID
     category_id: '',
-    image_path: '',
+    level_id: '',
+    duration: '',
+    capacity: '',
+    image_path: ''
   });
   const [openGroupDialog, setOpenGroupDialog] = useState(false);
   const difficultyColors = {
@@ -97,9 +97,13 @@ const WorkoutsPage = ({ isDarkMode }) => {
     intermediate: '#f1c40f',
     advanced: '#ff4757',
   };
+  const [error, setError] = useState(null);
+  const [groupWorkoutCategories, setGroupWorkoutCategories] = useState([]);
 
   useEffect(() => {
     fetchWorkouts();
+    fetchGroupWorkouts();
+    fetchGroupWorkoutCategories();
     initializeGroupWorkoutData();
     initializeWorkoutData();
   }, []);
@@ -117,12 +121,11 @@ const WorkoutsPage = ({ isDarkMode }) => {
 
   const initializeGroupWorkoutData = async () => {
     try {
-      console.log('Initializing group workout data...');
-      await axios.post('http://localhost:8080/api/group-workouts/init');
-      console.log('Group workout data initialized');
+      console.log('Group workout data already initialized, skipping...');
       fetchGroupWorkouts();
     } catch (error) {
       console.error('Error initializing group workout data:', error);
+      setError('Failed to initialize group workout data');
     }
   };
 
@@ -130,7 +133,14 @@ const WorkoutsPage = ({ isDarkMode }) => {
     try {
       const typesResponse = await axios.get('http://localhost:8080/api/workouts/types');
       setWorkoutTypes(typesResponse.data);
+      console.log("Workout types fetched:", typesResponse.data);
+      
       const levelsResponse = await axios.get('http://localhost:8080/api/workouts/levels');
+      console.log("Workout levels fetched:", levelsResponse.data);
+      // Log the first level to see its structure
+      if (levelsResponse.data && levelsResponse.data.length > 0) {
+        console.log("First level object structure:", JSON.stringify(levelsResponse.data[0]));
+      }
       setWorkoutLevels(levelsResponse.data);
     } catch (error) {
       console.error('Error fetching workout types and levels:', error);
@@ -142,7 +152,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
     try {
       console.log('Fetching workouts...');
       await initializeWorkoutData();
-      const trainerId = 3;
+      // Get current logged in trainer ID from localStorage or context
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
       const response = await axios.get(`http://localhost:8080/api/workouts?userId=${trainerId}&isTrainer=true`, {
         validateStatus: function (status) {
           return status >= 200 && status < 500;
@@ -164,34 +175,38 @@ const WorkoutsPage = ({ isDarkMode }) => {
   };
 
   const fetchGroupWorkouts = async () => {
+    console.log("Fetching group workouts...");
     try {
-      console.log('Fetching group workouts...');
-      const trainerId = 3;
-      try {
-        const response = await axios.get(`http://localhost:8080/api/group-workouts?trainerId=${trainerId}`, {
-          validateStatus: function (status) {
-            return status >= 200 && status < 500;
-          },
-        });
-        console.log('Group workout API response:', response);
-        
-        if (response.status === 200) {
-          setGroupWorkouts(response.data || []);
-          showAlert('Group workouts loaded successfully', 'success');
-        } else {
-          console.error('API returned non-200 status:', response.status);
-          setGroupWorkouts([]);
-          showAlert(`Error ${response.status}: ${response.data?.message || 'Failed to load group workouts'}`, 'error');
-        }
-      } catch (error) {
-        console.error('Error in fetch request:', error);
-        setGroupWorkouts([]);
-        showAlert('Failed to load group workouts: ' + (error.response?.data?.message || error.message || 'Server error'), 'error');
-      }
+      // Get the user ID from localStorage, same as in fetchWorkouts
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      
+      // Update the URL to use the absolute backend URL instead of a relative path
+      const response = await axios.get(`http://localhost:8080/api/group-workouts/trainer/${trainerId}`);
+      setGroupWorkouts(response.data || []);
+      console.log("Group workouts fetched successfully:", response.data);
     } catch (error) {
-      console.error('Unexpected error in fetchGroupWorkouts:', error);
+      console.error("Error fetching group workouts:", error);
+      // Set empty array to prevent undefined errors
       setGroupWorkouts([]);
-      showAlert('Failed to load group workouts: Unexpected error occurred', 'error');
+    }
+  };
+
+  const fetchGroupWorkoutCategories = async () => {
+    try {
+      console.log("Fetching group workout categories...");
+      const response = await axios.get('http://localhost:8080/api/group-workouts/categories');
+      console.log("Group workout categories response:", response.data);
+      
+      // Log the structure of the first category to understand its properties
+      if (response.data && response.data.length > 0) {
+        console.log("First category object structure:", JSON.stringify(response.data[0]));
+      }
+      
+      setGroupWorkoutCategories(response.data || []);
+    } catch (error) {
+      console.error("Error fetching group workout categories:", error);
+      console.log("Please check network tab to see what endpoint is being used for group workout categories");
+      setGroupWorkoutCategories([]);
     }
   };
 
@@ -300,7 +315,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
     }
     setActionLoading(true);
     try {
-      const trainerId = 3;
+      // Get current logged in trainer ID from localStorage or context
+      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
       const groupWorkoutRequest = {
         ...newGroupWorkout,
         trainer_id: trainerId,
@@ -318,10 +334,10 @@ const WorkoutsPage = ({ isDarkMode }) => {
       await fetchGroupWorkouts();
       handleCloseGroupDialog();
     } catch (error) {
-      showAlert(
-        selectedGroupWorkout
-          ? 'Failed to update group workout: ' + (error.response?.data?.message || error.message || 'Unknown error')
-          : 'Failed to add group workout: ' + (error.response?.data?.message || error.message || 'Unknown error'),
+      console.error('Error saving group workout:', error);
+      showAlert(selectedGroupWorkout ? 
+        'Failed to update group workout: ' + (error.response?.data?.message || error.message || 'Unknown error') : 
+        'Failed to add group workout: ' + (error.response?.data?.message || error.message || 'Unknown error'),
         'error'
       );
     } finally {
@@ -333,14 +349,13 @@ const WorkoutsPage = ({ isDarkMode }) => {
     setOpenGroupDialog(false);
     setSelectedGroupWorkout(null);
     setNewGroupWorkout({
-      name: '',
+      title: '',
       description: '',
-      capacity: '',
-      duration: '',
-      level_id: '',
-      trainer_id: 3,
       category_id: '',
-      image_path: '',
+      level_id: '',
+      duration: '',
+      capacity: '',
+      image_path: ''
     });
   };
 
@@ -349,17 +364,60 @@ const WorkoutsPage = ({ isDarkMode }) => {
   };
 
   const handleEditGroupWorkout = (workout) => {
+    console.log("Editing group workout with raw data:", workout);
     setSelectedGroupWorkout(workout);
-    setNewGroupWorkout({
-      name: workout.name,
+    
+    // Log workout levels for debugging
+    console.log("Available workout levels:", workoutLevels);
+    
+    // Fix category and level matching - these need to match the properties from backend
+    let categoryObject = null;
+    let levelObject = null;
+    
+    // Use categoryName instead of name property when matching categories
+    if (workout && workout.category && groupWorkoutCategories && groupWorkoutCategories.length > 0) {
+      console.log("Searching for category:", workout.category);
+      categoryObject = groupWorkoutCategories.find(cat => 
+        cat && cat.categoryName && cat.categoryName.toLowerCase() === workout.category.toLowerCase()
+      );
+    }
+    
+    // The levels might use 'name' property instead of 'levelName'
+    if (workout && workout.level && workoutLevels && workoutLevels.length > 0) {
+      console.log("Searching for level:", workout.level);
+      // Try both name and levelName properties to be safe
+      levelObject = workoutLevels.find(lvl => 
+        (lvl.name && lvl.name.toLowerCase() === workout.level.toLowerCase()) ||
+        (lvl.levelName && lvl.levelName.toLowerCase() === workout.level.toLowerCase())
+      );
+      
+      // If still not found, try a case-insensitive substring match as fallback
+      if (!levelObject) {
+        console.log("Level not found by exact match, trying substring match...");
+        levelObject = workoutLevels.find(lvl => {
+          const levelName = lvl.name || lvl.levelName || "";
+          return workout.level.toLowerCase().includes(levelName.toLowerCase()) || 
+                 levelName.toLowerCase().includes(workout.level.toLowerCase());
+        });
+      }
+    }
+    
+    console.log("Found category:", categoryObject);
+    console.log("Found level:", levelObject);
+    
+    // Create properly formatted data object
+    const formData = {
+      name: workout.title || '',
       description: workout.description || '',
-      capacity: workout.capacity.toString(),
-      duration: workout.duration.toString(),
-      level_id: workout.level_id,
-      trainer_id: workout.trainer_id,
-      category_id: workout.category_id,
-      image_path: workout.image_path || ''
-    });
+      category_id: categoryObject ? categoryObject.id : '',
+      level_id: levelObject ? levelObject.id : '',
+      duration: workout.duration ? String(workout.duration).replace(' min', '') : '',
+      capacity: workout.capacity || '',
+      image_path: workout.image || ''
+    };
+    
+    console.log("Setting form data to:", formData);
+    setNewGroupWorkout(formData);
     setOpenGroupDialog(true);
   };
 
@@ -484,8 +542,10 @@ const WorkoutsPage = ({ isDarkMode }) => {
       difficulty: '',
       duration: '',
       calories: '',
-      exercises: '',
-      description: ''
+      description: '',
+      equipment: [],
+      targetMuscles: [],
+      exercises: []
     });
   };
 
@@ -611,7 +671,267 @@ const WorkoutsPage = ({ isDarkMode }) => {
         </Box>
       </DialogTitle>
       <DialogContent sx={{ mt: 2, pb: 3 }}>
-        {/* Dialog content here */}
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Workout Name"
+              name="name"
+              value={newWorkout.name}
+              onChange={handleInputChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FitnessCenter sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  '&:hover fieldset': { borderColor: '#ff4757' },
+                  '&.Mui-focused fieldset': { borderColor: '#ff4757' },
+                },
+              }}
+              error={!!errors.name}
+              helperText={errors.name}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth required error={!!errors.type}>
+              <InputLabel>Workout Type</InputLabel>
+              <Select
+                name="type"
+                value={newWorkout.type}
+                onChange={handleInputChange}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <Category sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                }
+              >
+                {workoutTypes.map((type) => (
+                  <MenuItem key={type.id} value={type.name}>
+                    {type.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.type && <FormHelperText>{errors.type}</FormHelperText>}
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth required error={!!errors.difficulty}>
+              <InputLabel>Difficulty Level</InputLabel>
+              <Select
+                name="difficulty"
+                value={newWorkout.difficulty}
+                onChange={handleInputChange}
+                startAdornment={
+                  <InputAdornment position="start">
+                    <TrendingUp sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                }
+              >
+                {workoutLevels.map((level) => (
+                  <MenuItem key={level.id} value={level.name}>
+                    {level.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.difficulty && <FormHelperText>{errors.difficulty}</FormHelperText>}
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Duration (minutes)"
+              name="duration"
+              type="number"
+              value={newWorkout.duration}
+              onChange={handleInputChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AccessTime sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                ),
+              }}
+              error={!!errors.duration}
+              helperText={errors.duration}
+              required
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Calories Burned"
+              name="calories"
+              type="number"
+              value={newWorkout.calories}
+              onChange={handleInputChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FireIcon sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                ),
+              }}
+              error={!!errors.calories}
+              helperText={errors.calories}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Description"
+              name="description"
+              multiline
+              rows={3}
+              value={newWorkout.description}
+              onChange={handleInputChange}
+              placeholder="Enter workout description, goals, and instructions..."
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" gutterBottom>
+              Equipment
+            </Typography>
+            <TextField
+              fullWidth
+              label="Add Equipment (comma separated)"
+              value={newWorkout.equipmentInput || newWorkout.equipment.join(', ')}
+              onChange={(e) => {
+                setNewWorkout({ 
+                  ...newWorkout, 
+                  equipmentInput: e.target.value 
+                });
+              }}
+              onBlur={(e) => {
+                const equipmentArray = e.target.value.split(',').map(item => item.trim()).filter(item => item);
+                setNewWorkout({ 
+                  ...newWorkout, 
+                  equipment: equipmentArray,
+                  equipmentInput: null 
+                });
+              }}
+              placeholder="e.g., Dumbbells, Barbell, Resistance Bands, Kettlebell"
+            />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              {newWorkout.equipment.map((item, index) => (
+                <Chip
+                  key={index}
+                  label={item}
+                  onDelete={() => {
+                    const updatedEquipment = [...newWorkout.equipment];
+                    updatedEquipment.splice(index, 1);
+                    setNewWorkout({ ...newWorkout, equipment: updatedEquipment });
+                  }}
+                  sx={{
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                    color: isDarkMode ? '#fff' : 'inherit',
+                  }}
+                />
+              ))}
+            </Box>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" gutterBottom>
+              Target Muscles
+            </Typography>
+            <TextField
+              fullWidth
+              label="Add Target Muscles (comma separated)"
+              value={newWorkout.musclesInput || newWorkout.targetMuscles.join(', ')}
+              onChange={(e) => {
+                setNewWorkout({ 
+                  ...newWorkout, 
+                  musclesInput: e.target.value 
+                });
+              }}
+              onBlur={(e) => {
+                const musclesArray = e.target.value.split(',').map(item => item.trim()).filter(item => item);
+                setNewWorkout({ 
+                  ...newWorkout, 
+                  targetMuscles: musclesArray,
+                  musclesInput: null 
+                });
+              }}
+              placeholder="e.g., Chest, Back, Legs, Shoulders, Arms, Core"
+            />
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              {newWorkout.targetMuscles.map((muscle, index) => (
+                <Chip
+                  key={index}
+                  label={muscle}
+                  onDelete={() => {
+                    const updatedMuscles = [...newWorkout.targetMuscles];
+                    updatedMuscles.splice(index, 1);
+                    setNewWorkout({ ...newWorkout, targetMuscles: updatedMuscles });
+                  }}
+                  sx={{
+                    bgcolor: 'rgba(255,71,87,0.1)',
+                    color: '#ff4757',
+                  }}
+                />
+              ))}
+            </Box>
+          </Grid>
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="subtitle1">
+                Exercises
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenExerciseDialog()}
+                sx={{
+                  borderColor: '#ff4757',
+                  color: '#ff4757',
+                  '&:hover': {
+                    borderColor: '#ff3747',
+                    backgroundColor: 'rgba(255,71,87,0.1)',
+                  }
+                }}
+              >
+                Add Exercise
+              </Button>
+            </Box>
+            {newWorkout.exercises && newWorkout.exercises.length > 0 ? (
+              <Box sx={{ mt: 1 }}>
+                {newWorkout.exercises.map((exercise, index) => (
+                  <Card key={index} sx={{ p: 2, mb: 2, borderRadius: '12px' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        {exercise.exerciseName}
+                      </Typography>
+                      <Box>
+                        <IconButton size="small" onClick={() => handleOpenExerciseDialog(exercise, index)}>
+                          <Edit fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" onClick={() => handleDeleteExercise(index)}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                      <Chip size="small" label={`${exercise.sets} sets`} />
+                      <Chip size="small" label={exercise.repRange} />
+                    </Box>
+                  </Card>
+                ))}
+              </Box>
+            ) : (
+              <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '12px', bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+                <Typography variant="body2" color="text.secondary">
+                  No exercises added yet. Click "Add Exercise" to begin.
+                </Typography>
+              </Paper>
+            )}
+          </Grid>
+        </Grid>
       </DialogContent>
       <DialogActions 
         sx={{ 
@@ -743,7 +1063,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
               fullWidth
               label="Group Workout Name"
               name="name"
-              value={newGroupWorkout.name}
+              value={newGroupWorkout.name || ""}
               onChange={handleGroupWorkoutInputChange}
               InputProps={{
                 startAdornment: (
@@ -764,39 +1084,39 @@ const WorkoutsPage = ({ isDarkMode }) => {
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
+            <FormControl fullWidth margin="normal" required>
               <InputLabel>Category</InputLabel>
               <Select
                 name="category_id"
                 value={newGroupWorkout.category_id}
                 onChange={handleGroupWorkoutInputChange}
-                label="Category"
-                sx={{ borderRadius: '12px' }}
+                error={!!errors.category_id}
               >
-                {workoutTypes.map((type) => (
-                  <MenuItem key={type.id} value={type.id}>
-                    {type.name}
+                {groupWorkoutCategories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.categoryName || category.name}
                   </MenuItem>
                 ))}
               </Select>
+              {errors.category_id && <FormHelperText error>{errors.category_id}</FormHelperText>}
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
+            <FormControl fullWidth margin="normal" required>
               <InputLabel>Difficulty Level</InputLabel>
               <Select
                 name="level_id"
                 value={newGroupWorkout.level_id}
                 onChange={handleGroupWorkoutInputChange}
-                label="Difficulty Level"
-                sx={{ borderRadius: '12px' }}
+                error={!!errors.level_id}
               >
                 {workoutLevels.map((level) => (
                   <MenuItem key={level.id} value={level.id}>
-                    {level.name}
+                    {level.levelName || level.name}
                   </MenuItem>
                 ))}
               </Select>
+              {errors.level_id && <FormHelperText error>{errors.level_id}</FormHelperText>}
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -988,8 +1308,8 @@ const WorkoutsPage = ({ isDarkMode }) => {
     return (
       <Grid container spacing={3}>
         {groupWorkouts.map((workout) => {
-          const workoutType = workoutTypes.find((type) => type.id === workout.category_id) || { name: 'Unknown' };
-          const workoutLevel = workoutLevels.find((level) => level.id === workout.level_id) || { name: 'Unknown' };
+          const workoutTypeName = workout.category || 'Unknown';
+          const workoutLevelName = workout.level || 'Unknown';
           return (
             <Grid item xs={12} sm={6} key={workout.id}>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -1008,12 +1328,12 @@ const WorkoutsPage = ({ isDarkMode }) => {
                     },
                   }}
                 >
-                  {workout.image_path && (
+                  {workout.image && (
                     <Box
                       sx={{
                         width: '120px',
                         minHeight: '100%',
-                        backgroundImage: `url(${workout.image_path})`,
+                        backgroundImage: `url(${workout.image})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                       }}
@@ -1023,7 +1343,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
-                      width: workout.image_path ? 'calc(100% - 120px)' : '100%',
+                      width: workout.image ? 'calc(100% - 120px)' : '100%',
                       p: 3,
                     }}
                   >
@@ -1042,7 +1362,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
                           fontWeight: 600,
                         }}
                       >
-                        {workout.name}
+                        {workout.title}
                       </Typography>
                       <Box>
                         <IconButton
@@ -1064,15 +1384,15 @@ const WorkoutsPage = ({ isDarkMode }) => {
                     <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                       <Chip
                         size="small"
-                        label={workoutLevel.name}
+                        label={workoutLevelName}
                         sx={{
-                          bgcolor: `${difficultyColors[workoutLevel.name.toLowerCase()]}15`,
-                          color: difficultyColors[workoutLevel.name.toLowerCase()],
+                          bgcolor: `${difficultyColors[workoutLevelName.toLowerCase()]}15` || 'rgba(0,0,0,0.1)',
+                          color: difficultyColors[workoutLevelName.toLowerCase()] || '#333',
                         }}
                       />
                       <Chip
                         size="small"
-                        label={workoutType.name}
+                        label={workoutTypeName}
                         sx={{
                           bgcolor: 'rgba(255,71,87,0.1)',
                           color: '#ff4757',
@@ -1094,16 +1414,22 @@ const WorkoutsPage = ({ isDarkMode }) => {
                       {workout.description || 'No description available'}
                     </Typography>
                     <Grid container spacing={2} sx={{ mb: 2 }}>
-                      <Grid item xs={6}>
+                      <Grid item xs={4}>
                         <Box sx={{ textAlign: 'center' }}>
                           <Timer sx={{ color: '#ff4757', mb: 0.5 }} />
                           <Typography variant="body2">{workout.duration} min</Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid item xs={4}>
                         <Box sx={{ textAlign: 'center' }}>
-                          <People sx={{ color: '#ff4757', mb: 0.5 }} />
-                          <Typography variant="body2">{workout.capacity} participants</Typography>
+                          <FireIcon sx={{ color: '#ff4757', mb: 0.5 }} />
+                          <Typography variant="body2">{workout.calories || '0'} cal</Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Box sx={{ textAlign: 'center' }}>
+                          <FitnessCenter sx={{ color: '#ff4757', mb: 0.5 }} />
+                          <Typography variant="body2">{workout.exercises || 0} ex</Typography>
                         </Box>
                       </Grid>
                     </Grid>
@@ -1318,13 +1644,13 @@ const WorkoutsPage = ({ isDarkMode }) => {
                                 <Grid item xs={4}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <FireIcon sx={{ color: '#ff4757', mb: 0.5 }} />
-                                    <Typography variant="body2">{workout.calories} cal</Typography>
+                                    <Typography variant="body2">{workout.calories || '0'} cal</Typography>
                                   </Box>
                                 </Grid>
                                 <Grid item xs={4}>
                                   <Box sx={{ textAlign: 'center' }}>
                                     <FitnessCenter sx={{ color: '#ff4757', mb: 0.5 }} />
-                                    <Typography variant="body2">{workout.exercises.length} ex</Typography>
+                                    <Typography variant="body2">{workout.exercises || 0} ex</Typography>
                                   </Box>
                                 </Grid>
                               </Grid>
