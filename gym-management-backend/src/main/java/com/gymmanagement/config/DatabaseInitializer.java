@@ -1,7 +1,24 @@
 package com.gymmanagement.config;
 
-import com.gymmanagement.model.*;
-import com.gymmanagement.repository.*;
+import com.gymmanagement.model.TrainerClient;
+import com.gymmanagement.model.TrainerRegistrationRequest;
+import com.gymmanagement.model.TrainerSession;
+import com.gymmanagement.model.User;
+import com.gymmanagement.model.Workout;
+import com.gymmanagement.model.WorkoutCategory;
+import com.gymmanagement.model.WorkoutExercise;
+import com.gymmanagement.model.WorkoutLevel;
+import com.gymmanagement.repository.TrainerClientRepository;
+import com.gymmanagement.repository.TrainerRegistrationRequestRepository;
+import com.gymmanagement.repository.TrainerSessionRepository;
+import com.gymmanagement.repository.UserRepository;
+import com.gymmanagement.repository.WorkoutCategoryRepository;
+import com.gymmanagement.repository.WorkoutExerciseRepository;
+import com.gymmanagement.repository.WorkoutLevelRepository;
+import com.gymmanagement.repository.WorkoutRepository;
+import com.gymmanagement.service.WorkoutService;
+import com.gymmanagement.model.TrainerSettings;
+import com.gymmanagement.repository.TrainerSettingsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,13 +27,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 @Component
 public class DatabaseInitializer implements CommandLineRunner {
-
-    private static final Logger logger = Logger.getLogger(DatabaseInitializer.class.getName());
 
     @Autowired
     private UserRepository userRepository;
@@ -28,178 +44,320 @@ public class DatabaseInitializer implements CommandLineRunner {
     private TrainerClientRepository trainerClientRepository;
     
     @Autowired
-    private TrainerSessionRepository trainerSessionRepository;
+    private TrainerRegistrationRequestRepository requestRepository;
+    
+    @Autowired
+    private TrainerSessionRepository sessionRepository;
+    
+    @Autowired
+    private WorkoutCategoryRepository categoryRepository;
+    
+    @Autowired
+    private WorkoutLevelRepository levelRepository;
+    
+    @Autowired
+    private WorkoutRepository workoutRepository;
+    
+    @Autowired
+    private WorkoutExerciseRepository exerciseRepository;
+    
+    @Autowired
+    private WorkoutService workoutService;
     
     @Autowired
     private TrainerSettingsRepository trainerSettingsRepository;
     
-    @Autowired
-    private TrainerRegistrationRequestRepository registrationRequestRepository;
-
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         try {
-            // Clear existing data from trainer tables to avoid duplicates
-            logger.info("Initializing database with trainer data...");
-            
-            // Create admin user if not exists
-            User admin = null;
-            if (userRepository.findByEmail("admin@gymflex.com").isEmpty()) {
-                admin = new User();
-                admin.setName("Admin User");
+            // Only add test users if the database is empty
+            if (userRepository.count() == 0) {
+                // Create an admin user
+                User admin = new User();
                 admin.setEmail("admin@gymflex.com");
                 admin.setPassword(passwordEncoder.encode("admin123"));
                 admin.setRole("ADMIN");
+                admin.setFirstName("Admin");
+                admin.setLastName("User");
                 admin.setRegistrationDate(LocalDateTime.now());
-                admin = userRepository.save(admin);
-                logger.info("Admin user created: " + admin.getEmail());
+                userRepository.save(admin);
+                
+                // Create a member user
+                User member = new User();
+                member.setEmail("member@gymflex.com");
+                member.setPassword(passwordEncoder.encode("member123"));
+                member.setRole("MEMBER");
+                member.setFirstName("Member");
+                member.setLastName("User");
+                member.setRegistrationDate(LocalDateTime.now());
+                member.setPhoneNumber("+90 555 123 4567");
+                userRepository.save(member);
+                
+                // Create a second member
+                User member2 = new User();
+                member2.setEmail("member2@gymflex.com");
+                member2.setPassword(passwordEncoder.encode("member123"));
+                member2.setRole("MEMBER");
+                member2.setFirstName("Jane");
+                member2.setLastName("Smith");
+                member2.setPhoneNumber("+90 555 987 6543");
+                member2.setRegistrationDate(LocalDateTime.now());
+                userRepository.save(member2);
+                
+                // Create a trainer user
+                User trainer = new User();
+                trainer.setEmail("trainer@gymflex.com");
+                trainer.setPassword(passwordEncoder.encode("trainer123"));
+                trainer.setRole("TRAINER");
+                trainer.setFirstName("Trainer");
+                trainer.setLastName("User");
+                trainer.setRegistrationDate(LocalDateTime.now());
+                userRepository.save(trainer);
+                
+                createTrainerClientRelationship(trainer, member);
+                createTrainerRequest(trainer, member2);
+                createTrainerSessions(trainer, member);
+                
+                // Initialize workout data
+                initializeWorkoutData();
+                createSampleWorkouts(trainer);
+                
+                System.out.println("Test users created successfully!");
             } else {
-                admin = userRepository.findByEmail("admin@gymflex.com").get();
-                logger.info("Admin user already exists: " + admin.getEmail());
+                System.out.println("Database already has users, checking trainer relationships...");
+                
+                // Check if trainer-client relationship exists
+                if (trainerClientRepository.count() == 0) {
+                    Optional<User> trainer = userRepository.findByEmail("trainer@gymflex.com");
+                    Optional<User> member = userRepository.findByEmail("member@gymflex.com");
+                    
+                    if (trainer.isPresent() && member.isPresent()) {
+                        createTrainerClientRelationship(trainer.get(), member.get());
+                    }
+                }
+                
+                // Check if trainer request exists
+                if (requestRepository.count() == 0) {
+                    Optional<User> trainer = userRepository.findByEmail("trainer@gymflex.com");
+                    Optional<User> member2 = userRepository.findByEmail("member2@gymflex.com");
+                    
+                    if (trainer.isPresent() && member2.isPresent()) {
+                        createTrainerRequest(trainer.get(), member2.get());
+                    }
+                }
+                
+                // Check if trainer sessions exist
+                if (sessionRepository.count() == 0) {
+                    Optional<User> trainer = userRepository.findByEmail("trainer@gymflex.com");
+                    Optional<User> member = userRepository.findByEmail("member@gymflex.com");
+                    
+                    if (trainer.isPresent() && member.isPresent()) {
+                        createTrainerSessions(trainer.get(), member.get());
+                    }
+                }
+                
+                // Check if workout categories and levels exist
+                if (categoryRepository.count() == 0 || levelRepository.count() == 0) {
+                    initializeWorkoutData();
+                }
+                
+                // Check if sample workouts exist
+                if (workoutRepository.count() == 0) {
+                    Optional<User> trainer = userRepository.findByEmail("trainer@gymflex.com");
+                    if (trainer.isPresent()) {
+                        createSampleWorkouts(trainer.get());
+                    }
+                }
             }
             
-            // Create trainer users if not exists
-            User trainer1 = createTrainerIfNotExists("trainer@gymflex.com", "Enes Trainer");
-            User trainer2 = createTrainerIfNotExists("trainer2@gymflex.com", "Ayşe Instructor");
-            
-            logger.info("Trainer 1 created/loaded with ID: " + trainer1.getId());
-            logger.info("Trainer 2 created/loaded with ID: " + trainer2.getId());
-            
-            // Create client users if not exist
-            User client1 = createClientIfNotExists("client1@example.com", "Faruk Yılmaz");
-            User client2 = createClientIfNotExists("client2@example.com", "Mahmut Mahmutoğlu");
-            User client3 = createClientIfNotExists("client3@example.com", "Edin Dzeko");
-            User client4 = createClientIfNotExists("client4@example.com", "Mauro Icardi");
-            User client5 = createClientIfNotExists("client5@example.com", "Lionel Messi");
-            User client6 = createClientIfNotExists("client6@example.com", "Cristiano Ronaldo");
-            User client7 = createClientIfNotExists("client7@example.com", "Necip Uysal");
-            User client8 = createClientIfNotExists("client8@example.com", "Mike Tyson");
-            User client9 = createClientIfNotExists("client9@example.com", "Bruce Lee");
-            
-            // Create trainer settings if not exist
-            createTrainerSettingsIfNotExists(trainer1, 
-                "Certified personal trainer with 5 years of experience specializing in weight loss and strength training. Committed to helping clients achieve their fitness goals through personalized programs.", 
-                "Weight Training, HIIT, Nutrition");
-            
-            createTrainerSettingsIfNotExists(trainer2, 
-                "Yoga instructor and flexibility coach with 8 years of experience. Focused on holistic approaches to fitness including mindfulness and proper form.", 
-                "Yoga, Pilates, Flexibility Training");
-            
-            // Create trainer clients if not exist
-            createTrainerClientIfNotExists(trainer1, client1, 10);
-            createTrainerClientIfNotExists(trainer1, client2, 5);
-            createTrainerClientIfNotExists(trainer1, client3, 8);
-            createTrainerClientIfNotExists(trainer2, client4, 12);
-            createTrainerClientIfNotExists(trainer2, client5, 6);
-            
-            // Create trainer sessions if not exist
-            createTrainerSessionIfNotExists(trainer1, client1, LocalDate.now().plusDays(2), LocalTime.of(10, 0));
-            createTrainerSessionIfNotExists(trainer1, client2, LocalDate.now().plusDays(2), LocalTime.of(11, 30));
-            createTrainerSessionIfNotExists(trainer1, client3, LocalDate.now().plusDays(3), LocalTime.of(14, 0));
-            createTrainerSessionIfNotExists(trainer1, client1, LocalDate.now().plusDays(4), LocalTime.of(10, 0));
-            createTrainerSessionIfNotExists(trainer2, client4, LocalDate.now().plusDays(2), LocalTime.of(9, 0));
-            createTrainerSessionIfNotExists(trainer2, client5, LocalDate.now().plusDays(3), LocalTime.of(13, 0));
-            
-            // Create registration requests if not exist
-            createRegistrationRequestIfNotExists(trainer1, client6, 
-                "I would like to start personal training focusing on weight loss.", 
-                LocalDate.now().plusDays(7), LocalTime.of(10, 0), false);
-            
-            createRegistrationRequestIfNotExists(trainer1, client7, 
-                "Need help with strength training program.", 
-                LocalDate.now().plusDays(9), LocalTime.of(14, 0), false);
-            
-            createRegistrationRequestIfNotExists(trainer2, client8, 
-                "Interested in yoga and flexibility training.", 
-                LocalDate.now().plusDays(8), LocalTime.of(9, 30), true);
-            
-            logger.info("Sample trainer data created successfully!");
-            
-            // Log counts to verify data was inserted
-            logger.info("User count: " + userRepository.count());
-            logger.info("Trainer client count: " + trainerClientRepository.count());
-            logger.info("Trainer session count: " + trainerSessionRepository.count());
-            logger.info("Trainer settings count: " + trainerSettingsRepository.count());
-            logger.info("Registration request count: " + registrationRequestRepository.count());
+            // Check if trainer settings exist
+            if (trainerSettingsRepository.count() == 0) {
+                Optional<User> trainerOpt = userRepository.findByEmail("trainer@gymflex.com");
+                if (trainerOpt.isPresent()) {
+                    User trainer = trainerOpt.get();
+                    createTrainerSettings(trainer);
+                }
+            }
             
         } catch (Exception e) {
-            logger.severe("Error initializing database: " + e.getMessage());
+            System.err.println("Error during database initialization: " + e.getMessage());
             e.printStackTrace();
         }
     }
     
-    private User createClientIfNotExists(String email, String name) {
+    private void createTrainerClientRelationship(User trainer, User member) {
         try {
-            Optional<User> existingUser = userRepository.findByEmail(email);
+            TrainerClient clientRelationship = new TrainerClient();
+            clientRelationship.setTrainer(trainer);
+            clientRelationship.setClient(member);
+            clientRelationship.setRegistrationDate(LocalDateTime.now().minusDays(10));
+            clientRelationship.setRemainingSessions(8);
+            trainerClientRepository.save(clientRelationship);
             
-            if (existingUser.isPresent()) {
-                logger.info("Client already exists: " + email);
-                return existingUser.get();
-            } else {
-                User client = new User();
-                client.setName(name);
-                client.setEmail(email);
-                client.setPassword(passwordEncoder.encode("client123"));
-                client.setPhoneNumber("+90 5" + (int)(Math.random() * 100) + " " + (int)(Math.random() * 1000000));
-                client.setRole("CLIENT");
-                client.setRegistrationDate(LocalDateTime.now());
-                client = userRepository.save(client);
-                logger.info("Created new client: " + email + " with ID: " + client.getId());
-                return client;
-            }
+            System.out.println("Trainer-client relationship created!");
         } catch (Exception e) {
-            logger.severe("Error creating client: " + e.getMessage());
-            throw e;
+            System.err.println("Error creating trainer-client relationship: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
-    private User createTrainerIfNotExists(String email, String name) {
+    private void createTrainerRequest(User trainer, User member) {
         try {
-            Optional<User> existingUser = userRepository.findByEmail(email);
+            TrainerRegistrationRequest request = new TrainerRegistrationRequest();
+            request.setTrainer(trainer);
+            request.setClient(member);
+            request.setRequestMessage("I'd like to start strength training sessions with you. I'm available in the evenings.");
+            request.setRequestedMeetingDate(LocalDate.now().plusDays(3));
+            request.setRequestedMeetingTime(LocalTime.of(17, 30));
+            request.setIsModifiedByTrainer(false);
+            requestRepository.save(request);
             
-            if (existingUser.isPresent()) {
-                logger.info("Trainer already exists: " + email);
-                return existingUser.get();
-            } else {
-                User trainer = new User();
-                trainer.setName(name);
-                trainer.setEmail(email);
-                trainer.setPassword(passwordEncoder.encode("trainer123"));
-                trainer.setPhoneNumber("+90 5" + (int)(Math.random() * 100) + " " + (int)(Math.random() * 1000000));
-                trainer.setRole("TRAINER");
-                trainer.setRegistrationDate(LocalDateTime.now());
-                trainer = userRepository.save(trainer);
-                logger.info("Created new trainer: " + email + " with ID: " + trainer.getId());
-                return trainer;
-            }
+            System.out.println("Sample trainer request created!");
         } catch (Exception e) {
-            logger.severe("Error creating trainer: " + e.getMessage());
-            throw e;
+            System.err.println("Error creating trainer request: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
-    private void createTrainerSettingsIfNotExists(User trainer, String bio, String specialization) {
+    private void createTrainerSessions(User trainer, User member) {
         try {
-            if (trainerSettingsRepository.findByTrainer(trainer).isEmpty()) {
-                TrainerSettings settings = new TrainerSettings();
-                settings.setTrainer(trainer);
-                settings.setBio(bio);
-                settings.setSpecialization(specialization);
-                settings.setNewClientNotifications(true);
-                settings.setProgressUpdateNotifications(true);
-                settings.setMobileNotifications(true);
-                settings.setDesktopNotifications(true);
-                TrainerSettings saved = trainerSettingsRepository.save(settings);
-                logger.info("Created trainer settings for trainer ID: " + trainer.getId() + " with settings ID: " + saved.getId());
-            } else {
-                logger.info("Trainer settings already exist for trainer ID: " + trainer.getId());
-            }
+            // Create a session for today
+            TrainerSession session1 = new TrainerSession();
+            session1.setTrainer(trainer);
+            session1.setClient(member);
+            session1.setSessionDate(LocalDate.now());
+            session1.setSessionTime(LocalTime.of(9, 0));
+            session1.setSessionType("Personal Training");
+            session1.setNotes("Focus on upper body strength");
+            sessionRepository.save(session1);
+            
+            // Create a session for tomorrow
+            TrainerSession session2 = new TrainerSession();
+            session2.setTrainer(trainer);
+            session2.setClient(member);
+            session2.setSessionDate(LocalDate.now().plusDays(1));
+            session2.setSessionTime(LocalTime.of(15, 30));
+            session2.setSessionType("Yoga Session");
+            session2.setNotes("Beginner level");
+            sessionRepository.save(session2);
+            
+            // Create a session for next week
+            TrainerSession session3 = new TrainerSession();
+            session3.setTrainer(trainer);
+            session3.setClient(member);
+            session3.setSessionDate(LocalDate.now().plusDays(7));
+            session3.setSessionTime(LocalTime.of(11, 0));
+            session3.setSessionType("Strength Training");
+            session3.setNotes("Focus on leg day");
+            sessionRepository.save(session3);
+            
+            System.out.println("Sample trainer sessions created!");
         } catch (Exception e) {
-            logger.severe("Error creating trainer settings: " + e.getMessage());
-            throw e;
+            System.err.println("Error creating trainer sessions: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
-    private void createTrainerClientIfNotExists(User trainer, User client, int remainingSessions) {
+    private void initializeWorkoutData() {
         try {
-            if (!trainerClientRepository.existsByTrainerAndClient(trainer, client)) {
+            workoutService.initializeDefaultCategoriesAndLevels();
+            System.out.println("Workout categories and levels initialized!");
+        } catch (Exception e) {
+            System.err.println("Error initializing workout data: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void createSampleWorkouts(User trainer) {
+        try {
+            WorkoutCategory strengthCategory = categoryRepository.findByName("Strength Training");
+            WorkoutCategory cardioCategory = categoryRepository.findByName("Cardio");
+            
+            WorkoutLevel intermediateLevel = levelRepository.findByName("Intermediate");
+            WorkoutLevel advancedLevel = levelRepository.findByName("Advanced");
+            
+            if (strengthCategory == null || cardioCategory == null || 
+                intermediateLevel == null || advancedLevel == null) {
+                System.err.println("Missing workout categories or levels, initializing them first");
+                initializeWorkoutData();
+                
+                // Fetch them again after initialization
+                strengthCategory = categoryRepository.findByName("Strength Training");
+                cardioCategory = categoryRepository.findByName("Cardio");
+                intermediateLevel = levelRepository.findByName("Intermediate");
+                advancedLevel = levelRepository.findByName("Advanced");
+            }
+            
+            // Create a strength workout
+            Workout strengthWorkout = new Workout();
+            strengthWorkout.setUser(trainer);
+            strengthWorkout.setIsTrainer(true);
+            strengthWorkout.setLevel(intermediateLevel);
+            strengthWorkout.setCategory(strengthCategory);
+            strengthWorkout.setDuration(60);
+            strengthWorkout.setName("Full Body Strength");
+            strengthWorkout.setDescription("Complete full body workout focusing on major muscle groups");
+            strengthWorkout.setCalories(450);
+            strengthWorkout.setEquipment("Dumbbells,Barbell,Resistance Bands");
+            strengthWorkout.setTargetMuscles("Chest,Back,Legs,Shoulders");
+            
+            workoutRepository.save(strengthWorkout);
+            
+            // Add exercises to the strength workout
+            List<WorkoutExercise> strengthExercises = Arrays.asList(
+                new WorkoutExercise(null, strengthWorkout, "Barbell Squat", 4, "8-12 reps"),
+                new WorkoutExercise(null, strengthWorkout, "Bench Press", 4, "8-12 reps"),
+                new WorkoutExercise(null, strengthWorkout, "Deadlift", 3, "8-10 reps")
+            );
+            exerciseRepository.saveAll(strengthExercises);
+            
+            // Create a cardio workout
+            Workout cardioWorkout = new Workout();
+            cardioWorkout.setUser(trainer);
+            cardioWorkout.setIsTrainer(true);
+            cardioWorkout.setLevel(advancedLevel);
+            cardioWorkout.setCategory(cardioCategory);
+            cardioWorkout.setDuration(45);
+            cardioWorkout.setName("HIIT Cardio Blast");
+            cardioWorkout.setDescription("High-intensity interval training for maximum calorie burn");
+            cardioWorkout.setCalories(600);
+            cardioWorkout.setEquipment("Kettlebell,Jump Rope,Yoga Mat");
+            cardioWorkout.setTargetMuscles("Core,Legs,Shoulders");
+            
+            workoutRepository.save(cardioWorkout);
+            
+            // Add exercises to the cardio workout
+            List<WorkoutExercise> cardioExercises = Arrays.asList(
+                new WorkoutExercise(null, cardioWorkout, "Burpees", 5, "45 seconds"),
+                new WorkoutExercise(null, cardioWorkout, "Mountain Climbers", 5, "45 seconds"),
+                new WorkoutExercise(null, cardioWorkout, "Jump Rope", 5, "60 seconds")
+            );
+            exerciseRepository.saveAll(cardioExercises);
+            
+            System.out.println("Sample workouts created successfully!");
+        } catch (Exception e) {
+            System.err.println("Error creating sample workouts: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void createTrainerSettings(User trainer) {
+        try {
+            TrainerSettings settings = new TrainerSettings();
+            settings.setTrainer(trainer);
+            settings.setBio("Professional trainer with 5 years of experience in strength training and fitness coaching.");
+            settings.setSpecialization("Strength Training, Weight Loss, Nutrition");
+            settings.setNewClientNotifications(true);
+            settings.setProgressUpdateNotifications(true);
+            settings.setMobileNotifications(true);
+            settings.setDesktopNotifications(true);
+            
+            trainerSettingsRepository.save(settings);
+            
+            System.out.println("Default trainer settings created!");
+        } catch (Exception e) {
+            System.err.println("Error creating trainer settings: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
