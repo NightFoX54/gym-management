@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupWorkoutLevelRepository extends JpaRepository<GroupWorkoutLevel, Integer> {
-    GroupWorkoutLevel findByLevelName(String name);
-}
+} 

@@ -19,11 +19,11 @@ public class TrainerRegistrationRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
     

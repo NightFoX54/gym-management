@@ -18,7 +18,4 @@ public class GroupWorkoutLevel {
     
     @Column(name = "level_name", nullable = false)
     private String levelName;
-    
-    @Column(name = "description")
-    private String description;
-}
+} 

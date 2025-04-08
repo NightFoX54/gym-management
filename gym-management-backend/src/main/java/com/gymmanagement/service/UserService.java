@@ -5,11 +5,9 @@ import com.gymmanagement.dto.SignupResponse;
 import com.gymmanagement.model.Membership;
 import com.gymmanagement.model.MembershipPlan;
 import com.gymmanagement.model.User;
-import com.gymmanagement.model.PaymentMethod;
 import com.gymmanagement.repository.MembershipPlanRepository;
 import com.gymmanagement.repository.MembershipRepository;
 import com.gymmanagement.repository.UserRepository;
-import com.gymmanagement.repository.PaymentMethodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,9 +32,6 @@ public class UserService {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private PaymentMethodRepository paymentMethodRepository;
     
     @Transactional
     public SignupResponse registerUser(SignupRequest signupRequest) {
@@ -78,36 +73,10 @@ public class UserService {
             membership.setPlan(plan);
             membership.setStartDate(startDate);
             membership.setEndDate(endDate);
-            
-            // Initialize discount amount to zero by default
-            membership.setDiscountAmount(BigDecimal.ZERO);
-            
-            // Calculate discount based on duration
-            if(durationMonths == 3){
-                membership.setDiscountAmount(plan.getPlanPrice().multiply(BigDecimal.valueOf(0.10)).multiply(BigDecimal.valueOf(durationMonths)));
-            }
-            else if(durationMonths == 6){
-                membership.setDiscountAmount(plan.getPlanPrice().multiply(BigDecimal.valueOf(0.20)).multiply(BigDecimal.valueOf(durationMonths)));
-            }
-            else if(durationMonths == 12){
-                membership.setDiscountAmount(plan.getPlanPrice().multiply(BigDecimal.valueOf(0.28)).multiply(BigDecimal.valueOf(durationMonths)));
-            }
-            // For monthly (durationMonths == 1), discount remains zero
-            
-            // Calculate paid amount after discount
-            BigDecimal totalPrice = plan.getPlanPrice().multiply(BigDecimal.valueOf(durationMonths));
-            membership.setPaidAmount(totalPrice.subtract(membership.getDiscountAmount()));
+            membership.setPaidAmount(plan.getPlanPrice().multiply(BigDecimal.valueOf(durationMonths)));
             membership.setIsFrozen(false);
             
             Membership savedMembership = membershipRepository.save(membership);
-            
-            PaymentMethod paymentMethod = new PaymentMethod();
-            paymentMethod.setUserId(savedUser.getId());
-            paymentMethod.setCardHolderName(signupRequest.getCardHolderName());
-            paymentMethod.setCardNumber(signupRequest.getCardNumber());
-            paymentMethod.setExpiryDate(signupRequest.getExpiryDate());
-            paymentMethod.setCvv(signupRequest.getCvv());
-            paymentMethodRepository.save(paymentMethod);
             
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             

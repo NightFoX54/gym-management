@@ -18,15 +18,15 @@ public class TrainerClient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
     
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
     
-    @Column(name = "registration_date", nullable = false)
+    @Column(name = "registration_date")
     private LocalDateTime registrationDate;
     
     @Column(name = "remaining_sessions", nullable = false)
