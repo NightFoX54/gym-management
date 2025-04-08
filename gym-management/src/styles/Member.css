@@ -1142,3 +1142,83 @@
     opacity: 1;
   }
 }
+
+/* Add these styles to your existing CSS */
+.workout-button-member {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 18px 25px;
+  margin: 0 0 30px 0;
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(145deg, #ff4757, #ff6b81);
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.4s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+.workout-button-member:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+}
+
+.workout-button-member:active {
+  transform: translateY(1px);
+}
+
+.button-icon-member {
+  margin-right: 15px;
+  font-size: 22px;
+}
+
+.check-in-time-member {
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0.9;
+  position: absolute;
+  right: 25px;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+/* Add a different styling for when workout is active */
+.workout-button-member.active {
+  background: linear-gradient(145deg, #32b37d, #2c9d6e);
+  box-shadow: 0 4px 15px rgba(50, 179, 125, 0.3);
+}
+
+.workout-button-member.active:hover {
+  box-shadow: 0 6px 20px rgba(50, 179, 125, 0.4);
+}
+
+/* Dark mode styles for the workout button */
+.dark-mode .workout-button-member {
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.2);
+}
+
+.dark-mode .workout-button-member:hover {
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.3);
+}
+
+.dark-mode .workout-button-member.active {
+  box-shadow: 0 4px 15px rgba(50, 179, 125, 0.2);
+}
+
+.dark-mode .workout-button-member.active:hover {
+  box-shadow: 0 6px 20px rgba(50, 179, 125, 0.3);
+}
+
+.workout-button-member .button-text {
+  flex: 1;
+  text-align: left;
+}

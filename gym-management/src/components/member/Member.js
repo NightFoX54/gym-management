@@ -21,6 +21,8 @@ import {
   FaUsers,
   FaRegCreditCard,
   FaSignOutAlt,
+  FaStopwatch,
+  FaPlay,
 } from "react-icons/fa";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -88,8 +90,23 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
-  const [selectedSession, setSelectedSession] = useState(null);
+  // Add new state for workout tracking
+  const [workoutStatus, setWorkoutStatus] = useState({
+    isCheckedIn: false,
+    visitId: null,
+    checkInDate: null,
+    checkInTime: null
+  });
+
+  // Add state for attendance
+  const [attendance, setAttendance] = useState({
+    total: 0,
+    thisMonth: 0,
+    lastMonth: 0
+  });
+
+  // Replace the mock upcoming sessions with actual sessions data
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
 
   // Fetch user profile data
   useEffect(() => {
@@ -123,11 +140,6 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
           membershipStatus: data.membershipStatus || "Active",
           membershipEndDate: data.membershipEndDate || "N/A",
           profilePhoto: data.profilePhotoPath || "/uploads/images/default-avatar.jpg",
-          attendance: data.attendance || {
-            total: 0,
-            thisMonth: 0,
-            lastMonth: 0,
-          },
           upcomingSessions: data.upcomingSessions || [],
         });
       } catch (err) {
@@ -147,6 +159,142 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
     fetchUserProfile();
   }, []);
+
+  // Add a function to fetch workout status
+  useEffect(() => {
+    const fetchWorkoutStatus = async () => {
+      if (!userId) return;
+      
+      try {
+        const response = await fetch(`http://localhost:8080/api/club-visits/status/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${userInfo.token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch workout status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setWorkoutStatus(data);
+      } catch (err) {
+        console.error("Error fetching workout status:", err);
+      }
+    };
+    
+    fetchWorkoutStatus();
+  }, [userId, userInfo.token]);
+
+  // Add a function to fetch attendance data
+  const fetchAttendanceData = async () => {
+    if (!userId) return;
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/club-visits/attendance/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${userInfo.token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch attendance data: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setAttendance(data);
+    } catch (err) {
+      console.error("Error fetching attendance data:", err);
+    }
+  };
+
+  // Call it in useEffect
+  useEffect(() => {
+    fetchAttendanceData();
+  }, [userId, userInfo.token]);
+
+  // Add a function to fetch user sessions
+  const fetchUserSessions = async () => {
+    if (!userId) return;
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/user-sessions/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${userInfo.token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user sessions: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Combine trainer sessions and group sessions
+      const allSessions = [];
+      
+      // Format trainer sessions
+      if (data.trainerSessions && data.trainerSessions.length > 0) {
+        data.trainerSessions.forEach(session => {
+          allSessions.push({
+            id: `trainer-${session.id}`,
+            type: `Personal Training: ${session.sessionType}`,
+            trainer: session.trainerName,
+            date: session.date,
+            time: session.time,
+            sessionType: 'trainer',
+            trainerId: session.trainerId,
+            notes: session.notes || ''
+          });
+        });
+      }
+      
+      // Format group sessions
+      if (data.groupSessions && data.groupSessions.length > 0) {
+        data.groupSessions.forEach(session => {
+          allSessions.push({
+            id: `group-${session.id}`,
+            type: `Group Class: ${session.title}`,
+            trainer: session.trainer,
+            date: session.date,
+            time: session.time,
+            sessionType: 'group',
+            trainerId: session.trainerId,
+            level: session.level,
+            duration: session.duration,
+            category: session.category,
+            notes: session.notes || ''
+          });
+        });
+      }
+      
+      // Sort by date and time (most recent first)
+      allSessions.sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.time}`);
+        const dateB = new Date(`${b.date}T${b.time}`);
+        return dateA - dateB;
+      });
+      
+      // Only show upcoming sessions (filter out past sessions)
+      const now = new Date();
+      const upcomingSessions = allSessions.filter(session => {
+        const sessionDate = new Date(`${session.date}T${session.time}`);
+        return sessionDate >= now;
+      });
+      
+      // Limit to the next 2 sessions (changed from 5)
+      const nextTwoSessions = upcomingSessions.slice(0, 2);
+      
+      setUpcomingSessions(nextTwoSessions);
+    } catch (err) {
+      console.error("Error fetching user sessions:", err);
+    }
+  };
+  
+  // Call this function when the component mounts
+  useEffect(() => {
+    fetchUserSessions();
+  }, [userId, userInfo.token]);
 
   const handleLogoutMember = () => {
     logout();
@@ -362,14 +510,55 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
     setUploadProgress(0);
   };
 
-  const handleRescheduleClick = (session) => {
-    setSelectedSession(session);
-    setShowRescheduleModal(true);
-  };
-
-  const handleCloseRescheduleModal = () => {
-    setShowRescheduleModal(false);
-    setSelectedSession(null);
+  // Update the handleWorkoutToggle function to refresh attendance data after checkout
+  const handleWorkoutToggle = async () => {
+    if (!userId) return;
+    
+    try {
+      const endpoint = workoutStatus.isCheckedIn 
+        ? 'http://localhost:8080/api/club-visits/check-out' 
+        : 'http://localhost:8080/api/club-visits/check-in';
+        
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify({ userId })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to ${workoutStatus.isCheckedIn ? 'check out' : 'check in'}: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Update workout status
+      if (workoutStatus.isCheckedIn) {
+        // User checked out
+        setWorkoutStatus({
+          isCheckedIn: false,
+          visitId: null,
+          checkInDate: null,
+          checkInTime: null
+        });
+        
+        // After check-out, refresh the attendance data
+        await fetchAttendanceData();
+      } else {
+        // User checked in
+        setWorkoutStatus({
+          isCheckedIn: true,
+          visitId: data.visitId,
+          checkInDate: data.checkInDate,
+          checkInTime: data.checkInTime
+        });
+      }
+      
+    } catch (err) {
+      console.error(`Error ${workoutStatus.isCheckedIn ? 'checking out' : 'checking in'}:`, err);
+    }
   };
 
   return (
@@ -463,6 +652,27 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               </p>
             </div>
           </div>
+          
+          {/* Add workout button here, after the profile info section */}
+          <button 
+            className={`workout-button-member card-animate stagger-3 ${workoutStatus.isCheckedIn ? "active" : ""}`}
+            onClick={handleWorkoutToggle}
+          >
+            {workoutStatus.isCheckedIn ? (
+              <>
+                <FaStopwatch className="button-icon-member" />
+                <span className="button-text">Finish Your Workout</span>
+                <span className="check-in-time-member">
+                  Started at {workoutStatus.checkInTime && workoutStatus.checkInTime.substring(0, 5)}
+                </span>
+              </>
+            ) : (
+              <>
+                <FaPlay className="button-icon-member" />
+                <span className="button-text">Start Your Workout</span>
+              </>
+            )}
+          </button>
 
           <div className="dashboard-grid-member">
             <div
@@ -559,22 +769,27 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
           <div className="upcoming-sessions-member card-animate stagger-11">
             <h3>Upcoming Sessions</h3>
             <div className="sessions-list-member">
-              {member.upcomingSessions.map((session) => (
-                <div key={session.id} className="session-item-member">
-                  <div className="session-info-member">
-                    <h4>{session.type}</h4>
-                    <p>Trainer: {session.trainer}</p>
-                    <p>Date: {session.date}</p>
-                    <p>Time: {session.time}</p>
+              {upcomingSessions.length > 0 ? (
+                upcomingSessions.map((session) => (
+                  <div key={session.id} className="session-item-member">
+                    <div className="session-info-member">
+                      <h4>{session.type}</h4>
+                      <p>Trainer: {session.trainer}</p>
+                      <p>Date: {session.date}</p>
+                      <p>Time: {session.time}</p>
+                      {session.sessionType === 'group' && (
+                        <>
+                          <p>Level: {session.level}</p>
+                          <p>Duration: {session.duration}</p>
+                        </>
+                      )}
+                      {session.notes && <p>Notes: {session.notes}</p>}
+                    </div>
                   </div>
-                  <button 
-                    className="reschedule-button-member"
-                    onClick={() => handleRescheduleClick(session)}
-                  >
-                    Reschedule
-                  </button>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="no-sessions-message">No upcoming sessions scheduled</p>
+              )}
             </div>
           </div>
 
@@ -583,19 +798,19 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
             <div className="attendance-stats-member">
               <div className="stat-item-member">
                 <span className="stat-value-member">
-                  {member.attendance.total}
+                  {attendance.total}
                 </span>
                 <span className="stat-label-member">Total Visits</span>
               </div>
               <div className="stat-item-member">
                 <span className="stat-value-member">
-                  {member.attendance.thisMonth}
+                  {attendance.thisMonth}
                 </span>
                 <span className="stat-label-member">This Month</span>
               </div>
               <div className="stat-item-member">
                 <span className="stat-value-member">
-                  {member.attendance.lastMonth}
+                  {attendance.lastMonth}
                 </span>
                 <span className="stat-label-member">Last Month</span>
               </div>
@@ -667,31 +882,6 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
                   Save
                 </button>
               </div>
-            </div>
-          </div>
-        )}
-
-        {showRescheduleModal && selectedSession && (
-          <div className="reschedule-modal-overlay-member">
-            <div className="reschedule-modal-member">
-              <button className="close-modal-member" onClick={handleCloseRescheduleModal}>
-                <FaTimes />
-              </button>
-              <div className="reschedule-content-member">
-                <FaCheck className="success-icon-member" />
-                <h2>Reschedule Request Sent</h2>
-                <p>Your reschedule request has been sent to your trainer:</p>
-                <div className="session-details-member">
-                  <p><strong>Session Type:</strong> {selectedSession.type}</p>
-                  <p><strong>Trainer:</strong> {selectedSession.trainer}</p>
-                  <p><strong>Current Date:</strong> {selectedSession.date}</p>
-                  <p><strong>Current Time:</strong> {selectedSession.time}</p>
-                </div>
-                <p className="notification-member">Your trainer will contact you shortly to confirm the new schedule.</p>
-              </div>
-              <button className="close-button-member" onClick={handleCloseRescheduleModal}>
-                Close
-              </button>
             </div>
           </div>
         )}
