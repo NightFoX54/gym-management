@@ -32,6 +32,12 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState(null);
+  const [cardErrors, setCardErrors] = useState({
+    cardHolder: '',
+    cardNumber: '',
+    expiryDate: '',
+    cvv: ''
+  });
 
   const plans = [
     {
@@ -145,6 +151,9 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
   const handleCardInputChange = (e) => {
     const { name, value } = e.target;
     
+    // Always reset submission error when any field changes
+    setSubmissionError(null);
+    
     // Format card number with spaces after every 4 digits
     if (name === 'cardNumber') {
       const formattedValue = value
@@ -158,6 +167,12 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
         ...prevState,
         [name]: formattedValue
       }));
+      
+      // Validate card number
+      setCardErrors(prev => ({
+        ...prev,
+        cardNumber: formattedValue.replace(/\s/g, '').length < 16 ? 'Card number must be 16 digits' : ''
+      }));
       return;
     }
     
@@ -166,12 +181,22 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
       const formattedValue = value
         .replace(/\s/g, '')
         .replace(/\D/g, '')
-        .substring(0, 4)
-        .replace(/(.{2})/, '$1/');
+        .substring(0, 4);
+      
+      // Insert slash after first 2 digits if there are at least 2 digits
+      const finalValue = formattedValue.length >= 2 
+        ? formattedValue.substring(0, 2) + '/' + formattedValue.substring(2)
+        : formattedValue;
       
       setCardDetails(prevState => ({
         ...prevState,
-        [name]: formattedValue
+        [name]: finalValue
+      }));
+      
+      // Validate expiry date
+      setCardErrors(prev => ({
+        ...prev,
+        expiryDate: formattedValue.length < 4 ? 'Expiry date must be in MM/YY format' : ''
       }));
       return;
     }
@@ -186,6 +211,12 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
         ...prevState,
         [name]: formattedValue
       }));
+      
+      // Validate CVV
+      setCardErrors(prev => ({
+        ...prev,
+        cvv: formattedValue.length < 3 ? 'CVV must be 3-4 digits' : ''
+      }));
       return;
     }
     
@@ -194,6 +225,28 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
       ...prevState,
       [name]: value
     }));
+    
+    // Validate card holder
+    if (name === 'cardHolder') {
+      setCardErrors(prev => ({
+        ...prev,
+        cardHolder: !value.trim() ? 'Cardholder name is required' : ''
+      }));
+    }
+  };
+
+  const validateCardDetails = () => {
+    const errors = {
+      cardHolder: !cardDetails.cardHolder.trim() ? 'Cardholder name is required' : '',
+      cardNumber: cardDetails.cardNumber.replace(/\s/g, '').length < 16 ? 'Card number must be 16 digits' : '',
+      expiryDate: cardDetails.expiryDate.replace('/', '').length < 4 ? 'Expiry date must be in MM/YY format' : '',
+      cvv: cardDetails.cvv.length < 3 ? 'CVV must be 3-4 digits' : ''
+    };
+    
+    setCardErrors(errors);
+    
+    // Return true if there are no errors
+    return !Object.values(errors).some(error => error);
   };
 
   const handleSubmit = (e) => {
@@ -230,6 +283,12 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
   };
 
   const completeSignup = async () => {
+    // First validate card details
+    if (!validateCardDetails()) {
+      setSubmissionError('Please complete all payment information correctly');
+      return;
+    }
+    
     setIsSubmitting(true);
     setSubmissionError(null);
     
@@ -260,10 +319,10 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
         durationMonths: durationMonths,
         startDate: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD
         paymentMethod: "CREDIT_CARD",
-        cardNumber: cardDetails.cardNumber.replace(/\s/g, ''), // Last 4 digits
+        cardNumber: cardDetails.cardNumber.replace(/\s/g, ''), 
         cardHolderName: cardDetails.cardHolder,
         expiryDate: cardDetails.expiryDate,
-        cvv: cardDetails.cvv
+        cvv: parseInt(cardDetails.cvv, 10) // Convert to integer as backend expects numeric CVV
       };
       
       console.log('Sending signup data:', signupData);
@@ -297,7 +356,16 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
       }
     } catch (error) {
       console.error('Signup error:', error);
-      setSubmissionError(error.response?.data?.message || 'An error occurred during registration');
+      
+      // Provide user-friendly error message
+      if (error.response?.data?.message?.includes("intCompact") || error.response?.data?.message?.includes("subtrahend is null")) {
+        setSubmissionError('Please complete all payment information correctly');
+      } else {
+        setSubmissionError(error.response?.data?.message || 'An error occurred during registration. Please check your information and try again.');
+      }
+      
+      // Reset submission state so user can try again
+      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -488,6 +556,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                         onChange={handleCardInputChange}
                         required
                       />
+                      {cardErrors.cardHolder && <span className="error-message">{cardErrors.cardHolder}</span>}
                     </div>
                     <div className="form-group">
                       <label htmlFor="cardNumber">Card Number</label>
@@ -500,6 +569,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                         onChange={handleCardInputChange}
                         required
                       />
+                      {cardErrors.cardNumber && <span className="error-message">{cardErrors.cardNumber}</span>}
                     </div>
                     <div className="form-row">
                       <div className="form-group">
@@ -513,6 +583,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                           onChange={handleCardInputChange}
                           required
                         />
+                        {cardErrors.expiryDate && <span className="error-message">{cardErrors.expiryDate}</span>}
                       </div>
                       <div className="form-group">
                         <label htmlFor="cvv">CVV</label>
@@ -527,6 +598,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                           onBlur={() => document.querySelector('.credit-card').classList.remove('flipped')}
                           required
                         />
+                        {cardErrors.cvv && <span className="error-message">{cardErrors.cvv}</span>}
                       </div>
                     </div>
                     <button 
@@ -570,7 +642,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                 </div>
               </div>
             </div>
-            {submissionError && <div className="error-message">{submissionError}</div>}
+            {submissionError && <div className="error-message submission-error">{submissionError}</div>}
           </div>
         );
 
