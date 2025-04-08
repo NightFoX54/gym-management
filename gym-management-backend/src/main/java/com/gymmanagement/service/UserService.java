@@ -57,6 +57,7 @@ public class UserService {
         user.setPhoneNumber(signupRequest.getPhoneNumber());
         user.setRole("MEMBER"); // Default role for signup
         user.setRegistrationDate(LocalDateTime.now());
+        user.setProfilePhotoPath("/uploads/images/default-avatar.jpg"); // Set default profile photo
         
         User savedUser = userRepository.save(user);
         
