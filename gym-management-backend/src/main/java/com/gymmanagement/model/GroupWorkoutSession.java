@@ -25,4 +25,7 @@ public class GroupWorkoutSession {
     private LocalDate date;
     
     private LocalTime time;
+    
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 } 

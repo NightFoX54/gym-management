@@ -31,12 +31,20 @@ public class GroupWorkoutController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllWorkouts(@RequestParam(required = false) Integer categoryId) {
+    public ResponseEntity<?> getAllWorkouts(
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Long trainerId) {
         try {
             List<GroupWorkout> workouts;
-            if (categoryId != null) {
+            
+            if (trainerId != null) {
+                // Filter workouts by trainer ID
+                workouts = groupWorkoutService.getWorkoutsByTrainer(trainerId);
+            } else if (categoryId != null) {
+                // Filter workouts by category
                 workouts = groupWorkoutService.getWorkoutsByCategory(categoryId);
             } else {
+                // Get all workouts
                 workouts = groupWorkoutService.getAllWorkouts();
             }
             
@@ -173,6 +181,129 @@ public class GroupWorkoutController {
             groupWorkoutService.updateWorkout(workout);
             
             return ResponseEntity.ok(Collections.singletonMap("message", "Workout image updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+    
+    @PostMapping
+    public ResponseEntity<?> createGroupWorkout(@RequestBody Map<String, Object> request) {
+        try {
+            String name = (String) request.get("name");
+            String description = (String) request.get("description");
+            Integer capacity = Integer.parseInt(request.get("capacity").toString());
+            Integer duration = Integer.parseInt(request.get("duration").toString());
+            Integer levelId = Integer.parseInt(request.get("level_id").toString());
+            Integer categoryId = Integer.parseInt(request.get("category_id").toString());
+            Long trainerId = Long.parseLong(request.get("trainer_id").toString());
+            
+            // Fix image path handling - check both possible keys
+            String imagePath = null;
+            if (request.get("imagePath") != null) {
+                imagePath = (String) request.get("imagePath");
+            } else if (request.get("image_path") != null) {
+                imagePath = (String) request.get("image_path");
+            }
+            
+            GroupWorkout newWorkout = groupWorkoutService.createGroupWorkout(
+                name, description, capacity, duration, levelId, categoryId, trainerId, imagePath);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", newWorkout.getId());
+            response.put("title", newWorkout.getName());
+            response.put("description", newWorkout.getDescription());
+            response.put("capacity", newWorkout.getCapacity());
+            response.put("duration", newWorkout.getDuration());
+            response.put("level", newWorkout.getLevel().getLevelName());
+            response.put("category", newWorkout.getCategory().getCategoryName());
+            response.put("trainer", newWorkout.getTrainer().getFirstName() + " " + newWorkout.getTrainer().getLastName());
+            response.put("message", "Group workout created successfully");
+            
+            // Add image path to response
+            response.put("image", newWorkout.getImagePath());
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/trainer/{trainerId}")
+    public ResponseEntity<?> getTrainerWorkouts(@PathVariable Long trainerId) {
+        try {
+            List<Map<String, Object>> workouts = groupWorkoutService.getWorkoutsByTrainerId(trainerId)
+                .stream()
+                .map(workout -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", workout.getId());
+                    map.put("title", workout.getName());
+                    map.put("description", workout.getDescription());
+                    map.put("capacity", workout.getCapacity());
+                    map.put("duration", workout.getDuration() + " min");
+                    map.put("level", workout.getLevel().getLevelName());
+                    map.put("category", workout.getCategory().getCategoryName());
+                    map.put("image", workout.getImagePath());
+                    map.put("trainer", workout.getTrainer().getFirstName() + " " + 
+                            workout.getTrainer().getLastName());
+                    return map;
+                })
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(workouts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+    
+    @PutMapping("/{workoutId}")
+    public ResponseEntity<?> updateGroupWorkout(
+            @PathVariable Integer workoutId,
+            @RequestBody Map<String, Object> request) {
+        try {
+            Optional<GroupWorkout> workoutOpt = groupWorkoutService.getWorkoutById(workoutId);
+            
+            if (!workoutOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Collections.singletonMap("error", "Workout not found"));
+            }
+            
+            String name = (String) request.get("name");
+            String description = (String) request.get("description");
+            Integer capacity = Integer.parseInt(request.get("capacity").toString());
+            Integer duration = Integer.parseInt(request.get("duration").toString());
+            Integer levelId = Integer.parseInt(request.get("level_id").toString());
+            Integer categoryId = Integer.parseInt(request.get("category_id").toString());
+            String imagePath = request.get("imagePath") != null ? (String) request.get("imagePath") : null;
+            
+            GroupWorkout updatedWorkout = groupWorkoutService.updateGroupWorkout(
+                workoutId, name, description, capacity, duration, levelId, categoryId, imagePath);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", updatedWorkout.getId());
+            response.put("title", updatedWorkout.getName());
+            response.put("description", updatedWorkout.getDescription());
+            response.put("capacity", updatedWorkout.getCapacity());
+            response.put("duration", updatedWorkout.getDuration());
+            response.put("level", updatedWorkout.getLevel().getLevelName());
+            response.put("category", updatedWorkout.getCategory().getCategoryName());
+            response.put("trainer", updatedWorkout.getTrainer().getFirstName() + " " + updatedWorkout.getTrainer().getLastName());
+            response.put("message", "Group workout updated successfully");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteGroupWorkout(@PathVariable Integer id) {
+        try {
+            groupWorkoutService.deleteGroupWorkout(id);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Group workout deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("error", e.getMessage()));

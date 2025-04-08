@@ -28,6 +28,9 @@ public class GroupWorkoutService {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    private GroupWorkoutLevelRepository levelRepository;
+    
     public List<GroupWorkoutCategory> getAllCategories() {
         return categoryRepository.findAll();
     }
@@ -38,6 +41,12 @@ public class GroupWorkoutService {
     
     public List<GroupWorkout> getWorkoutsByCategory(Integer categoryId) {
         return groupWorkoutRepository.findByCategoryId(categoryId);
+    }
+    
+    public List<GroupWorkout> getWorkoutsByTrainer(Long trainerId) {
+        return groupWorkoutRepository.findAll().stream()
+            .filter(workout -> workout.getTrainer().getId().equals(trainerId))
+            .collect(Collectors.toList());
     }
     
     public List<GroupWorkoutSession> getSessionsForWorkout(Integer workoutId) {
@@ -76,5 +85,93 @@ public class GroupWorkoutService {
 
     public GroupWorkout updateWorkout(GroupWorkout workout) {
         return groupWorkoutRepository.save(workout);
+    }
+    
+    @Transactional
+    public GroupWorkout createGroupWorkout(
+            String name, 
+            String description, 
+            Integer capacity, 
+            Integer duration, 
+            Integer levelId, 
+            Integer categoryId, 
+            Long trainerId, 
+            String imagePath) {
+        
+        // Get trainer
+        User trainer = userRepository.findById(trainerId)
+                .orElseThrow(() -> new RuntimeException("Trainer not found with id: " + trainerId));
+        
+        // Get level
+        GroupWorkoutLevel level = levelRepository.findById(levelId)
+                .orElseThrow(() -> new RuntimeException("Workout level not found with id: " + levelId));
+        
+        // Get category
+        GroupWorkoutCategory category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Workout category not found with id: " + categoryId));
+        
+        // Create new workout
+        GroupWorkout workout = new GroupWorkout();
+        workout.setName(name);
+        workout.setDescription(description);
+        workout.setCapacity(capacity);
+        workout.setDuration(duration);
+        workout.setLevel(level);
+        workout.setCategory(category);
+        workout.setTrainer(trainer);
+        workout.setImagePath(imagePath);
+        
+        return groupWorkoutRepository.save(workout);
+    }
+    
+    @Transactional
+    public GroupWorkout updateGroupWorkout(
+            Integer workoutId,
+            String name, 
+            String description, 
+            Integer capacity, 
+            Integer duration, 
+            Integer levelId, 
+            Integer categoryId, 
+            String imagePath) {
+        
+        // Get existing workout
+        GroupWorkout workout = groupWorkoutRepository.findById(workoutId)
+                .orElseThrow(() -> new RuntimeException("Workout not found with id: " + workoutId));
+        
+        // Get level
+        GroupWorkoutLevel level = levelRepository.findById(levelId)
+                .orElseThrow(() -> new RuntimeException("Workout level not found with id: " + levelId));
+        
+        // Get category
+        GroupWorkoutCategory category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Workout category not found with id: " + categoryId));
+        
+        // Update workout
+        workout.setName(name);
+        workout.setDescription(description);
+        workout.setCapacity(capacity);
+        workout.setDuration(duration);
+        workout.setLevel(level);
+        workout.setCategory(category);
+        
+        if (imagePath != null) {
+            workout.setImagePath(imagePath);
+        }
+        
+        return groupWorkoutRepository.save(workout);
+    }
+
+    public List<GroupWorkout> getWorkoutsByTrainerId(Long trainerId) {
+        // Get user by ID
+        User trainer = userRepository.findById(trainerId)
+            .orElseThrow(() -> new RuntimeException("Trainer not found with ID: " + trainerId));
+        
+        // Find all workouts for this trainer
+        return groupWorkoutRepository.findByTrainer(trainer);
+    }
+
+    public void deleteGroupWorkout(Integer id) {
+        groupWorkoutRepository.deleteById(id);
     }
 } 
