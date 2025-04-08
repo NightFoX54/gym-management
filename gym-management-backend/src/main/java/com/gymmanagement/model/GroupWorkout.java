@@ -16,30 +16,30 @@ public class GroupWorkout {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
     
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
-    @Column(nullable = false)
+    @Column(name = "capacity", nullable = false)
     private Integer capacity;
     
-    @Column(nullable = false)
+    @Column(name = "duration", nullable = false)
     private Integer duration;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "level_id")
     private GroupWorkoutLevel level;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "trainer_id")
     private User trainer;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private GroupWorkoutCategory category;
     
     @Column(name = "image_path")
     private String imagePath;
-} 
+}

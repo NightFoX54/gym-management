@@ -18,4 +18,7 @@ public class GroupWorkoutCategory {
     
     @Column(name = "category_name", nullable = false)
     private String categoryName;
-} 
+    
+    @Column(name = "description")
+    private String description;
+}

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -18,11 +19,16 @@ public class GroupWorkoutSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
-    @ManyToOne
-    @JoinColumn(name = "group_workout_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_workout_id", nullable = false)
     private GroupWorkout groupWorkout;
     
+    @Column(name = "date", nullable = false)
     private LocalDate date;
     
+    @Column(name = "time", nullable = false)
     private LocalTime time;
-} 
+    
+    @Column(name = "notes")
+    private String notes;
+}
