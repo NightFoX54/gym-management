@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 08 Nis 2025, 23:16:26
+-- Üretim Zamanı: 09 Nis 2025, 23:18:58
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -48,7 +48,9 @@ INSERT INTO `club_visits` (`id`, `user_id`, `check_in_date`, `check_in_time`, `c
 (5, 13, '2025-04-08', '23:54:39', '2025-04-08', '23:54:39'),
 (6, 13, '2025-04-08', '23:56:15', '2025-04-08', '23:56:15'),
 (7, 13, '2025-04-08', '23:59:37', '2025-04-08', '23:59:38'),
-(8, 13, '2025-04-08', '23:59:40', '2025-04-08', '23:59:40');
+(8, 13, '2025-04-08', '23:59:40', '2025-04-08', '23:59:40'),
+(9, 13, '2025-04-09', '13:34:41', '2025-04-09', '13:34:41'),
+(10, 13, '2025-04-09', '13:34:46', '2025-04-09', '13:34:46');
 
 -- --------------------------------------------------------
 
@@ -79,6 +81,27 @@ CREATE TABLE `employee_info` (
   `weekly_hours` int NOT NULL,
   `shift_schedule_path` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `free_pt_use`
+--
+
+CREATE TABLE `free_pt_use` (
+  `id` bigint NOT NULL,
+  `member_id` bigint NOT NULL,
+  `session_id` bigint DEFAULT NULL,
+  `session_request_id` int DEFAULT NULL,
+  `use_time` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `free_pt_use`
+--
+
+INSERT INTO `free_pt_use` (`id`, `member_id`, `session_id`, `session_request_id`, `use_time`) VALUES
+(1, 13, NULL, 3, '2025-04-09 21:58:21');
 
 -- --------------------------------------------------------
 
@@ -452,9 +475,37 @@ CREATE TABLE `personal_training_ratings` (
   `id` int NOT NULL,
   `member_id` bigint NOT NULL,
   `session_id` bigint NOT NULL,
-  `rating` tinyint DEFAULT NULL,
+  `rating` int DEFAULT NULL,
   `comment` text COLLATE utf8mb4_general_ci
 ) ;
+
+--
+-- Tablo döküm verisi `personal_training_ratings`
+--
+
+INSERT INTO `personal_training_ratings` (`id`, `member_id`, `session_id`, `rating`, `comment`) VALUES
+(1, 13, 4, 2, ''),
+(2, 13, 5, 4, 'deneme');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `pt_session_buy`
+--
+
+CREATE TABLE `pt_session_buy` (
+  `id` bigint NOT NULL,
+  `client_id` bigint NOT NULL,
+  `amount_of_sessions` int NOT NULL,
+  `total_price` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `pt_session_buy`
+--
+
+INSERT INTO `pt_session_buy` (`id`, `client_id`, `amount_of_sessions`, `total_price`) VALUES
+(1, 3, 1, 200.00);
 
 -- --------------------------------------------------------
 
@@ -536,7 +587,7 @@ CREATE TABLE `trainer_clients` (
 
 INSERT INTO `trainer_clients` (`id`, `trainer_id`, `client_id`, `registration_date`, `remaining_sessions`) VALUES
 (1, 3, 2, '2025-03-15 21:10:10', 8),
-(3, 3, 13, '2025-04-06 20:24:56', 10);
+(3, 3, 13, '2025-04-06 20:24:56', 11);
 
 -- --------------------------------------------------------
 
@@ -559,7 +610,7 @@ CREATE TABLE `trainer_registration_requests` (
 --
 
 INSERT INTO `trainer_registration_requests` (`id`, `trainer_id`, `client_id`, `request_message`, `requested_meeting_date`, `requested_meeting_time`, `is_modified_by_trainer`) VALUES
-(4, 3, 13, 'I\'d like to book a training session', '2025-04-09', '09:07:00', 0);
+(7, 3, 13, 'I\'d like to book a training session', '2025-04-15', '10:31:00', 0);
 
 -- --------------------------------------------------------
 
@@ -585,7 +636,48 @@ INSERT INTO `trainer_sessions` (`id`, `trainer_id`, `client_id`, `session_date`,
 (1, 3, 2, '2025-03-25', '09:00:00', 'Focus on upper body strength', 'Personal Training'),
 (2, 3, 2, '2025-03-26', '15:30:00', 'Beginner level', 'Yoga Session'),
 (3, 3, 2, '2025-04-01', '11:00:00', 'Focus on leg day', 'Strength Training'),
-(4, 3, 13, '2025-04-14', '11:27:00', 'Automatically created from registration request #3', 'Initial Consultation');
+(4, 3, 13, '2025-04-08', '11:28:00', 'Automatically created from registration request #3', 'Initial Consultation'),
+(5, 3, 13, '2025-04-08', '11:28:00', 'Automatically created from registration request #3', 'Initial Consultation'),
+(6, 3, 13, '2025-04-09', '05:42:00', '', 'Personal Training'),
+(7, 3, 13, '2025-04-10', '05:43:00', '', 'Personal Training'),
+(8, 3, 13, '2025-04-17', '10:22:00', 'Automatically created from registration request #6', 'Initial Consultation');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `trainer_session_requests`
+--
+
+CREATE TABLE `trainer_session_requests` (
+  `id` int NOT NULL,
+  `trainer_id` bigint NOT NULL,
+  `client_id` bigint NOT NULL,
+  `request_message` text COLLATE utf8mb4_general_ci,
+  `requested_meeting_date` date DEFAULT NULL,
+  `requested_meeting_time` time DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `trainer_session_requests`
+--
+
+INSERT INTO `trainer_session_requests` (`id`, `trainer_id`, `client_id`, `request_message`, `requested_meeting_date`, `requested_meeting_time`) VALUES
+(1, 3, 13, '', '2025-04-17', '05:19:00'),
+(2, 3, 13, '', '2025-04-10', '04:33:00'),
+(3, 3, 13, '', '2025-04-10', '23:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `trainer_session_reschedule_request`
+--
+
+CREATE TABLE `trainer_session_reschedule_request` (
+  `id` bigint NOT NULL,
+  `session_id` bigint NOT NULL,
+  `new_session_date` date NOT NULL,
+  `new_session_time` time NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -781,6 +873,15 @@ ALTER TABLE `employee_info`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Tablo için indeksler `free_pt_use`
+--
+ALTER TABLE `free_pt_use`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`),
+  ADD KEY `session_id` (`session_id`),
+  ADD KEY `session_request_id` (`session_request_id`);
+
+--
 -- Tablo için indeksler `group_workouts`
 --
 ALTER TABLE `group_workouts`
@@ -897,6 +998,13 @@ ALTER TABLE `personal_training_ratings`
   ADD KEY `session_id` (`session_id`);
 
 --
+-- Tablo için indeksler `pt_session_buy`
+--
+ALTER TABLE `pt_session_buy`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `client_id` (`client_id`);
+
+--
 -- Tablo için indeksler `salary_payments`
 --
 ALTER TABLE `salary_payments`
@@ -944,6 +1052,21 @@ ALTER TABLE `trainer_sessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `trainer_id` (`trainer_id`),
   ADD KEY `client_id` (`client_id`);
+
+--
+-- Tablo için indeksler `trainer_session_requests`
+--
+ALTER TABLE `trainer_session_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `trainer_id` (`trainer_id`),
+  ADD KEY `client_id` (`client_id`);
+
+--
+-- Tablo için indeksler `trainer_session_reschedule_request`
+--
+ALTER TABLE `trainer_session_reschedule_request`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `session_id` (`session_id`);
 
 --
 -- Tablo için indeksler `trainer_settings`
@@ -1001,7 +1124,7 @@ ALTER TABLE `workout_levels`
 -- Tablo için AUTO_INCREMENT değeri `club_visits`
 --
 ALTER TABLE `club_visits`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `contact_requests`
@@ -1014,6 +1137,12 @@ ALTER TABLE `contact_requests`
 --
 ALTER TABLE `employee_info`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `free_pt_use`
+--
+ALTER TABLE `free_pt_use`
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `group_workouts`
@@ -1112,6 +1241,12 @@ ALTER TABLE `personal_training_ratings`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- Tablo için AUTO_INCREMENT değeri `pt_session_buy`
+--
+ALTER TABLE `pt_session_buy`
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `salary_payments`
 --
 ALTER TABLE `salary_payments`
@@ -1139,19 +1274,31 @@ ALTER TABLE `slider_settings`
 -- Tablo için AUTO_INCREMENT değeri `trainer_clients`
 --
 ALTER TABLE `trainer_clients`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_registration_requests`
 --
 ALTER TABLE `trainer_registration_requests`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_sessions`
 --
 ALTER TABLE `trainer_sessions`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `trainer_session_requests`
+--
+ALTER TABLE `trainer_session_requests`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `trainer_session_reschedule_request`
+--
+ALTER TABLE `trainer_session_reschedule_request`
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_settings`
@@ -1210,6 +1357,14 @@ ALTER TABLE `club_visits`
 --
 ALTER TABLE `employee_info`
   ADD CONSTRAINT `employee_info_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Tablo kısıtlamaları `free_pt_use`
+--
+ALTER TABLE `free_pt_use`
+  ADD CONSTRAINT `free_pt_use_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `free_pt_use_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `trainer_sessions` (`id`),
+  ADD CONSTRAINT `free_pt_use_ibfk_3` FOREIGN KEY (`session_request_id`) REFERENCES `trainer_session_requests` (`id`);
 
 --
 -- Tablo kısıtlamaları `group_workouts`
@@ -1292,6 +1447,12 @@ ALTER TABLE `personal_training_ratings`
   ADD CONSTRAINT `personal_training_ratings_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `trainer_sessions` (`id`);
 
 --
+-- Tablo kısıtlamaları `pt_session_buy`
+--
+ALTER TABLE `pt_session_buy`
+  ADD CONSTRAINT `pt_session_buy_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `trainer_clients` (`id`);
+
+--
 -- Tablo kısıtlamaları `salary_payments`
 --
 ALTER TABLE `salary_payments`
@@ -1317,6 +1478,19 @@ ALTER TABLE `trainer_registration_requests`
 ALTER TABLE `trainer_sessions`
   ADD CONSTRAINT `trainer_sessions_ibfk_1` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `trainer_sessions_ibfk_2` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`);
+
+--
+-- Tablo kısıtlamaları `trainer_session_requests`
+--
+ALTER TABLE `trainer_session_requests`
+  ADD CONSTRAINT `trainer_session_requests_ibfk_1` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `trainer_session_requests_ibfk_2` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`);
+
+--
+-- Tablo kısıtlamaları `trainer_session_reschedule_request`
+--
+ALTER TABLE `trainer_session_reschedule_request`
+  ADD CONSTRAINT `trainer_session_reschedule_request_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `trainer_sessions` (`id`);
 
 --
 -- Tablo kısıtlamaları `trainer_settings`
