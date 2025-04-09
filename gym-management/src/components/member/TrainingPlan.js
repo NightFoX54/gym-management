@@ -204,6 +204,7 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
         </div>
 
         <div className="training-content-trainingplan">
+          {/*
           <h2 className="card-animate stagger-3">Training Plan</h2>
 
           <div className="program-overview-trainingplan card-animate stagger-4">
@@ -255,7 +256,7 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
               <p>{new Date(programOverview.nextSession).toLocaleString()}</p>
             </div>
           </div>
-
+          */}
           <div className="workout-schedule-trainingplan">
             <h3>Weekly Schedule</h3>
             
@@ -305,7 +306,7 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
               </div>
             )}
           </div>
-
+          {/*
           <div className="program-goals-trainingplan card-animate stagger-5">
             <h3>Program Goals</h3>
             <ul className="goals-list-trainingplan">
@@ -317,6 +318,7 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
               ))}
             </ul>
           </div>
+          */}
         </div>
       </div>
     </div>

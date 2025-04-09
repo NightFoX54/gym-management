@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner, FaKey } from 'react-icons/fa';
 import '../../styles/MyProfile.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +25,16 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // New state variables for password change
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Get user info from localStorage
   const userInfoString = localStorage.getItem('user');
@@ -269,6 +279,108 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
     setUploadProgress(0);
   };
 
+  // Handle input change in password form
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Reset password form and errors
+  const resetPasswordForm = () => {
+    setPasswordData({
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setPasswordErrors({});
+  };
+
+  // Open password modal
+  const openPasswordModal = () => {
+    resetPasswordForm();
+    setShowPasswordModal(true);
+  };
+
+  // Close password modal
+  const closePasswordModal = () => {
+    setShowPasswordModal(false);
+    resetPasswordForm();
+  };
+
+  // Validate password form
+  const validatePasswordForm = () => {
+    const errors = {};
+    
+    if (!passwordData.oldPassword) {
+      errors.oldPassword = "Current password is required";
+    }
+    
+    if (!passwordData.newPassword) {
+      errors.newPassword = "New password is required";
+    } else if (passwordData.newPassword.length < 6) {
+      errors.newPassword = "Password must be at least 6 characters";
+    }
+    
+    if (!passwordData.confirmPassword) {
+      errors.confirmPassword = "Please confirm your new password";
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      errors.confirmPassword = "Passwords don't match";
+    }
+    
+    setPasswordErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Submit password change
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validatePasswordForm()) {
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    setSuccessMessage('');
+    setErrorMessage('');
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/members/${userId}/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify({
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to change password");
+      }
+      
+      // Password changed successfully
+      setSuccessMessage('Password changed successfully!');
+      closePasswordModal();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+    } catch (err) {
+      setPasswordErrors({
+        general: err.message || "Failed to change password. Please try again."
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="loading-container">
@@ -335,10 +447,16 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
           </div>
           <h2 className="profile-name-myprofile">{profile.fullName}</h2>
           {!isEditing && (
-            <button className="edit-button-myprofile" onClick={handleEditMember}>
-              <FaEdit />
-              <span>Edit Profile</span>
-            </button>
+            <div className="profile-action-buttons">
+              <button className="edit-button-myprofile" onClick={handleEditMember}>
+                <FaEdit />
+                <span>Edit Profile</span>
+              </button>
+              <button className="password-button-myprofile" onClick={openPasswordModal}>
+                <FaKey />
+                <span>Change Password</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -426,6 +544,89 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
           )}
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="password-modal-overlay">
+          <div className="password-modal">
+            <h3>Change Password</h3>
+            <form onSubmit={handlePasswordSubmit}>
+              {passwordErrors.general && (
+                <div className="password-error-message">
+                  {passwordErrors.general}
+                </div>
+              )}
+              
+              <div className="password-field">
+                <label>Current Password</label>
+                <input
+                  type="password"
+                  name="oldPassword"
+                  value={passwordData.oldPassword}
+                  onChange={handlePasswordChange}
+                  className={passwordErrors.oldPassword ? 'error' : ''}
+                />
+                {passwordErrors.oldPassword && (
+                  <span className="field-error">{passwordErrors.oldPassword}</span>
+                )}
+              </div>
+              
+              <div className="password-field">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                  className={passwordErrors.newPassword ? 'error' : ''}
+                />
+                {passwordErrors.newPassword && (
+                  <span className="field-error">{passwordErrors.newPassword}</span>
+                )}
+              </div>
+              
+              <div className="password-field">
+                <label>Confirm New Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                  className={passwordErrors.confirmPassword ? 'error' : ''}
+                />
+                {passwordErrors.confirmPassword && (
+                  <span className="field-error">{passwordErrors.confirmPassword}</span>
+                )}
+              </div>
+              
+              <div className="password-modal-buttons">
+                <button
+                  type="button"
+                  className="cancel-button-myprofile"
+                  onClick={closePasswordModal}
+                  disabled={isChangingPassword}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="save-button-myprofile"
+                  disabled={isChangingPassword}
+                >
+                  {isChangingPassword ? (
+                    <>
+                      <FaSpinner className="spinner" />
+                      Updating...
+                    </>
+                  ) : (
+                    'Update Password'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showImageModal && (
         <div className="photo-modal-overlay">

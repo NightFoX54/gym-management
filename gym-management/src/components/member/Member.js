@@ -710,7 +710,8 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <h3>Weekly Schedule</h3>
               <p>Check your upcoming training sessions</p>
             </div>
-
+            
+            {/* Personal Statistics card is temporarily hidden
             <div
               className="dashboard-card-member stagger-5"
               onClick={() => navigate("/member/personal-statistics")}
@@ -719,6 +720,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <h3>Personal Statistics</h3>
               <p>View your fitness progress and achievements</p>
             </div>
+            */}
 
             <div
               className="dashboard-card-member stagger-6"
@@ -728,7 +730,8 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <h3>Group Classes</h3>
               <p>Choose the suitable program among our already prepared programs by our trainers</p>
             </div>
-
+            
+            {/*
             <div
               className="dashboard-card-member stagger-7"
               onClick={() => navigate("/member/settings")}
@@ -737,6 +740,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <h3>Settings</h3>
               <p>Manage your account preferences</p>
             </div>
+            */}
 
             <div
               className="dashboard-card-member stagger-8"

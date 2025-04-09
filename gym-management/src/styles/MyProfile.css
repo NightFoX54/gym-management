@@ -998,3 +998,165 @@
   from { opacity: 1; transform: translateY(0); }
   to { opacity: 0; transform: translateY(-10px); }
 }
+
+/* Password button styling */
+.profile-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.password-button-myprofile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: #2e86de;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+}
+
+.password-button-myprofile:hover {
+  background-color: #54a0ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 134, 222, 0.2);
+}
+
+.password-button-myprofile svg {
+  font-size: 16px;
+}
+
+/* Password modal styling */
+.password-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.password-modal {
+  background-color: white;
+  border-radius: 15px;
+  padding: 25px;
+  width: 90%;
+  max-width: 500px;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dark-mode .password-modal {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+}
+
+.password-modal h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3436;
+  text-align: center;
+}
+
+.dark-mode .password-modal h3 {
+  color: #ffffff;
+}
+
+.password-field {
+  margin-bottom: 20px;
+}
+
+.password-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.dark-mode .password-field label {
+  color: #e2e8f0;
+}
+
+.password-field input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.dark-mode .password-field input {
+  background-color: #2d2d2d;
+  border-color: #404040;
+  color: #ffffff;
+}
+
+.password-field input:focus {
+  border-color: #2e86de;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.1);
+}
+
+.password-field input.error {
+  border-color: #ff4757;
+}
+
+.field-error {
+  color: #ff4757;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+.password-error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.password-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .profile-action-buttons {
+    width: 100%;
+  }
+  
+  .edit-button-myprofile,
+  .password-button-myprofile {
+    width: 80%;
+  }
+  
+  .password-modal-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .cancel-button-myprofile,
+  .save-button-myprofile {
+    width: 100%;
+  }
+}

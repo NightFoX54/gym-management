@@ -118,29 +118,143 @@
 }
 
 .trainer-card-pt {
-  background-color: var(--card-background);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 25px;
+  border-radius: 12px;
+  background-color: var(--card-background, white);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  text-align: center;
   max-width: 350px;
-  margin: 0 auto;
 }
 
 .trainer-card-pt:hover {
   transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.trainer-image-pt {
-  height: 200px;
-  position: relative;
+.trainer-avatar-container-pt {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #4CAF50;
+  margin-bottom: 16px;
 }
 
-.trainer-image-pt img {
+.trainer-avatar-pt {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.trainer-info-pt h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-color, #333);
+}
+
+.trainer-rating-box-pt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.star-rating-pt {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 18px;
+}
+
+.star-pt {
+  color: #ddd;
+  margin-right: 2px;
+}
+
+.filled-star-pt {
+  color: #f6c23e;
+}
+
+.rating-text-pt {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-muted, #6e707e);
+}
+
+.trainer-detail-pt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  font-size: 15px;
+  color: var(--text-color, #333);
+}
+
+.detail-icon-pt {
+  margin-right: 8px;
+  color: #4CAF50;
+}
+
+.trainer-bio-pt {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 15px;
+  padding-top: 15px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-color, #555);
+}
+
+.bio-label-pt {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.book-session-button-pt {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  display: inline-block;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.book-session-button-pt:hover {
+  background-color: #45a049;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Dark mode adjustments */
+.dark-mode .trainer-card-pt {
+  background-color: #2a2a2a;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .trainer-info-pt h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .trainer-detail-pt {
+  color: #d0d0d0;
+}
+
+.dark-mode .trainer-bio-pt {
+  color: #c0c0c0;
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 .trainer-content-pt {
@@ -202,23 +316,6 @@
 .trainer-description-pt {
   margin: 1rem 0;
   line-height: 1.5;
-}
-
-.book-session-button-pt {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-  margin-top: 1rem;
-}
-
-.book-session-button-pt:hover {
-  background-color: #45a049;
 }
 
 .booking-modal-overlay-pt,
@@ -983,7 +1080,7 @@
   }
 }
 
-/* Add these styles to properly display ratings */
+/* Add these styles for the rating display */
 
 .stars-display-member-mypt {
   display: flex;
@@ -2035,4 +2132,33 @@
   display: flex;
   justify-content: center;
   margin-top: 20px;
+}
+
+/* Add these styles for the rating display */
+.trainer-rating-box-pt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.star-rating-pt {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.star-pt {
+  color: #ddd;
+  margin-right: 2px;
+  font-size: 16px;
+}
+
+.filled-star-pt {
+  color: #f6c23e;
+}
+
+.rating-text-pt {
+  font-size: 14px;
+  color: var(--text-muted);
 } 

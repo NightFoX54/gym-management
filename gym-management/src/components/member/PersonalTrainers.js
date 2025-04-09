@@ -26,6 +26,7 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import '../../styles/PersonalTrainers.css';
+import axios from 'axios';
 
 const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -84,6 +85,8 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
   const [cardCVC, setCardCVC] = useState('');
   const [cardName, setCardName] = useState('');
   const [paymentError, setPaymentError] = useState('');
+
+  const [trainerRatings, setTrainerRatings] = useState({});
 
   // Get the logged in user data from localStorage
   const userString = localStorage.getItem('user');
@@ -151,6 +154,20 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
       setLoadingMyTrainers(false);
     }
   };
+
+  // Add this useEffect to fetch trainer ratings
+  useEffect(() => {
+    const fetchTrainerRatings = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/trainer/ratings');
+        setTrainerRatings(response.data);
+      } catch (error) {
+        console.error("Error fetching trainer ratings:", error);
+      }
+    };
+
+    fetchTrainerRatings();
+  }, []);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -691,36 +708,49 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
           ) : (
             <div className="trainers-grid-pt">
               {trainers.map((trainer) => (
-                <div key={trainer.id} className="trainer-card-pt">
-                  <div className="trainer-image-pt">
-                    <img src={trainer.profilePhoto || "https://images.unsplash.com/photo-1611672585731-fa10603fb9e0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"} alt={trainer.firstName} />
+                <div className="trainer-card-pt" key={trainer.id}>
+                  <div className="trainer-avatar-container-pt">
+                    <img
+                      src={trainer.profilePhoto || "https://images.unsplash.com/photo-1611672585731-fa10603fb9e0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"}
+                      alt={`${trainer.firstName} ${trainer.lastName}`}
+                      className="trainer-avatar-pt"
+                    />
                   </div>
-                  <div className="trainer-content-pt">
+                  
+                  <div className="trainer-info-pt">
                     <h3>{trainer.firstName} {trainer.lastName}</h3>
-                    <p className="specialization-pt">{trainer.specialization || "Personal Trainer"}</p>
                     
-                    <div className="trainer-details-pt">
-                      <div className="detail-item-pt">
-                        <FaUserGraduate />
-                        <span>{trainer.experience || "Experienced"} trainer</span>
+                    <div className="trainer-rating-box-pt">
+                      <div className="star-rating-pt">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span 
+                            key={star} 
+                            className={`star-pt ${star <= Math.round(trainerRatings[trainer.id] || 0) ? 'filled-star-pt' : ''}`}
+                          >
+                            <FaStar />
+                          </span>
+                        ))}
                       </div>
-                      <div className="detail-item-pt">
-                        <FaStar />
-                        <span>{trainer.rating || "4.5"} rating</span>
-                      </div>
-                      <div className="detail-item-pt">
-                        <FaCalendarAlt />
-                        <span>{trainer.availability || "Weekdays"}</span>
+                      <div className="rating-text-pt">
+                        {(trainerRatings[trainer.id] || 0).toFixed(1)} 
+                        {trainerRatings[trainer.id] ? '' : ' (No reviews yet)'}
                       </div>
                     </div>
-
-                    <div className="certifications-pt">
-                      <h4>Bio:</h4>
-                      <p className="trainer-description-pt">{trainer.bio || "Professional personal trainer ready to help you achieve your fitness goals."}</p>
+                    
+                    <div className="trainer-detail-pt">
+                      <FaDumbbell className="detail-icon-pt" />
+                      <span>{trainer.specialization || "General fitness"}</span>
                     </div>
-
+                    
+                    {trainer.bio && (
+                      <div className="trainer-bio-pt">
+                        <span className="bio-label-pt">Bio:</span>
+                        <p>{trainer.bio}</p>
+                      </div>
+                    )}
+                    
                     <button 
-                      className="book-session-button-pt"
+                      className="book-session-button-pt" 
                       onClick={() => handleBookSession(trainer)}
                     >
                       Book a Session
