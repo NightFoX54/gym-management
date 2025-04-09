@@ -326,4 +326,79 @@ public class TrainerController {
                     .body(Map.of("error", "Failed to create training request: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/approve-session-request/{requestId}")
+    public ResponseEntity<?> approveSessionRequest(@PathVariable Integer requestId) {
+        try {
+            TrainerSessionResponse session = trainerService.approveSessionRequest(requestId);
+            return ResponseEntity.ok(Map.of(
+                "id", session.getId(),
+                "message", "Session request approved successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to approve session request: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/approve-reschedule-request/{requestId}")
+    public ResponseEntity<?> approveRescheduleRequest(@PathVariable Long requestId) {
+        try {
+            trainerService.approveRescheduleRequest(requestId);
+            return ResponseEntity.ok(Map.of(
+                "message", "Session rescheduled successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to approve reschedule request: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{trainerId}/session-requests")
+    public ResponseEntity<?> getSessionRequests(@PathVariable Long trainerId) {
+        try {
+            List<Map<String, Object>> requests = trainerService.getTrainerSessionRequests(trainerId);
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch session requests: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{trainerId}/reschedule-requests")
+    public ResponseEntity<?> getRescheduleRequests(@PathVariable Long trainerId) {
+        try {
+            List<Map<String, Object>> requests = trainerService.getTrainerRescheduleRequests(trainerId);
+            return ResponseEntity.ok(requests);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to fetch reschedule requests: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reject-session-request/{requestId}")
+    public ResponseEntity<?> rejectSessionRequest(@PathVariable Integer requestId) {
+        try {
+            trainerService.rejectSessionRequest(requestId);
+            return ResponseEntity.ok(Map.of(
+                "message", "Session request rejected successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to reject session request: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reject-reschedule-request/{requestId}")
+    public ResponseEntity<?> rejectRescheduleRequest(@PathVariable Long requestId) {
+        try {
+            trainerService.rejectRescheduleRequest(requestId);
+            return ResponseEntity.ok(Map.of(
+                "message", "Reschedule request rejected successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to reject reschedule request: " + e.getMessage()));
+        }
+    }
 }

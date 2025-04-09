@@ -4,10 +4,12 @@ import com.gymmanagement.model.TrainerClient;
 import com.gymmanagement.model.TrainerSession;
 import com.gymmanagement.model.PersonalTrainingRating;
 import com.gymmanagement.model.User;
+import com.gymmanagement.model.TrainerSessionRescheduleRequest;
 import com.gymmanagement.repository.TrainerClientRepository;
 import com.gymmanagement.repository.TrainerSessionRepository;
 import com.gymmanagement.repository.PersonalTrainingRatingRepository;
 import com.gymmanagement.repository.UserRepository;
+import com.gymmanagement.repository.TrainerSessionRescheduleRequestRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,6 +35,9 @@ public class MemberTrainerController {
     
     @Autowired
     private PersonalTrainingRatingRepository ratingRepository;
+
+    @Autowired
+    private TrainerSessionRescheduleRequestRepository rescheduleRequestRepository;
 
     @GetMapping("/{memberId}")
     public ResponseEntity<?> getMemberTrainers(@PathVariable Long memberId) {
@@ -150,6 +156,53 @@ public class MemberTrainerController {
             response.put("time", updatedSession.getSessionTime().toString());
             response.put("type", updatedSession.getSessionType());
             response.put("notes", updatedSession.getNotes());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/reschedule-request/{sessionId}")
+    public ResponseEntity<?> requestSessionReschedule(@PathVariable Long sessionId, @RequestBody Map<String, String> requestData) {
+        try {
+            TrainerSession session = sessionRepository.findById(sessionId)
+                    .orElseThrow(() -> new RuntimeException("Session not found with id: " + sessionId));
+            
+            // Parse the new date and time
+            LocalDate newDate = LocalDate.parse(requestData.get("date"));
+            String newTimeStr = requestData.get("time");
+            String[] timeParts = newTimeStr.split(":");
+            LocalTime newTime = LocalTime.of(
+                Integer.parseInt(timeParts[0]), 
+                Integer.parseInt(timeParts[1])
+            );
+            
+            // Check if a reschedule request already exists for this session
+            List<TrainerSessionRescheduleRequest> existingRequests = rescheduleRequestRepository.findBySessionId(sessionId);
+            TrainerSessionRescheduleRequest request;
+            
+            if (!existingRequests.isEmpty()) {
+                // Update the existing request
+                request = existingRequests.get(0);
+                request.setNewSessionDate(newDate);
+                request.setNewSessionTime(newTime);
+            } else {
+                // Create a new reschedule request
+                request = new TrainerSessionRescheduleRequest();
+                request.setSession(session);
+                request.setNewSessionDate(newDate);
+                request.setNewSessionTime(newTime);
+            }
+            
+            TrainerSessionRescheduleRequest savedRequest = rescheduleRequestRepository.save(request);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", savedRequest.getId());
+            response.put("sessionId", session.getId());
+            response.put("newDate", savedRequest.getNewSessionDate().toString());
+            response.put("newTime", savedRequest.getNewSessionTime().toString());
+            response.put("message", "Reschedule request submitted successfully");
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
