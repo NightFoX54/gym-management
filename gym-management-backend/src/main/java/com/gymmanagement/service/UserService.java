@@ -19,6 +19,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import com.gymmanagement.dto.CustomerDTO;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import com.gymmanagement.dto.EmployeeDTO;
+import java.util.Arrays;
+import com.gymmanagement.model.EmployeeInfo;
+import com.gymmanagement.repository.EmployeeInfoRepository;
+import com.gymmanagement.dto.ShiftEntryDTO;
+import com.gymmanagement.model.ShiftEntry;
+import com.gymmanagement.repository.ShiftEntryRepository;
 
 @Service
 public class UserService {
@@ -37,6 +48,12 @@ public class UserService {
 
     @Autowired
     private PaymentMethodRepository paymentMethodRepository;
+    
+    @Autowired
+    private EmployeeInfoRepository employeeInfoRepository;
+    
+    @Autowired
+    private ShiftEntryRepository shiftEntryRepository;
     
     @Transactional
     public SignupResponse registerUser(SignupRequest signupRequest) {
@@ -131,5 +148,83 @@ public class UserService {
                 .success(true)
                 .message("User registered successfully")
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CustomerDTO> getAllCustomers() {
+        List<User> members = userRepository.findByRole("MEMBER");
+        
+        return members.stream().map(user -> {
+            CustomerDTO dto = new CustomerDTO();
+            dto.setId(user.getId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+            dto.setPhoneNumber(user.getPhoneNumber());
+            dto.setRegistrationDate(user.getRegistrationDate());
+            
+            Optional<Membership> membershipOpt = membershipRepository.findByUser(user);
+            if (membershipOpt.isPresent()) {
+                Membership membership = membershipOpt.get();
+                dto.setMembershipPlanName(membership.getPlan().getPlanName());
+                dto.setMembershipStartDate(membership.getStartDate());
+                dto.setMembershipEndDate(membership.getEndDate());
+                dto.setIsMembershipFrozen(membership.getIsFrozen());
+                // Determine if membership is active based on end date and frozen status
+                dto.setIsMembershipActive(!membership.getIsFrozen() && membership.getEndDate().isAfter(LocalDate.now()));
+            } else {
+                // Handle cases where a member might not have a membership record
+                // Or set default/null values
+                dto.setMembershipPlanName("N/A");
+                dto.setIsMembershipActive(false);
+                dto.setIsMembershipFrozen(false);
+            }
+            
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeDTO> getAllEmployees() {
+        List<String> employeeRoles = Arrays.asList("TRAINER", "STAFF");
+        List<User> employees = userRepository.findByRoleIn(employeeRoles);
+        
+        return employees.stream().map(user -> {
+            EmployeeDTO dto = new EmployeeDTO();
+            // Map basic user info
+            dto.setId(user.getId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+            dto.setPhoneNumber(user.getPhoneNumber());
+            dto.setRole(user.getRole());
+            dto.setRegistrationDate(user.getRegistrationDate());
+            
+            // Map EmployeeInfo
+            Optional<EmployeeInfo> infoOpt = employeeInfoRepository.findByUser(user);
+            if (infoOpt.isPresent()) {
+                EmployeeInfo info = infoOpt.get();
+                dto.setSalary(info.getSalary());
+                dto.setWeeklyHours(info.getWeeklyHours());
+            } else {
+                dto.setSalary(null);
+                dto.setWeeklyHours(null);
+            }
+            
+            // Map ShiftEntries
+            List<ShiftEntry> shifts = shiftEntryRepository.findByUserOrderByDayOfWeekAscStartTimeAsc(user);
+            List<ShiftEntryDTO> shiftDTOs = shifts.stream().map(shift -> {
+                ShiftEntryDTO shiftDto = new ShiftEntryDTO();
+                shiftDto.setId(shift.getId());
+                shiftDto.setDayOfWeek(shift.getDayOfWeek());
+                shiftDto.setStartTime(shift.getStartTime());
+                shiftDto.setEndTime(shift.getEndTime());
+                shiftDto.setTask(shift.getTask());
+                return shiftDto;
+            }).collect(Collectors.toList());
+            dto.setShiftEntries(shiftDTOs);
+            
+            return dto;
+        }).collect(Collectors.toList());
     }
 } 

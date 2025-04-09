@@ -9,6 +9,9 @@ import com.gymmanagement.model.TrainerSettings;
 import com.gymmanagement.model.User;
 import com.gymmanagement.repository.TrainerSettingsRepository;
 import com.gymmanagement.repository.UserRepository;
+import com.gymmanagement.dto.CustomerDTO;
+import com.gymmanagement.dto.EmployeeDTO;
+import com.gymmanagement.service.UserService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +29,9 @@ public class UserController {
     
     @Autowired
     private TrainerSettingsRepository trainerSettingsRepository;
+    
+    @Autowired
+    private UserService userService;
     
     // Get users by role
     @GetMapping("/role/{role}")
@@ -63,6 +69,31 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(null);
+        }
+    }
+
+    // Endpoint to get all customers (users with MEMBER role)
+    @GetMapping("/customers")
+    public ResponseEntity<List<CustomerDTO>> getAllCustomers() {
+        try {
+            List<CustomerDTO> customers = userService.getAllCustomers();
+            return ResponseEntity.ok(customers);
+        } catch (Exception e) {
+            // Log the exception details
+            System.err.println("Error fetching customers: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    // Endpoint to get all employees (users with specific roles like TRAINER, STAFF etc.)
+    @GetMapping("/employees")
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
+        try {
+            List<EmployeeDTO> employees = userService.getAllEmployees();
+            return ResponseEntity.ok(employees);
+        } catch (Exception e) {
+            System.err.println("Error fetching employees: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }
