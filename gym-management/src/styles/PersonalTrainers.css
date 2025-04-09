@@ -981,4 +981,1058 @@
     text-align: center;
     margin-bottom: 10px;
   }
+}
+
+/* Add these styles to properly display ratings */
+
+.stars-display-member-mypt {
+  display: flex;
+  gap: 5px;
+  margin: 5px 0;
+}
+
+.star-display-member-mypt {
+  font-size: 18px;
+  color: #ddd;
+}
+
+.star-display-member-mypt.active {
+  color: #f6c23e; /* Gold color for active stars */
+}
+
+.rating-comment-display-member-mypt {
+  font-style: italic;
+  margin-top: 5px;
+  font-size: 14px;
+  color: #666;
+}
+
+.dark-mode .rating-comment-display-member-mypt {
+  color: #bbb;
+}
+
+.dark-mode .star-display-member-mypt {
+  color: #555;
+}
+
+.dark-mode .star-display-member-mypt.active {
+  color: #f6c23e;
+}
+
+/* Add these styles to your PersonalTrainers.css file to ensure modals display correctly */
+
+.modal-overlay-pt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-pt {
+  background-color: white;
+  color: var(--text-color);
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  position: relative;
+  padding: 1.5rem;
+}
+
+.modal-header-pt {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-header-pt h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-modal-pt {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.close-modal-pt:hover {
+  opacity: 1;
+}
+
+.modal-content-pt {
+  padding: 1rem;
+}
+
+.modal-actions-pt {
+  padding: 1rem;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.cancel-button-pt, .confirm-button-pt {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cancel-button-pt {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  color: var(--text-color);
+}
+
+.confirm-button-pt {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+}
+
+.confirm-button-pt:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+.booking-form-pt {
+  padding: 1rem 0;
+}
+
+.form-group-pt {
+  margin-bottom: 1rem;
+}
+
+.form-group-pt label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.date-input-pt, .time-input-pt {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.trainer-name-modal-pt {
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.trainer-name-modal-pt h4 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.success-message-pt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.success-icon-pt {
+  font-size: 3rem;
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+/* Dark mode adjustments */
+.dark-mode .modal-pt {
+  background-color: #2d3748;
+  border: 1px solid #4a5568;
+}
+
+.dark-mode .modal-header-pt,
+.dark-mode .modal-actions-pt {
+  border-color: #444;
+}
+
+.dark-mode .date-input-pt,
+.dark-mode .time-input-pt {
+  background-color: #1a202c;
+  color: #e2e8f0;
+  border-color: #4a5568;
+}
+
+.dark-mode .cancel-button-pt {
+  border-color: #4a5568;
+}
+
+/* Enhanced Session Card Styling */
+.session-card-member-mypt {
+  background-color: var(--card-background);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 15px;
+  border-left: 4px solid #4CAF50;
+}
+
+.session-card-member-mypt:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+}
+
+.session-card-member-mypt.past {
+  border-left: 4px solid #2196F3;
+}
+
+.session-header-member-mypt {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.dark-mode .session-header-member-mypt {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.session-details-member-mypt {
+  padding: 10px 0;
+}
+
+.session-date-member-mypt, 
+.session-time-member-mypt, 
+.session-type-member-mypt {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.session-date-member-mypt svg, 
+.session-time-member-mypt svg, 
+.session-type-member-mypt svg {
+  color: #4CAF50;
+  min-width: 16px;
+}
+
+.session-card-member-mypt.past .session-date-member-mypt svg,
+.session-card-member-mypt.past .session-time-member-mypt svg,
+.session-card-member-mypt.past .session-type-member-mypt svg {
+  color: #2196F3;
+}
+
+.session-notes-member-mypt {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 10px;
+  border-radius: 6px;
+  margin: 10px 0;
+  font-style: italic;
+}
+
+.dark-mode .session-notes-member-mypt {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.session-rating-member-mypt {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode .session-rating-member-mypt {
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced sessions section */
+.sessions-section-member-mypt {
+  margin-bottom: 30px;
+  padding: 0 15px;
+}
+
+.sessions-section-member-mypt h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: var(--text-color);
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(76, 175, 80, 0.3);
+}
+
+
+/* Unified Modal Styling (like Rate Session Modal) */
+.booking-modal-overlay-pt,
+.success-modal-overlay-pt,
+.modal-overlay-pt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.booking-modal-pt,
+.success-modal-pt,
+.modal-pt,
+.rating-modal-member-mypt,
+.reschedule-modal-member-mypt {
+  background-color: white;
+  color: #333;
+  padding: 25px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.dark-mode .booking-modal-pt,
+.dark-mode .success-modal-pt,
+.dark-mode .modal-pt,
+.dark-mode .rating-modal-member-mypt,
+.dark-mode .reschedule-modal-member-mypt {
+  background-color: #1a1a1a;
+  color: white;
+  border: 1px solid #444;
+}
+
+.close-modal-pt,
+.close-modal-member-mypt {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.close-modal-pt:hover,
+.close-modal-member-mypt:hover {
+  color: #e53e3e;
+}
+
+.dark-mode .close-modal-pt,
+.dark-mode .close-modal-member-mypt {
+  color: #aaa;
+}
+
+.dark-mode .close-modal-pt:hover,
+.dark-mode .close-modal-member-mypt:hover {
+  color: #ff4757;
+}
+
+.booking-modal-pt h2,
+.booking-modal-pt h3,
+.success-modal-pt h2,
+.modal-pt h3,
+.rating-modal-member-mypt h3,
+.reschedule-modal-member-mypt h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  color: var(--text-color);
+}
+
+.dark-mode .booking-modal-pt h2,
+.dark-mode .booking-modal-pt h3,
+.dark-mode .success-modal-pt h2,
+.dark-mode .modal-pt h3,
+.dark-mode .rating-modal-member-mypt h3,
+.dark-mode .reschedule-modal-member-mypt h3 {
+  border-bottom: 1px solid #444;
+}
+
+.modal-content-pt h2,
+.modal-content-pt h3,
+.modal-content-pt p,
+.modal-content-pt strong {
+  color: var(--text-color);
+}
+
+/* Modal Buttons Unified Style */
+.modal-actions-pt,
+.modal-buttons-member-mypt {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-button-pt,
+.cancel-button-member-mypt,
+.confirm-button-pt,
+.submit-button-member-mypt {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.cancel-button-pt,
+.cancel-button-member-mypt {
+  background-color: #f8f8f8;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.cancel-button-pt:hover,
+.cancel-button-member-mypt:hover {
+  background-color: #eee;
+}
+
+.confirm-button-pt,
+.submit-button-member-mypt {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+
+.confirm-button-pt:hover,
+.submit-button-member-mypt:hover {
+  background-color: #45a049;
+}
+
+.confirm-button-pt:disabled,
+.submit-button-member-mypt:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}
+
+.dark-mode .cancel-button-pt,
+.dark-mode .cancel-button-member-mypt {
+  background-color: #333;
+  color: #ddd;
+  border: 1px solid #555;
+}
+
+.dark-mode .cancel-button-pt:hover,
+.dark-mode .cancel-button-member-mypt:hover {
+  background-color: #444;
+}
+
+/* Success Modal Enhancement */
+.success-modal-pt {
+  text-align: center;
+}
+
+.success-icon-pt {
+  font-size: 50px;
+  color: #4CAF50;
+  margin: 0 auto 20px;
+}
+
+/* Forms in Modals */
+.booking-form-pt,
+.booking-form-member-mypt {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.dark-mode .booking-form-pt,
+.dark-mode .booking-form-member-mypt {
+  background-color: #2d3748;
+}
+
+.form-group-pt,
+.form-group-member-mypt {
+  margin-bottom: 15px;
+}
+
+.form-group-pt label,
+.form-group-member-mypt label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.date-input-pt, 
+.time-input-pt,
+.date-input-member-mypt, 
+.time-input-member-mypt {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.date-input-pt:focus, 
+.time-input-pt:focus,
+.date-input-member-mypt:focus, 
+.time-input-member-mypt:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+.dark-mode .date-input-pt, 
+.dark-mode .time-input-pt,
+.dark-mode .date-input-member-mypt, 
+.dark-mode .time-input-member-mypt {
+  background-color: #1a202c;
+  color: #e2e8f0;
+  border-color: #4a5568;
+}
+
+.dark-mode .date-input-pt:focus, 
+.dark-mode .time-input-pt:focus,
+.dark-mode .date-input-member-mypt:focus, 
+.dark-mode .time-input-member-mypt:focus {
+  border-color: #4CAF50;
+}
+
+/* Session Details in Modals */
+.session-details-member-mypt {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+}
+
+.dark-mode .session-details-member-mypt {
+  background-color: #2d2d2d;
+}
+
+.session-details-member-mypt p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.session-details-member-mypt strong {
+  min-width: 80px;
+}
+
+/* Enhanced Rate & Reschedule buttons */
+.rate-session-button-member-mypt,
+.reschedule-button-member-mypt {
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  border: none;
+  margin-top: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.rate-session-button-member-mypt {
+  background-color: #2196F3;
+  color: white;
+}
+
+.rate-session-button-member-mypt:hover {
+  background-color: #1e88e5;
+}
+
+.reschedule-button-member-mypt {
+  background-color: #ff9800;
+  color: white;
+}
+
+.reschedule-button-member-mypt:hover {
+  background-color: #f57c00;
+}
+
+/* Fix star colors */
+.star-member-mypt, 
+.star-display-member-mypt,
+.star-empty-member-mypt {
+  color: #ddd; /* Light gray for empty stars */
+}
+
+.star-member-mypt.active,
+.star-display-member-mypt.active,
+.star-filled-member-mypt {
+  color: #f6c23e; /* Gold color for filled stars */
+}
+
+/* Fix modal background colors in dark mode */
+.dark-mode .booking-form-pt,
+.dark-mode .booking-form-member-mypt,
+.dark-mode .session-details-member-mypt {
+  background-color: #2d2d2d; /* Consistent dark gray for all backgrounds */
+  border: 1px solid #444;
+}
+
+/* Fix the form background in modals */
+.booking-form-pt,
+.booking-form-member-mypt {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+}
+
+/* Fix input fields in dark mode */
+.dark-mode .date-input-pt, 
+.dark-mode .time-input-pt,
+.dark-mode .date-input-member-mypt, 
+.dark-mode .time-input-member-mypt {
+  background-color: #1a1a1a; /* Match the main dark mode background */
+  color: #e2e8f0;
+  border-color: #444;
+}
+
+/* Make sure modal sections have consistent styling */
+.dark-mode .modal-pt,
+.dark-mode .booking-modal-pt,
+.dark-mode .success-modal-pt,
+.dark-mode .rating-modal-member-mypt,
+.dark-mode .reschedule-modal-member-mypt {
+  background-color: #1a1a1a;
+  color: white;
+}
+
+/* Ensure all modal content areas match dark theme */
+.dark-mode .modal-content-pt {
+  background-color: #1a1a1a;
+}
+
+/* Remove any blue tinting from modal elements in dark mode */
+.dark-mode .form-group-pt label,
+.dark-mode .form-group-member-mypt label {
+  color: #e2e8f0;
+}
+
+/* Already Client Modal Styling */
+.already-client-modal {
+  text-align: center;
+  max-width: 450px;
+}
+
+.already-client-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.info-icon {
+  font-size: 48px;
+  color: #3498db;
+  margin-bottom: 20px;
+}
+
+.dark-mode .info-icon {
+  color: #4fc3f7;
+}
+
+.already-client-content h3 {
+  margin-bottom: 15px;
+  color: var(--text-color);
+}
+
+.already-client-content p {
+  margin-bottom: 25px;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.already-client-content .modal-actions-pt {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Free PT Sessions Info Card */
+.free-pt-info {
+  margin-bottom: 20px;
+}
+
+.free-pt-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-left: 4px solid #4e73df;
+}
+
+.dark-mode .free-pt-card {
+  background-color: #1a1a1a;
+  color: #f8f9fc;
+  border-left: 4px solid #4e73df;
+}
+
+.free-pt-card h3 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.free-pt-card h3 svg {
+  margin-right: 10px;
+}
+
+.free-pt-details {
+  padding-left: 10px;
+}
+
+.free-pt-remaining {
+  font-size: 1.1em;
+  margin: 10px 0;
+}
+
+.free-pt-note {
+  font-size: 0.9em;
+  font-style: italic;
+}
+
+/* Free Initial Consultation Info */
+.free-consultation-info {
+  margin-bottom: 20px;
+}
+
+.info-message {
+  display: flex;
+  align-items: flex-start;
+  background-color: #f8f9fc;
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid #4e73df;
+}
+
+.dark-mode .info-message {
+  background-color: #1a1a1a;
+  border-left: 4px solid #4e73df;
+}
+
+.info-message .info-icon {
+  font-size: 20px;
+  color: #4e73df;
+  margin-right: 15px;
+  margin-top: 3px;
+}
+
+.info-message p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Buy Sessions Button */
+.buy-sessions-button-pt {
+  background-color: #36b9cc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.buy-sessions-button-pt:hover {
+  background-color: #258391;
+}
+
+/* Buy More Sessions Modal */
+.buy-sessions-modal-pt {
+  max-width: 550px;
+}
+
+.trainer-info-pt {
+  padding: 10px 0;
+}
+
+.session-packages-pt {
+  margin: 20px 0;
+}
+
+.package-buttons-pt {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.package-button-pt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  border: 2px solid #d1d3e2;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dark-mode .package-button-pt {
+  background-color: #1a1a1a;
+  border-color: #444;
+  color: #f8f9fc;
+}
+
+.package-button-pt:hover {
+  border-color: #4e73df;
+}
+
+.selected-package-pt {
+  border-color: #4e73df;
+  background-color: #eaeffd;
+}
+
+.dark-mode .selected-package-pt {
+  border-color: #4e73df;
+  background-color: #233a77;
+}
+
+.package-price-pt {
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.discount-badge-pt {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #e74a3b;
+  color: white;
+  font-size: 0.8em;
+  padding: 4px 8px;
+  border-radius: 20px;
+}
+
+.payment-section-pt {
+  margin-top: 20px;
+}
+
+.payment-error-pt {
+  display: flex;
+  align-items: center;
+  background-color: #fee;
+  color: #e74a3b;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.dark-mode .payment-error-pt {
+  background-color: #3d1c1c;
+}
+
+.payment-error-pt svg {
+  margin-right: 10px;
+}
+
+.form-group-pt {
+  margin-bottom: 15px;
+}
+
+.form-group-pt label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.form-group-pt input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d3e2;
+  border-radius: 4px;
+  font-size: 1em;
+  transition: border-color 0.2s;
+}
+
+.dark-mode .form-group-pt input {
+  background-color: #1a1a1a;
+  border-color: #444;
+  color: #f8f9fc;
+}
+
+.form-group-pt input:focus {
+  border-color: #4e73df;
+  outline: none;
+}
+
+.card-details-row-pt {
+  display: flex;
+  gap: 15px;
+}
+
+.expiry-group {
+  flex: 3;
+}
+
+.cvc-group {
+  flex: 2;
+}
+
+.purchase-button-pt {
+  background-color: #4e73df;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.purchase-button-pt:hover {
+  background-color: #2e59d9;
+}
+
+.purchase-button-pt:disabled {
+  background-color: #95a5c2;
+  cursor: not-allowed;
+}
+
+/* Success and loading states */
+.success-message-pt,
+.loading-message-pt {
+  text-align: center;
+  padding: 30px;
+}
+
+.success-message-pt svg {
+  font-size: 48px;
+  color: #1cc88a;
+  margin-bottom: 15px;
+}
+
+.loading-message-pt .spinner-pt {
+  font-size: 48px;
+  color: #4e73df;
+  margin-bottom: 15px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Close button for Buy Training Sessions modal */
+.close-button-pt {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #5a5c69;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+}
+
+.close-button-pt:hover {
+  color: #e74a3b;
+  background-color: rgba(231, 74, 59, 0.1);
+}
+
+.dark-mode .close-button-pt {
+  color: #d1d3e2;
+}
+
+.dark-mode .close-button-pt:hover {
+  color: #e74a3b;
+  background-color: rgba(231, 74, 59, 0.2);
+}
+
+/* Modal header positioning for the close button */
+.modal-header-pt {
+  position: relative;
+  padding-right: 40px;
+}
+
+/* Primary button styling for confirmation modals */
+.primary-button-pt {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.primary-button-pt:hover {
+  background-color: #45a049;
+}
+
+.dark-mode .primary-button-pt {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.dark-mode .primary-button-pt:hover {
+  background-color: #45a049;
+}
+
+/* Modal buttons container for single button layouts */
+.modal-buttons-pt {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 } 

@@ -19,7 +19,11 @@ import {
   FaComments,
   FaSpinner,
   FaUsers,
-  FaUserFriends
+  FaUserFriends,
+  FaInfoCircle,
+  FaShoppingCart,
+  FaCreditCard,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import '../../styles/PersonalTrainers.css';
 
@@ -54,6 +58,32 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [rescheduleTime, setRescheduleTime] = useState('');
   const [rescheduleMessage, setRescheduleMessage] = useState('');
+  const [rescheduleConfirmationMessage, setRescheduleConfirmationMessage] = useState('');
+  const [showRescheduleConfirmationModal, setShowRescheduleConfirmationModal] = useState(false);
+
+  // In the existing code, let's add a state for the Book More Sessions modal
+  const [showBookMoreModal, setShowBookMoreModal] = useState(false);
+  const [selectedMyTrainer, setSelectedMyTrainer] = useState(null);
+  const [bookMoreDate, setBookMoreDate] = useState('');
+  const [bookMoreTime, setBookMoreTime] = useState('');
+  const [bookMoreMessage, setBookMoreMessage] = useState('');
+  const [bookingMoreStatus, setBookingMoreStatus] = useState(null);
+
+  // Add a new state for the already-client notification
+  const [showAlreadyClientModal, setShowAlreadyClientModal] = useState(false);
+  const [alreadyClientTrainer, setAlreadyClientTrainer] = useState(null);
+
+  // Add these state variables to your existing state declarations
+  const [freeSessionsInfo, setFreeSessionsInfo] = useState(null);
+  const [showBuyMoreSessionsModal, setShowBuyMoreSessionsModal] = useState(false);
+  const [selectedTrainerToBuy, setSelectedTrainerToBuy] = useState(null);
+  const [selectedSessionPackage, setSelectedSessionPackage] = useState(1);
+  const [buyMoreStatus, setBuyMoreStatus] = useState(null);
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCVC, setCardCVC] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [paymentError, setPaymentError] = useState('');
 
   // Get the logged in user data from localStorage
   const userString = localStorage.getItem('user');
@@ -91,6 +121,13 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
     }
   }, [activeTab, userId]);
   
+  // Update the useEffect to fetch myTrainers for both tabs
+  useEffect(() => {
+    if (userId) {
+      fetchMyTrainers();
+    }
+  }, [userId]);
+  
   const fetchMyTrainers = async () => {
     if (!userId) return;
     
@@ -121,11 +158,41 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const handleBookSession = (trainer) => {
-    setSelectedTrainer(trainer);
-    setBookingDate('');
-    setBookingTime('');
-    setBookingMessage('');
-    setShowBookingModal(true);
+    console.log("Selected trainer:", trainer);
+    console.log("My trainers:", myTrainers);
+    
+    // First, make sure myTrainers is loaded
+    if (!myTrainers || myTrainers.length === 0) {
+      // If myTrainers isn't loaded yet, proceed with booking
+      setSelectedTrainer(trainer);
+      setBookingDate('');
+      setBookingTime('');
+      setBookingMessage('');
+      setShowBookingModal(true);
+      return;
+    }
+    
+    // Check if this trainer is already in myTrainers
+    // Add more flexible comparison to handle potential data structure differences
+    const isAlreadyMyTrainer = myTrainers.some(myTrainer => {
+      console.log(`Comparing: myTrainer.trainerId=${myTrainer.trainerId} with trainer.id=${trainer.id}`);
+      return myTrainer.trainerId === trainer.id;
+    });
+    
+    console.log("Is already my trainer:", isAlreadyMyTrainer);
+    
+    if (isAlreadyMyTrainer) {
+      // Set the trainer and show the notification
+      setAlreadyClientTrainer(trainer);
+      setShowAlreadyClientModal(true);
+    } else {
+      // Original booking flow
+      setSelectedTrainer(trainer);
+      setBookingDate('');
+      setBookingTime('');
+      setBookingMessage('');
+      setShowBookingModal(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -262,7 +329,8 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
     }
     
     try {
-      const response = await fetch(`http://localhost:8080/api/member-trainers/reschedule/${sessionToReschedule.id}`, {
+      // Use the new endpoint for reschedule requests
+      const response = await fetch(`http://localhost:8080/api/member-trainers/reschedule-request/${sessionToReschedule.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -275,36 +343,272 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to reschedule session');
+        throw new Error('Failed to submit reschedule request');
       }
       
       const result = await response.json();
       
-      // Update the local state to reflect the change
-      const updatedMyTrainers = myTrainers.map(trainer => {
-        const updatedUpcomingSessions = trainer.upcomingSessions.map(session => {
-          if (session.id === sessionToReschedule.id) {
-            return { 
-              ...session, 
-              date: rescheduleDate,
-              time: rescheduleTime
-            };
-          }
-          return session;
-        });
-        
-        return {
-          ...trainer,
-          upcomingSessions: updatedUpcomingSessions
-        };
-      });
-      
-      setMyTrainers(updatedMyTrainers);
+      // Close the reschedule modal
       setShowRescheduleModal(false);
+      
+      // Show confirmation modal
+      setRescheduleConfirmationMessage(
+        `Your reschedule request has been submitted and is waiting for trainer approval. 
+        You will be notified when the trainer responds to your request.`
+      );
+      setShowRescheduleConfirmationModal(true);
+      
+      // Reset form
       setSessionToReschedule(null);
     } catch (err) {
-      console.error('Error rescheduling session:', err);
-      setRescheduleMessage('Failed to reschedule session. Please try again.');
+      console.error('Error submitting reschedule request:', err);
+      setRescheduleMessage('Failed to submit reschedule request. Please try again.');
+    }
+  };
+
+  // Add this function to handle opening the Book More Sessions modal
+  const handleOpenBookMoreModal = (trainer) => {
+    setSelectedMyTrainer(trainer);
+    setBookMoreDate('');
+    setBookMoreTime('');
+    setBookMoreMessage('');
+    setBookingMoreStatus(null);
+    setShowBookMoreModal(true);
+  };
+
+  // Add this function to submit the booking request
+  const handleBookMoreSubmit = async () => {
+    if (!selectedMyTrainer || !bookMoreDate || !bookMoreTime) {
+      return;
+    }
+    
+    // Check if user has either free PT sessions or paid sessions available
+    if (freeSessionsInfo && freeSessionsInfo.remaining === 0 && selectedMyTrainer.remainingSessions === 0) {
+      setBookMoreMessage("You don't have any free PT sessions or paid sessions remaining. Please purchase more sessions first.");
+      return;
+    }
+    
+    try {
+      const requestData = {
+        trainerId: selectedMyTrainer.trainerId,
+        clientId: userId,
+        requestMessage: bookMoreMessage,
+        requestedMeetingDate: bookMoreDate,
+        requestedMeetingTime: bookMoreTime
+      };
+      
+      const response = await fetch('http://localhost:8080/api/trainer-session-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify(requestData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to book more sessions');
+      }
+      
+      setBookingMoreStatus('success');
+      
+      // Close modal after 2 seconds on success
+      setTimeout(() => {
+        setShowBookMoreModal(false);
+        setBookingMoreStatus(null);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error booking more sessions:', error);
+      setBookingMoreStatus('error');
+    }
+  };
+
+  // Function to handle redirecting to My Trainers tab
+  const handleRedirectToMyTrainers = () => {
+    setActiveTab('myTrainers');
+    setShowAlreadyClientModal(false);
+  };
+
+  // Add this useEffect to fetch free PT session info
+  useEffect(() => {
+    const fetchFreePtInfo = async () => {
+      if (!userId) return;
+      
+      try {
+        const response = await fetch(`http://localhost:8080/api/free-pt/remaining/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${user.token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch free PT sessions info');
+        }
+        
+        const data = await response.json();
+        setFreeSessionsInfo(data);
+      } catch (err) {
+        console.error('Error fetching free PT sessions info:', err);
+      }
+    };
+    
+    fetchFreePtInfo();
+  }, [userId, user.token]);
+
+  // Update the formatter functions to ensure only numbers are accepted
+  const formatCardNumber = (value) => {
+    // Remove any non-numeric characters
+    const v = value.replace(/[^0-9]/g, '');
+    
+    // Split into groups of 4 digits
+    const parts = [];
+    for (let i = 0; i < v.length && i < 16; i += 4) {
+      parts.push(v.substring(i, Math.min(i + 4, v.length)));
+    }
+    
+    // Join with spaces
+    return parts.join(' ');
+  };
+
+  const formatExpiry = (value) => {
+    // Remove any non-numeric characters
+    const v = value.replace(/[^0-9]/g, '');
+    
+    // Format as MM/YY
+    if (v.length > 0) {
+      // Ensure month is between 01-12
+      let month = v.substring(0, Math.min(2, v.length));
+      if (month.length === 2 && parseInt(month) > 12) {
+        month = '12';
+      }
+      
+      if (v.length > 2) {
+        return `${month}/${v.substring(2, 4)}`;
+      } else {
+        return month;
+      }
+    }
+    
+    return '';
+  };
+
+  // Add these handler functions
+  const handleOpenBuyMoreSessionsModal = (trainer) => {
+    setSelectedTrainerToBuy(trainer);
+    setSelectedSessionPackage(1);
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCVC('');
+    setCardName('');
+    setPaymentError('');
+    setBuyMoreStatus(null);
+    setShowBuyMoreSessionsModal(true);
+  };
+
+  const handleCloseBuyMoreSessionsModal = () => {
+    setShowBuyMoreSessionsModal(false);
+    setSelectedTrainerToBuy(null);
+  };
+
+  const handleBuyMoreSessions = async () => {
+    // Validate form
+    if (!cardName.trim()) {
+      setPaymentError('Please enter the cardholder name');
+      return;
+    }
+    
+    if (cardNumber.replace(/\s/g, '').length < 16) {
+      setPaymentError('Please enter a valid card number');
+      return;
+    }
+    
+    if (!cardExpiry.includes('/') || cardExpiry.length !== 5) {
+      setPaymentError('Please enter a valid expiry date (MM/YY)');
+      return;
+    }
+    
+    if (cardCVC.length < 3) {
+      setPaymentError('Please enter a valid CVC');
+      return;
+    }
+    
+    setBuyMoreStatus('processing');
+    
+    // Calculate price with discount
+    let unitPrice = 200; // Single session price in TL
+    let discount = 0;
+    
+    if (selectedSessionPackage === 5) {
+      discount = 0.1; // 10% discount
+    } else if (selectedSessionPackage === 10) {
+      discount = 0.15; // 15% discount
+    } else if (selectedSessionPackage === 20) {
+      discount = 0.2; // 20% discount
+    }
+    
+    const totalPrice = unitPrice * selectedSessionPackage;
+    const finalPrice = totalPrice * (1 - discount);
+    
+    try {
+      // First, find or create the trainer-client relationship
+      const trainerClientResponse = await fetch(`http://localhost:8080/api/trainer-client/find`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          trainerId: selectedTrainerToBuy.trainerId,
+          clientId: userId
+        })
+      });
+      
+      if (!trainerClientResponse.ok) {
+        throw new Error('Failed to find trainer-client relationship');
+      }
+      
+      const trainerClientData = await trainerClientResponse.json();
+      
+      // Now use the trainerClientId for the purchase
+      const response = await fetch('http://localhost:8080/api/pt-sessions/buy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          trainerClientId: trainerClientData.id,
+          sessionAmount: selectedSessionPackage,
+          totalPrice: finalPrice.toFixed(2)
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to process payment');
+      }
+      
+      const data = await response.json();
+      setBuyMoreStatus('success');
+      
+      // Update the trainer's remaining sessions in the local state
+      setMyTrainers(myTrainers.map(trainer => {
+        if (trainer.trainerId === selectedTrainerToBuy.trainerId) {
+          return {...trainer, remainingSessions: data.remainingSessions};
+        }
+        return trainer;
+      }));
+      
+      // Refresh my trainers list after 2 seconds
+      setTimeout(() => {
+        fetchMyTrainers();
+        handleCloseBuyMoreSessionsModal();
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Error buying more sessions:', err);
+      setPaymentError('Payment failed. Please try again.');
+      setBuyMoreStatus(null);
     }
   };
 
@@ -342,6 +646,36 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
           <FaUserFriends /> My Trainers
         </button>
       </div>
+
+      {/* Free PT info display on My Trainers tab */}
+      {activeTab === 'myTrainers' && freeSessionsInfo && (
+        <div className="free-pt-info">
+          <div className="free-pt-card">
+            <h3><FaDumbbell /> Monthly Free PT Sessions</h3>
+            <div className="free-pt-details">
+              <p>Your membership includes {freeSessionsInfo.total} free personal training sessions each month.</p>
+              <p className="free-pt-remaining">
+                <strong>Remaining this month: {freeSessionsInfo.remaining}</strong> (Used: {freeSessionsInfo.used})
+              </p>
+              <p className="free-pt-note">
+                These sessions can be used for initial consultations with trainers to help find the best match for your fitness goals.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Free consultation info on All Trainers tab */}
+      {activeTab === 'allTrainers' && (
+        <div className="free-consultation-info">
+          <div className="info-message">
+            <FaInfoCircle className="info-icon" />
+            <p>
+              <strong>Free Initial Consultations:</strong> Your membership includes complimentary personal training consultations to help you find the perfect trainer for your fitness journey. Schedule a session to discuss your goals, assess your needs, and determine if the trainer is right for you.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* All Trainers Tab Content */}
       {activeTab === 'allTrainers' && (
@@ -437,13 +771,15 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
                     </div>
                     <button 
                       className="book-more-button-member-mypt"
-                      onClick={() => handleBookSession({
-                        id: trainer.id,
-                        firstName: trainer.firstName,
-                        lastName: trainer.lastName
-                      })}
+                      onClick={() => handleOpenBookMoreModal(trainer)}
                     >
-                      <FaCalendarAlt /> Book More Sessions
+                      <FaCalendarCheck /> Book More Sessions
+                    </button>
+                    <button 
+                      className="buy-sessions-button-pt"
+                      onClick={() => handleOpenBuyMoreSessionsModal(trainer)}
+                    >
+                      <FaShoppingCart /> Buy Sessions
                     </button>
                   </div>
                   
@@ -453,7 +789,7 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
                     {trainer.upcomingSessions && trainer.upcomingSessions.length > 0 ? (
                       <div className="sessions-list-member-mypt">
                         {trainer.upcomingSessions.map(session => (
-                          <div className="session-card-member-mypt" key={session.id}>
+                          <div className="session-card-member-mypt" key={session.id || `session-${session.date}-${session.time}`}>
                             <div className="session-info-member-mypt">
                               <p><FaCalendarAlt /> <strong>Date:</strong> {session.date}</p>
                               <p><FaClock /> <strong>Time:</strong> {session.time}</p>
@@ -479,35 +815,49 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
                     {trainer.pastSessions && trainer.pastSessions.length > 0 ? (
                       <div className="sessions-list-member-mypt">
                         {trainer.pastSessions.map(session => (
-                          <div className="session-card-member-mypt" key={session.id}>
-                            <div className="session-info-member-mypt">
-                              <p><FaCalendarAlt /> <strong>Date:</strong> {session.date}</p>
-                              <p><FaClock /> <strong>Time:</strong> {session.time}</p>
-                              <p><FaDumbbell /> <strong>Type:</strong> {session.type || "Training Session"}</p>
+                          <div className="session-card-member-mypt past" key={session.id || `past-session-${session.date}-${session.time}`}>
+                            <div className="session-header-member-mypt">
+                              <span className="session-date-member-mypt">
+                                <FaCalendarDay /> {session.date}
+                              </span>
+                              <span className="session-time-member-mypt">
+                                <FaClock /> {session.time}
+                              </span>
+                            </div>
+                            <div className="session-details-member-mypt">
+                              <p className="session-type-member-mypt">
+                                <FaDumbbell /> {session.type || "Training Session"}
+                              </p>
+                              {session.notes && (
+                                <p className="session-notes-member-mypt">
+                                  <FaComments /> {session.notes}
+                                </p>
+                              )}
                               
-                              {session.hasRating && (
+                              {session.hasRating ? (
                                 <div className="session-rating-member-mypt">
-                                  <p>
-                                    <strong>Your Rating:</strong> {' '}
-                                    {[...Array(5)].map((_, i) => (
-                                      <FaStar 
-                                        key={i} 
-                                        className={i < session.rating ? "star-active-member-mypt" : "star-inactive-member-mypt"} 
+                                  <p>Your Rating:</p>
+                                  <div className="stars-display-member-mypt">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <FaStar
+                                        key={star}
+                                        className={`star-display-member-mypt ${star <= session.rating ? "active" : ""}`}
                                       />
                                     ))}
-                                  </p>
+                                  </div>
+                                  {session.comment && (
+                                    <p className="rating-comment-display-member-mypt">"{session.comment}"</p>
+                                  )}
                                 </div>
+                              ) : (
+                                <button 
+                                  className="rate-session-button-member-mypt"
+                                  onClick={() => handleOpenRatingModal(session)}
+                                >
+                                  <FaStar /> Rate This Session
+                                </button>
                               )}
                             </div>
-                            
-                            {!session.hasRating && (
-                              <button 
-                                className="rate-button-member-mypt"
-                                onClick={() => handleOpenRatingModal(session)}
-                              >
-                                <FaStar /> Rate Session
-                              </button>
-                            )}
                           </div>
                         ))}
                       </div>
@@ -716,6 +1066,308 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
               >
                 <FaCheck /> Confirm Reschedule
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Book More Sessions Modal */}
+      {showBookMoreModal && selectedMyTrainer && (
+        <div className="modal-overlay-pt">
+          <div className="modal-pt">
+            <div className="modal-header-pt">
+              <h3>Book More Sessions</h3>
+              <button className="close-modal-pt" onClick={() => setShowBookMoreModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            
+            {bookingMoreStatus === 'success' ? (
+              <div className="success-message-pt">
+                <FaCheckCircle className="success-icon-pt" /> 
+                <p>Session request sent successfully!</p>
+              </div>
+            ) : (
+              <>
+                <div className="trainer-name-modal-pt">
+                  <h4>{selectedMyTrainer.trainerName}</h4>
+                </div>
+                
+                {/* Add free PT session warning message */}
+                {freeSessionsInfo && freeSessionsInfo.remaining > 0 && (
+                  <div className="free-session-info alert alert-info">
+                    <FaInfoCircle className="mr-2" />
+                    <span>You have {freeSessionsInfo.remaining} free PT session(s) remaining. This booking will use one free session.</span>
+                  </div>
+                )}
+                
+                {/* Add warning if no free sessions and no paid sessions remain */}
+                {freeSessionsInfo && freeSessionsInfo.remaining === 0 && selectedMyTrainer.remainingSessions === 0 && (
+                  <div className="no-sessions-warning alert alert-warning">
+                    <FaExclamationTriangle className="mr-2" />
+                    <span>You have no free PT sessions or paid sessions remaining with this trainer. Please purchase more sessions before booking.</span>
+                  </div>
+                )}
+                
+                {/* Add info if using paid sessions */}
+                {freeSessionsInfo && freeSessionsInfo.remaining === 0 && selectedMyTrainer.remainingSessions > 0 && (
+                  <div className="paid-session-info alert alert-info">
+                    <FaInfoCircle className="mr-2" />
+                    <span>This booking will use one of your {selectedMyTrainer.remainingSessions} remaining paid session(s) with this trainer.</span>
+                  </div>
+                )}
+                
+                <div className="booking-form-pt">
+                  <div className="form-group-pt">
+                    <label htmlFor="book-more-date">Select Date:</label>
+                    <input 
+                      type="date" 
+                      id="book-more-date" 
+                      className="date-input-pt"
+                      value={bookMoreDate}
+                      onChange={(e) => setBookMoreDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  
+                  <div className="form-group-pt">
+                    <label htmlFor="book-more-time">Select Time:</label>
+                    <input 
+                      type="time" 
+                      id="book-more-time" 
+                      className="time-input-pt"
+                      value={bookMoreTime}
+                      onChange={(e) => setBookMoreTime(e.target.value)}
+                    />
+                  </div>
+                  
+                  {bookingMoreStatus === 'error' && (
+                    <p className="booking-error-message">Failed to send request. Please try again.</p>
+                  )}
+                </div>
+                
+                <div className="modal-actions-pt">
+                  <button 
+                    className="cancel-button-pt"
+                    onClick={() => setShowBookMoreModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="confirm-button-pt"
+                    onClick={handleBookMoreSubmit}
+                    disabled={!bookMoreDate || !bookMoreTime}
+                  >
+                    <FaCalendarCheck /> Request Session
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Already Client Modal */}
+      {showAlreadyClientModal && alreadyClientTrainer && (
+        <div className="modal-overlay-pt">
+          <div className="modal-pt already-client-modal">
+            <button 
+              className="close-modal-pt"
+              onClick={() => setShowAlreadyClientModal(false)}
+            >
+              <FaTimes />
+            </button>
+            
+            <div className="already-client-content">
+              <FaInfoCircle className="info-icon" />
+              <h3>Already Your Trainer</h3>
+              <p>
+                You are already a client of <strong>{alreadyClientTrainer.firstName} {alreadyClientTrainer.lastName}</strong>. 
+                Please book additional sessions from the "My Trainers" tab.
+              </p>
+              
+              <div className="modal-actions-pt">
+                <button 
+                  className="cancel-button-pt"
+                  onClick={() => setShowAlreadyClientModal(false)}
+                >
+                  Close
+                </button>
+                <button 
+                  className="confirm-button-pt"
+                  onClick={handleRedirectToMyTrainers}
+                >
+                  Go to My Trainers
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Buy More Sessions Modal */}
+      {showBuyMoreSessionsModal && selectedTrainerToBuy && (
+        <div className="modal-overlay-pt">
+          <div className="modal-pt buy-sessions-modal-pt">
+            <div className="modal-header-pt">
+              <h3>Buy Training Sessions</h3>
+              <button className="close-button-pt" onClick={handleCloseBuyMoreSessionsModal}>
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="modal-content-pt">
+              {buyMoreStatus === 'success' ? (
+                <div className="success-message-pt">
+                  <FaCheckCircle />
+                  <h4>Payment Successful!</h4>
+                  <p>You've purchased {selectedSessionPackage} sessions with {selectedTrainerToBuy.firstName} {selectedTrainerToBuy.lastName}.</p>
+                </div>
+              ) : buyMoreStatus === 'processing' ? (
+                <div className="loading-message-pt">
+                  <FaSpinner className="spinner-pt" />
+                  <p>Processing payment...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="trainer-info-pt">
+                    <h4>Trainer: {selectedTrainerToBuy.firstName} {selectedTrainerToBuy.lastName}</h4>
+                    
+                    <div className="session-packages-pt">
+                      <h4>Select Package:</h4>
+                      <div className="package-buttons-pt">
+                        <button 
+                          className={`package-button-pt ${selectedSessionPackage === 1 ? 'selected-package-pt' : ''}`}
+                          onClick={() => setSelectedSessionPackage(1)}
+                        >
+                          1 Session
+                          <span className="package-price-pt">200 TL</span>
+                        </button>
+                        <button 
+                          className={`package-button-pt ${selectedSessionPackage === 5 ? 'selected-package-pt' : ''}`}
+                          onClick={() => setSelectedSessionPackage(5)}
+                        >
+                          5 Sessions
+                          <span className="package-price-pt">900 TL</span>
+                          <span className="discount-badge-pt">10% off</span>
+                        </button>
+                        <button 
+                          className={`package-button-pt ${selectedSessionPackage === 10 ? 'selected-package-pt' : ''}`}
+                          onClick={() => setSelectedSessionPackage(10)}
+                        >
+                          10 Sessions
+                          <span className="package-price-pt">1,700 TL</span>
+                          <span className="discount-badge-pt">15% off</span>
+                        </button>
+                        <button 
+                          className={`package-button-pt ${selectedSessionPackage === 20 ? 'selected-package-pt' : ''}`}
+                          onClick={() => setSelectedSessionPackage(20)}
+                        >
+                          20 Sessions
+                          <span className="package-price-pt">3,200 TL</span>
+                          <span className="discount-badge-pt">20% off</span>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="payment-section-pt">
+                      <h4>Payment Details:</h4>
+                      {paymentError && (
+                        <div className="payment-error-pt">
+                          <FaExclamationTriangle />
+                          <span>{paymentError}</span>
+                        </div>
+                      )}
+                      
+                      <div className="form-group-pt">
+                        <label htmlFor="card-name">Cardholder Name</label>
+                        <input 
+                          type="text" 
+                          id="card-name" 
+                          value={cardName}
+                          onChange={(e) => setCardName(e.target.value)}
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      
+                      <div className="form-group-pt">
+                        <label htmlFor="card-number">Card Number</label>
+                        <input 
+                          type="text" 
+                          id="card-number" 
+                          value={cardNumber}
+                          onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                          placeholder="1234 5678 9012 3456"
+                          maxLength={19}
+                        />
+                      </div>
+                      
+                      <div className="card-details-row-pt">
+                        <div className="form-group-pt expiry-group">
+                          <label htmlFor="card-expiry">Expiry Date</label>
+                          <input 
+                            type="text" 
+                            id="card-expiry" 
+                            value={cardExpiry}
+                            onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                            placeholder="MM/YY"
+                            maxLength={5}
+                          />
+                        </div>
+                        
+                        <div className="form-group-pt cvc-group">
+                          <label htmlFor="card-cvc">CVC</label>
+                          <input 
+                            type="text" 
+                            id="card-cvc" 
+                            value={cardCVC}
+                            onChange={(e) => setCardCVC(e.target.value.replace(/\D/g, '').substring(0, 4))}
+                            maxLength={4}
+                            placeholder="123"
+                          />
+                        </div>
+                      </div>
+                      
+                      <button 
+                        className="purchase-button-pt"
+                        onClick={handleBuyMoreSessions}
+                      >
+                        Purchase {selectedSessionPackage} Session{selectedSessionPackage > 1 ? 's' : ''}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Confirmation Modal */}
+      {showRescheduleConfirmationModal && (
+        <div className="modal-overlay-pt">
+          <div className="modal-pt">
+            <div className="modal-header-pt">
+              <h3>Reschedule Request Submitted</h3>
+              <button className="close-button-pt" onClick={() => setShowRescheduleConfirmationModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="modal-content-pt">
+              <div className="success-message-pt">
+                <FaCheckCircle className="success-icon-pt" />
+                <p>{rescheduleConfirmationMessage}</p>
+              </div>
+              
+              <div className="modal-buttons-pt">
+                <button 
+                  className="primary-button-pt" 
+                  onClick={() => setShowRescheduleConfirmationModal(false)}
+                >
+                  OK
+                </button>
+              </div>
             </div>
           </div>
         </div>

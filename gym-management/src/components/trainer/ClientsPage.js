@@ -38,6 +38,8 @@ import {
   Tabs,
   Tab,
   LinearProgress,
+  Card,
+  CardActions,
 } from '@mui/material';
 import { 
   LoadingButton,
@@ -97,6 +99,8 @@ const ClientsPage = ({ isDarkMode }) => {
   });
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, clientId: null });
   const [clientRequests, setClientRequests] = useState([]);
+  const [sessionRequests, setSessionRequests] = useState([]);
+  const [rescheduleRequests, setRescheduleRequests] = useState([]);
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
   const [trainerId, setTrainerId] = useState(null);
@@ -104,6 +108,7 @@ const ClientsPage = ({ isDarkMode }) => {
   const [clientDetailTab, setClientDetailTab] = useState(0);
   const [clientDetails, setClientDetails] = useState(null);
   const [clientDetailsLoading, setClientDetailsLoading] = useState(false);
+  const [requestTabValue, setRequestTabValue] = useState(0);
 
   useEffect(() => {
     // Get the trainer ID from user in local storage or use a default for testing
@@ -136,6 +141,8 @@ const ClientsPage = ({ isDarkMode }) => {
     if (trainerId) {
       fetchClients();
       fetchRequests();
+      fetchSessionRequests();
+      fetchRescheduleRequests();
     }
   }, [trainerId]);
 
@@ -217,6 +224,50 @@ const ClientsPage = ({ isDarkMode }) => {
     } catch (error) {
       console.error('Error fetching requests:', error);
       showAlert(`Failed to fetch client requests: ${error.message}`, 'error');
+    }
+  };
+
+  const fetchSessionRequests = async () => {
+    try {
+      console.log(`Fetching session requests for trainer ID: ${trainerId}`);
+      const response = await fetch(`http://localhost:8080/api/trainer/${trainerId}/session-requests`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Session requests fetched:", data);
+        setSessionRequests(data);
+      } else {
+        console.error("Failed to fetch session requests");
+      }
+    } catch (error) {
+      console.error("Error fetching session requests:", error);
+    }
+  };
+
+  const fetchRescheduleRequests = async () => {
+    try {
+      console.log(`Fetching reschedule requests for trainer ID: ${trainerId}`);
+      const response = await fetch(`http://localhost:8080/api/trainer/${trainerId}/reschedule-requests`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Reschedule requests fetched:", data);
+        setRescheduleRequests(data);
+      } else {
+        console.error("Failed to fetch reschedule requests");
+      }
+    } catch (error) {
+      console.error("Error fetching reschedule requests:", error);
     }
   };
 
@@ -1372,158 +1423,346 @@ const ClientsPage = ({ isDarkMode }) => {
     return rows;
   };
 
-  const renderRequestsSection = () => (
-    <Box sx={{ mb: 4 }}>
-      <Typography variant="h6" sx={{ 
-        mb: 2, 
-        color: isDarkMode ? '#f5f5f5' : '#2c3e50',  // Brighter text in dark mode
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1
-      }}>
-        <AccessTimeFilled sx={{ color: '#ff6b81' }} />
-        Pending Client Requests
-      </Typography>
+  const renderRequestsSection = () => {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Pending Requests
+        </Typography>
+        
+        <Tabs
+          value={requestTabValue}
+          onChange={(e, newValue) => setRequestTabValue(newValue)}
+          sx={{ mb: 2 }}
+        >
+          <Tab label={`Registration (${clientRequests.length})`} />
+          <Tab label={`Session (${sessionRequests.length})`} />
+          <Tab label={`Reschedule (${rescheduleRequests.length})`} />
+        </Tabs>
 
-      <AnimatePresence>
-        {clientRequests.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            <Paper sx={{
-              p: 3,
-              textAlign: 'center',
-              bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-              borderRadius: '16px',
-            }}>
-              <Typography color="textSecondary">
-                No pending requests at the moment
-              </Typography>
-            </Paper>
-          </motion.div>
-        ) : (
-          <Grid container spacing={2}>
-            {clientRequests.map((request) => (
-              <Grid item xs={12} md={6} key={request.id}>
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Paper sx={{
-                    p: 3,
-                    bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-                    borderRadius: '16px',
-                    border: '1px solid',
-                    borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '4px',
-                      height: '100%',
-                      background: 'linear-gradient(to bottom, #ff4757, #ff6b81)',
-                    }
-                  }}>
-                    <Box sx={{ pl: 2 }}>
-                      <Typography variant="h6" sx={{ color: '#ff4757', mb: 1 }}>
-                        {request.name}
-                      </Typography>
-                      
-                      <Grid container spacing={2} sx={{ mb: 2 }}>
-                        <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="textSecondary">
-                            Email: {request.email}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Phone: {request.phone || 'Not provided'}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="textSecondary">
-                            Program: {request.program}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Meeting Date: {formatDate(request.meetingDate)}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Meeting Time: {formatTime(request.meetingTime)}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-
-                      {request.message && (
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            mb: 2,
-                            p: 2,
-                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-                            borderRadius: '8px',
-                            color: isDarkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'
-                          }}
-                        >
-                          "{request.message}"
-                        </Typography>
-                      )}
-
-                      <Box sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'flex-end',
-                        gap: 1 
-                      }}>
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                          <Button
-                            variant="outlined"
-                            startIcon={<Close />}
-                            onClick={() => handleRequestAction(request.id, 'reject')}
-                            disabled={actionLoading}
-                            sx={{
-                              borderColor: '#ff4757',
-                              color: '#ff4757',
-                              '&:hover': {
-                                borderColor: '#ff3747',
-                                bgcolor: 'rgba(255,71,87,0.1)',
-                              }
-                            }}
-                          >
-                            Reject
-                          </Button>
-                        </motion.div>
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                          <Button
+        {/* Registration Requests */}
+        {requestTabValue === 0 && (
+          <AnimatePresence>
+            {clientRequests.length > 0 ? (
+              <Grid container spacing={2}>
+                {clientRequests.map((request) => (
+                  <Grid item xs={12} md={6} lg={4} key={request.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Card
+                        sx={{
+                          height: '100%',
+                          bgcolor: isDarkMode ? 'background.paper' : '#f9f9f9',
+                          borderLeft: '4px solid #2196f3',
+                          transition: 'transform 0.2s',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: 4,
+                          },
+                        }}
+                      >
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                              {request.name}
+                            </Typography>
+                            <Chip size="small" label="Registration" sx={{ bgcolor: '#2196f3', color: 'white' }} />
+                          </Box>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <Email fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="body2">{request.email}</Typography>
+                          </Box>
+                          
+                          {request.phone && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Phone fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                              <Typography variant="body2">{request.phone}</Typography>
+                            </Box>
+                          )}
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <CalendarToday fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="body2">{request.date || 'No date specified'}</Typography>
+                          </Box>
+                          
+                          {request.time && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <AccessTime fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                              <Typography variant="body2">{request.time}</Typography>
+                            </Box>
+                          )}
+                          
+                          {request.message && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                "{request.message}"
+                              </Typography>
+                            </Box>
+                          )}
+                        </CardContent>
+                        <CardActions>
+                          <LoadingButton
+                            size="small"
                             variant="contained"
+                            color="success"
                             startIcon={<Check />}
-                            onClick={() => handleRequestAction(request.id, 'approve')}
-                            disabled={actionLoading}
-                            sx={{
-                              bgcolor: '#ff4757',
-                              '&:hover': {
-                                bgcolor: '#ff3747',
-                              }
-                            }}
+                            onClick={() => handleAcceptRegistration(request.id)}
+                            loading={actionLoading}
                           >
-                            Approve
+                            Accept
+                          </LoadingButton>
+                          <Button 
+                            size="small" 
+                            variant="outlined" 
+                            color="error"
+                            startIcon={<Close />}
+                            onClick={() => handleDeclineRegistration(request.id)}
+                            disabled={actionLoading}
+                          >
+                            Decline
                           </Button>
-                        </motion.div>
-                      </Box>
-                    </Box>
-                  </Paper>
-                </motion.div>
+                        </CardActions>
+                      </Card>
+                    </motion.div>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography color="text.secondary">No pending registration requests</Typography>
+              </Box>
+            )}
+          </AnimatePresence>
         )}
-      </AnimatePresence>
-    </Box>
-  );
+
+        {/* Session Requests */}
+        {requestTabValue === 1 && (
+          <AnimatePresence>
+            {sessionRequests.length > 0 ? (
+              <Grid container spacing={2}>
+                {sessionRequests.map((request) => (
+                  <Grid item xs={12} md={6} lg={4} key={request.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Card
+                        sx={{
+                          height: '100%',
+                          bgcolor: isDarkMode ? 'background.paper' : '#f9f9f9',
+                          borderLeft: '4px solid #4caf50',
+                          transition: 'transform 0.2s',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: 4,
+                          },
+                        }}
+                      >
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                              {request.name}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              {request.isFreeSession && (
+                                <Chip size="small" label="Free Session" sx={{ bgcolor: '#ff9800', color: 'white' }} />
+                              )}
+                              <Chip size="small" label="Session" sx={{ bgcolor: '#4caf50', color: 'white' }} />
+                            </Box>
+                          </Box>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <Email fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="body2">{request.email}</Typography>
+                          </Box>
+                          
+                          {request.phone && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Phone fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                              <Typography variant="body2">{request.phone}</Typography>
+                            </Box>
+                          )}
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <CalendarToday fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="body2">{request.date || 'No date specified'}</Typography>
+                          </Box>
+                          
+                          {request.time && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <AccessTime fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                              <Typography variant="body2">{request.time}</Typography>
+                            </Box>
+                          )}
+                          
+                          {request.message && (
+                            <Box sx={{ mt: 2 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                "{request.message}"
+                              </Typography>
+                            </Box>
+                          )}
+                        </CardContent>
+                        <CardActions>
+                          <LoadingButton
+                            size="small"
+                            variant="contained"
+                            color="success"
+                            startIcon={<Check />}
+                            onClick={() => handleAcceptSession(request.id)}
+                            loading={actionLoading}
+                          >
+                            Accept
+                          </LoadingButton>
+                          <Button 
+                            size="small" 
+                            variant="outlined" 
+                            color="error"
+                            startIcon={<Close />}
+                            onClick={() => handleDeclineSession(request.id)}
+                            disabled={actionLoading}
+                          >
+                            Decline
+                          </Button>
+                        </CardActions>
+                      </Card>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography color="text.secondary">No pending session requests</Typography>
+              </Box>
+            )}
+          </AnimatePresence>
+        )}
+
+        {/* Reschedule Requests */}
+        {requestTabValue === 2 && (
+          <AnimatePresence>
+            {rescheduleRequests.length > 0 ? (
+              <Grid container spacing={2}>
+                {rescheduleRequests.map((request) => (
+                  <Grid item xs={12} md={6} lg={4} key={request.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Card
+                        sx={{
+                          height: '100%',
+                          bgcolor: isDarkMode ? 'background.paper' : '#f9f9f9',
+                          borderLeft: '4px solid #9c27b0',
+                          transition: 'transform 0.2s',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: 4,
+                          },
+                        }}
+                      >
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                              {request.name}
+                            </Typography>
+                            <Chip size="small" label="Reschedule" sx={{ bgcolor: '#9c27b0', color: 'white' }} />
+                          </Box>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <Email fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="body2">{request.email}</Typography>
+                          </Box>
+                          
+                          {request.phone && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <Phone fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                              <Typography variant="body2">{request.phone}</Typography>
+                            </Box>
+                          )}
+                          
+                          <Divider sx={{ my: 1 }} />
+                          
+                          <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+                            Current Appointment:
+                          </Typography>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <CalendarToday fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="body2">{request.currentDate || 'No date specified'}</Typography>
+                          </Box>
+                          
+                          {request.currentTime && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <AccessTime fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                              <Typography variant="body2">{request.currentTime}</Typography>
+                            </Box>
+                          )}
+                          
+                          <Divider sx={{ my: 1 }} />
+                          
+                          <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary' }}>
+                            Requested Change:
+                          </Typography>
+                          
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <CalendarToday fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            <Typography variant="body2">{request.newDate || 'No date specified'}</Typography>
+                          </Box>
+                          
+                          {request.newTime && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                              <AccessTime fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                              <Typography variant="body2">{request.newTime}</Typography>
+                            </Box>
+                          )}
+                        </CardContent>
+                        <CardActions>
+                          <LoadingButton
+                            size="small"
+                            variant="contained"
+                            color="success"
+                            startIcon={<Check />}
+                            onClick={() => handleAcceptReschedule(request.id, request.sessionId)}
+                            loading={actionLoading}
+                          >
+                            Accept
+                          </LoadingButton>
+                          <Button 
+                            size="small" 
+                            variant="outlined" 
+                            color="error"
+                            startIcon={<Close />}
+                            onClick={() => handleDeclineReschedule(request.id)}
+                            disabled={actionLoading}
+                          >
+                            Decline
+                          </Button>
+                        </CardActions>
+                      </Card>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography color="text.secondary">No pending reschedule requests</Typography>
+              </Box>
+            )}
+          </AnimatePresence>
+        )}
+      </Box>
+    );
+  };
 
   const renderDeleteConfirmDialog = () => (
     <Dialog
@@ -1669,6 +1908,221 @@ const ClientsPage = ({ isDarkMode }) => {
       </DialogActions>
     </Dialog>
   );
+
+  // Determine if any requests exist
+  const hasAnyRequests = clientRequests.length > 0 || 
+                         sessionRequests.length > 0 || 
+                         rescheduleRequests.length > 0;
+
+  // Handle accepting a client registration request
+  const handleAcceptRegistration = async (requestId) => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/trainer/requests/${requestId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ initialSessions: 10 })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to approve client request');
+      }
+      
+      // Remove the request from the list
+      setClientRequests(clientRequests.filter(req => req.id !== requestId));
+      // Refresh the clients list
+      fetchClients();
+      setAlert({
+        open: true,
+        message: 'Client registration accepted successfully!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error accepting client registration:', error);
+      setAlert({
+        open: true,
+        message: 'Error accepting client registration',
+        severity: 'error'
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle declining a client registration request
+  const handleDeclineRegistration = async (requestId) => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/trainer/requests/${requestId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to reject client request');
+      }
+      
+      // Remove the request from the list
+      setClientRequests(prev => prev.filter(req => req.id !== requestId));
+      showAlert('Client request declined', 'info');
+    } catch (error) {
+      console.error('Error declining client request:', error);
+      showAlert('Failed to decline client request', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle accepting a session request
+  const handleAcceptSession = async (requestId) => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/trainer/approve-session-request/${requestId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to approve session request');
+      }
+      
+      // Remove the request from the list
+      setSessionRequests(sessionRequests.filter(req => req.id !== requestId));
+      // Refresh the sessions list
+      fetchSessions();
+      setAlert({
+        open: true,
+        message: 'Session request accepted successfully!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error accepting session request:', error);
+      setAlert({
+        open: true,
+        message: 'Error accepting session request',
+        severity: 'error'
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle declining a session request
+  const handleDeclineSession = async (requestId) => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/trainer/reject-session-request/${requestId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to decline session request');
+      }
+      
+      // Remove the session request from the list
+      setSessionRequests(prev => prev.filter(req => req.id !== requestId));
+      showAlert('Session request declined', 'info');
+    } catch (error) {
+      console.error('Error declining session:', error);
+      showAlert('Failed to decline session request', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle accepting a reschedule request
+  const handleAcceptReschedule = async (requestId) => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/trainer/approve-reschedule-request/${requestId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to approve reschedule request');
+      }
+      
+      // Remove the request from the list
+      setRescheduleRequests(rescheduleRequests.filter(req => req.id !== requestId));
+      // Refresh the sessions list
+      fetchSessions();
+      setAlert({
+        open: true,
+        message: 'Reschedule request accepted successfully!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error accepting reschedule request:', error);
+      setAlert({
+        open: true,
+        message: 'Error accepting reschedule request',
+        severity: 'error'
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle declining a reschedule request
+  const handleDeclineReschedule = async (requestId) => {
+    setActionLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8080/api/trainer/reject-reschedule-request/${requestId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to decline reschedule request');
+      }
+      
+      // Remove the request from the list
+      setRescheduleRequests(prev => prev.filter(req => req.id !== requestId));
+      showAlert('Reschedule request declined', 'info');
+    } catch (error) {
+      console.error('Error declining reschedule request:', error);
+      showAlert('Failed to decline reschedule request', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const fetchSessions = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/trainer/${trainerId}/sessions`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch sessions: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Sessions data received:", data);
+      // You might want to store this in state if needed
+      // For now, we just need to refresh the data after a reschedule
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      showAlert(`Failed to fetch sessions: ${error.message}`, 'error');
+    }
+  };
 
   return (
     <Box sx={{ p: 3 }}>
