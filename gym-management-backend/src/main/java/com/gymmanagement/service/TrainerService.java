@@ -5,6 +5,7 @@ import com.gymmanagement.dto.TrainerRequestResponse;
 import com.gymmanagement.dto.TrainerSessionRequest;
 import com.gymmanagement.dto.TrainerSessionResponse;
 import com.gymmanagement.model.FreePtUse;
+import com.gymmanagement.model.PersonalTrainingRating;
 import com.gymmanagement.model.TrainerClient;
 import com.gymmanagement.model.TrainerRegistrationRequest;
 import com.gymmanagement.model.TrainerSession;
@@ -17,6 +18,7 @@ import com.gymmanagement.repository.UserRepository;
 import com.gymmanagement.repository.TrainerSessionRequestRepository;
 import com.gymmanagement.repository.TrainerSessionRescheduleRequestRepository;
 import com.gymmanagement.repository.FreePtUseRepository;
+import com.gymmanagement.repository.PersonalTrainingRatingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +55,9 @@ public class TrainerService {
     
     @Autowired
     private FreePtUseRepository freePtUseRepository;
+    
+    @Autowired
+    private PersonalTrainingRatingRepository ratingRepository;
     
     public List<TrainerClientResponse> getTrainerClients(Long trainerId) {
         List<TrainerClient> clients = clientRepository.findByTrainerId(trainerId);
@@ -421,5 +426,35 @@ public class TrainerService {
         
         // Simply delete the request - no need to adjust any other records
         rescheduleRequestRepository.deleteById(requestId);
+    }
+
+    public Map<Long, Double> getTrainerRatings() {
+        Map<Long, Double> trainerRatings = new HashMap<>();
+        
+        // Get all trainer sessions
+        List<TrainerSession> allSessions = sessionRepository.findAll();
+        
+        // Group sessions by trainer
+        Map<Long, List<TrainerSession>> sessionsByTrainer = allSessions.stream()
+                .collect(Collectors.groupingBy(session -> session.getTrainer().getId()));
+        
+        // For each trainer, calculate average rating
+        sessionsByTrainer.forEach((trainerId, sessions) -> {
+            List<Double> ratings = new ArrayList<>();
+            
+            // Get ratings for each session
+            for (TrainerSession session : sessions) {
+                Optional<PersonalTrainingRating> ratingOpt = ratingRepository.findBySessionId(session.getId());
+                ratingOpt.ifPresent(rating -> ratings.add(rating.getRating().doubleValue()));
+            }
+            
+            // Calculate average or default to 0
+            double averageRating = ratings.isEmpty() ? 0 : 
+                ratings.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+            
+            trainerRatings.put(trainerId, averageRating);
+        });
+        
+        return trainerRatings;
     }
 }
