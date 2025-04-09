@@ -1,5 +1,6 @@
 package com.gymmanagement.controller;
 
+import com.gymmanagement.dto.PasswordChangeRequest;
 import com.gymmanagement.model.Membership;
 import com.gymmanagement.model.MembershipPlan;
 import com.gymmanagement.model.User;
@@ -8,6 +9,7 @@ import com.gymmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -28,6 +30,9 @@ public class MemberController {
     
     @Autowired
     private MembershipRepository membershipRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/{memberId}/discount")
     public ResponseEntity<Map<String, Object>> getMemberDiscount(@PathVariable Long memberId) {
@@ -286,6 +291,38 @@ public class MemberController {
             errorResponse.put("message", e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/{id}/change-password")
+    public ResponseEntity<?> changePassword(
+            @PathVariable Long id,
+            @RequestBody PasswordChangeRequest request) {
+        
+        try {
+            // Check if the user exists
+            Optional<User> userOpt = userRepository.findById(id);
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "User not found"));
+            }
+            
+            User user = userOpt.get();
+            
+            // Verify old password
+            if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("message", "Current password is incorrect"));
+            }
+            
+            // Update password
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to update password: " + e.getMessage()));
         }
     }
 } 

@@ -401,4 +401,9 @@ public class TrainerController {
                     .body(Map.of("error", "Failed to reject reschedule request: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/ratings")
+    public ResponseEntity<Map<Long, Double>> getTrainerRatings() {
+        return ResponseEntity.ok(trainerService.getTrainerRatings());
+    }
 }
