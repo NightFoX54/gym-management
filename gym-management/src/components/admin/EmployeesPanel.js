@@ -1,61 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../../styles/AdminPanels.css';
-import { DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
-import { Button, Table } from 'antd';
-import axios from 'axios';
-
-// Helper function to get day name from number
-const getDayName = (dayNumber) => {
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  return days[dayNumber - 1] || 'Invalid Day';
-};
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 
 const EmployeesPanel = () => {
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [employees, setEmployees] = useState([
+    {
+      id: 1,
+      name: 'Enes',
+      surname: 'Oy',
+      email: 'enes.oy@example.com',
+      phone: '+90 555 987 6543',
+      salary: 32000,
+      hoursPerWeek: 40,
+      shiftSchedule: '/s1.jpg'
+    },
+    {
+      id: 2,
+      name: 'Arif',
+      surname: 'Işık',
+      email: 'arif.isik@example.com',
+      phone: '+90 555 876 5432',
+      salary: 28000,
+      hoursPerWeek: 38,
+      shiftSchedule: '/s2.jpg'
+    },
+    {
+      id: 3,
+      name: 'Aziz',
+      surname: 'Vefa',
+      email: 'aziz.vefa@example.com',
+      phone: '+90 555 765 4321',
+      salary: 35000,
+      hoursPerWeek: 42,
+      shiftSchedule: '/s3.jpg'
+    }
+  ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showShiftModal, setShowShiftModal] = useState(false);
+  const [selectedShift, setSelectedShift] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
-  const [selectedEmployeeShifts, setSelectedEmployeeShifts] = useState([]);
-  const [showShiftModal, setShowShiftModal] = useState(false);
+  const [newEmployee, setNewEmployee] = useState({
+    name: '',
+    surname: '',
+    email: '',
+    phone: '',
+    salary: '',
+    hoursPerWeek: '',
+    shiftSchedule: ''
+  });
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [newEmployee, setNewEmployee] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    role: 'STAFF',
-    salary: '',
-    weeklyHours: ''
-  });
-
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get('http://localhost:8080/api/users/employees');
-        setEmployees(response.data);
-      } catch (err) {
-        console.error("Error fetching employees:", err);
-        setError('Failed to load employees. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmployees();
-  }, []);
-
+  // Phone number validation function
   const validatePhoneInput = (value, previousValue) => {
+    // If empty, return empty
     if (!value) return '';
     
+    // Allow only + at the beginning and numbers
     const regex = /^(\+)?[0-9\s]*$/;
     
     if (!regex.test(value)) {
@@ -67,18 +73,22 @@ const EmployeesPanel = () => {
 
   const handleAddEmployee = (e) => {
     e.preventDefault();
-    console.warn("Add employee needs backend integration.");
-    setEmployees([...employees, { ...newEmployee, id: Date.now(), shiftEntries: [] }]);
+    setEmployees([...employees, { ...newEmployee, id: employees.length + 1 }]);
     setShowAddForm(false);
     setNewEmployee({ 
-      firstName: '', 
-      lastName: '', 
+      name: '', 
+      surname: '', 
       email: '', 
-      phoneNumber: '', 
-      role: 'STAFF', 
+      phone: '', 
       salary: '', 
-      weeklyHours: ''
+      hoursPerWeek: '', 
+      shiftSchedule: '' 
     });
+  };
+
+  const handleShowShift = (shiftSchedule) => {
+    setSelectedShift(shiftSchedule);
+    setShowShiftModal(true);
   };
 
   const handleEditClick = () => {
@@ -104,15 +114,15 @@ const EmployeesPanel = () => {
   };
 
   const handleSaveEdit = (id, updatedData) => {
-    console.warn("Edit employee needs backend integration.");
-    setEmployees(employees.map(emp => emp.id === id ? { ...emp, ...updatedData } : emp));
+    setEmployees(employees.map(employee => 
+      employee.id === id ? { ...employee, ...updatedData } : employee
+    ));
     setEditingEmployee(null);
   };
 
   const handleDeleteConfirm = () => {
-    console.warn("Delete employee needs backend integration.");
     if (employeeToDelete) {
-      setEmployees(employees.filter(emp => emp.id !== employeeToDelete.id));
+      setEmployees(employees.filter(employee => employee.id !== employeeToDelete.id));
       setEmployeeToDelete(null);
       setShowConfirmDialog(false);
     }
@@ -123,46 +133,18 @@ const EmployeesPanel = () => {
     setShowConfirmDialog(false);
   };
 
-  const handleShowShift = (shifts) => {
-    if (shifts && shifts.length > 0) {
-      setSelectedEmployeeShifts(shifts);
-      setShowShiftModal(true);
-    } else {
-      alert("No shift schedule available for this employee.");
-    }
-  };
-
-  const handleCloseShiftModal = () => {
-    setShowShiftModal(false);
-    setSelectedEmployeeShifts([]);
-  };
-
-  const handleShiftButtonClick = (e, shifts) => {
-    e.stopPropagation();
-    handleShowShift(shifts);
-  };
-
+  // Filter employees based on search query
   const filteredEmployees = employees.filter(employee => {
-    const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.toLowerCase();
+    const fullName = `${employee.name} ${employee.surname}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase()) || 
            (employee.email && employee.email.toLowerCase().includes(searchQuery.toLowerCase()));
   });
 
-  // Define columns for the shift modal table
-  const shiftColumns = [
-    { title: 'Day', dataIndex: 'dayOfWeek', key: 'day', render: getDayName },
-    { title: 'Start Time', dataIndex: 'startTime', key: 'start' },
-    { title: 'End Time', dataIndex: 'endTime', key: 'end' },
-    { title: 'Task', dataIndex: 'task', key: 'task' },
-  ];
-
-  if (loading) {
-    return <div className="panel-container loading">Loading employees...</div>;
-  }
-
-  if (error) {
-    return <div className="panel-container error">Error: {error}</div>;
-  }
+  // Prevent row click when clicking the shift button
+  const handleShiftButtonClick = (e, shiftSchedule) => {
+    e.stopPropagation();
+    handleShowShift(shiftSchedule);
+  };
 
   return (
     <div className="panel-container">
@@ -227,14 +209,13 @@ const EmployeesPanel = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
+              <th>Name</th>
+              <th>Surname</th>
               <th>Email</th>
               <th>Phone</th>
-              <th>Role</th>
               <th>Salary (₺)</th>
               <th>Hours/Week</th>
-              <th>Shift Schedule</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -242,43 +223,128 @@ const EmployeesPanel = () => {
               <tr 
                 key={employee.id} 
                 onClick={() => handleSelectEmployee(employee)}
-                className={`${isEditing && !editingEmployee ? 'editable-row' : ''} ${isDeleting ? 'deletable-row' : ''}`}
+                className={
+                  isEditing && !editingEmployee 
+                    ? 'selectable-row' 
+                    : isDeleting 
+                      ? 'deletable-row' 
+                      : ''
+                }
               >
-                <td>{isEditing && editingEmployee?.id === employee.id ? <input type="text" value={editingEmployee.firstName} onChange={(e) => setEditingEmployee({...editingEmployee, firstName: e.target.value})} /> : employee.firstName}</td>
-                <td>{isEditing && editingEmployee?.id === employee.id ? <input type="text" value={editingEmployee.lastName} onChange={(e) => setEditingEmployee({...editingEmployee, lastName: e.target.value})} /> : employee.lastName}</td>
-                <td>{isEditing && editingEmployee?.id === employee.id ? <input type="email" value={editingEmployee.email} onChange={(e) => setEditingEmployee({...editingEmployee, email: e.target.value})} /> : employee.email}</td>
-                <td>{isEditing && editingEmployee?.id === employee.id ? <input type="text" value={editingEmployee.phoneNumber || ''} onChange={(e) => setEditingEmployee({...editingEmployee, phoneNumber: validatePhoneInput(e.target.value, editingEmployee.phoneNumber)})} /> : employee.phoneNumber}</td>
-                <td>{isEditing && editingEmployee?.id === employee.id ? 
-                    <select 
-                      value={editingEmployee.role} 
-                      onChange={(e) => setEditingEmployee({...editingEmployee, role: e.target.value})}
-                    >
-                      <option value="TRAINER">TRAINER</option>
-                      <option value="STAFF">STAFF</option>
-                    </select> 
-                    : employee.role}</td>
-                <td>{isEditing && editingEmployee?.id === employee.id ? 
-                  <input type="number" value={editingEmployee.salary || ''} onChange={(e) => setEditingEmployee({...editingEmployee, salary: e.target.value ? parseFloat(e.target.value) : null})} /> 
-                  : employee.salary ? `₺${employee.salary.toLocaleString()}` : 'N/A'}
-                </td>
-                <td>{isEditing && editingEmployee?.id === employee.id ? 
-                  <input type="number" value={editingEmployee.weeklyHours || ''} onChange={(e) => setEditingEmployee({...editingEmployee, weeklyHours: e.target.value ? parseInt(e.target.value) : null})} /> 
-                  : employee.weeklyHours ? `${employee.weeklyHours}h` : 'N/A'}
-                </td>
-                <td>
-                  {isEditing && editingEmployee?.id === employee.id ? (
-                    <span>Edit Shift (TBD)</span>
-                  ) : (
-                    <Button 
-                      icon={<EyeOutlined />} 
-                      onClick={(e) => handleShiftButtonClick(e, employee.shiftEntries)}
-                      size="small"
-                      disabled={!employee.shiftEntries || employee.shiftEntries.length === 0}
-                    >
-                      View Shift
-                    </Button>
-                  )}
-                </td>
+                {editingEmployee?.id === employee.id ? (
+                  <>
+                    <td>
+                      <input
+                        type="text"
+                        value={editingEmployee.name}
+                        onChange={(e) => setEditingEmployee({
+                          ...editingEmployee,
+                          name: e.target.value
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={editingEmployee.surname}
+                        onChange={(e) => setEditingEmployee({
+                          ...editingEmployee,
+                          surname: e.target.value
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="email"
+                        value={editingEmployee.email}
+                        onChange={(e) => setEditingEmployee({
+                          ...editingEmployee,
+                          email: e.target.value
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={editingEmployee.phone}
+                        onChange={(e) => setEditingEmployee({
+                          ...editingEmployee,
+                          phone: validatePhoneInput(e.target.value, editingEmployee.phone)
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={editingEmployee.salary}
+                        onChange={(e) => setEditingEmployee({
+                          ...editingEmployee,
+                          salary: Number(e.target.value)
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={editingEmployee.hoursPerWeek}
+                        onChange={(e) => setEditingEmployee({
+                          ...editingEmployee,
+                          hoursPerWeek: Number(e.target.value)
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <div className="edit-actions">
+                        <input
+                          type="text"
+                          placeholder="Shift Schedule URL"
+                          value={editingEmployee.shiftSchedule}
+                          onChange={(e) => setEditingEmployee({
+                            ...editingEmployee,
+                            shiftSchedule: e.target.value
+                          })}
+                        />
+                        <div className="action-buttons">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveEdit(employee.id, editingEmployee);
+                            }}
+                            className="save-button"
+                          >
+                            Save
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingEmployee(null);
+                            }}
+                            className="cancel-button"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td>{employee.name}</td>
+                    <td>{employee.surname}</td>
+                    <td>{employee.email}</td>
+                    <td>{employee.phone}</td>
+                    <td>₺{employee.salary.toLocaleString()}</td>
+                    <td>{employee.hoursPerWeek}h</td>
+                    <td>
+                      <button 
+                        onClick={(e) => handleShiftButtonClick(e, employee.shiftSchedule)}
+                        className="shift-button"
+                      >
+                        View Shift
+                      </button>
+                    </td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>
@@ -287,100 +353,104 @@ const EmployeesPanel = () => {
 
       {showAddForm && (
         <div className="modal-overlay">
-          <div className="modal add-employee-modal">
+          <div className="modal">
             <h3>Add New Employee</h3>
             <form onSubmit={handleAddEmployee}>
-              <div className="form-section">
-                <h4>Basic Information</h4>
-                <div className="form-grid two-columns">
-                  <div className="input-group">
-                    <label htmlFor="employee-name">Name</label>
-                    <input
-                      id="employee-name"
-                      type="text"
-                      placeholder="Enter first name"
-                      value={newEmployee.firstName}
-                      onChange={(e) => setNewEmployee({...newEmployee, firstName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="employee-surname">Surname</label>
-                    <input
-                      id="employee-surname"
-                      type="text"
-                      placeholder="Enter last name"
-                      value={newEmployee.lastName}
-                      onChange={(e) => setNewEmployee({...newEmployee, lastName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="employee-email">Email</label>
-                    <input
-                      id="employee-email"
-                      type="email"
-                      placeholder="example@domain.com"
-                      value={newEmployee.email}
-                      onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="employee-phone">Phone Number</label>
-                    <input
-                      id="employee-phone"
-                      type="text"
-                      placeholder="+90 555 123 4567"
-                      value={newEmployee.phoneNumber}
-                      onChange={(e) => setNewEmployee({
-                        ...newEmployee, 
-                        phoneNumber: validatePhoneInput(e.target.value, newEmployee.phoneNumber)
-                      })}
-                      required
-                    />
-                    <small className="input-hint">Only numbers and a plus sign at the beginning are allowed</small>
-                  </div>
+              <div className="form-grid">
+                <div className="input-group">
+                  <label htmlFor="employee-name">Name</label>
+                  <input
+                    id="employee-name"
+                    type="text"
+                    placeholder="Enter first name"
+                    value={newEmployee.name}
+                    onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})}
+                    required
+                  />
                 </div>
-              </div>
+                
+                <div className="input-group">
+                  <label htmlFor="employee-surname">Surname</label>
+                  <input
+                    id="employee-surname"
+                    type="text"
+                    placeholder="Enter last name"
+                    value={newEmployee.surname}
+                    onChange={(e) => setNewEmployee({...newEmployee, surname: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="input-group">
+                  <label htmlFor="employee-email">Email</label>
+                  <input
+                    id="employee-email"
+                    type="email"
+                    placeholder="example@domain.com"
+                    value={newEmployee.email}
+                    onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="input-group">
+                  <label htmlFor="employee-phone">Phone Number</label>
+                  <input
+                    id="employee-phone"
+                    type="text"
+                    placeholder="+90 555 123 4567"
+                    value={newEmployee.phone}
+                    onChange={(e) => setNewEmployee({
+                      ...newEmployee, 
+                      phone: validatePhoneInput(e.target.value, newEmployee.phone)
+                    })}
+                    required
+                  />
+                  <small className="input-hint">Only numbers and a plus sign at the beginning are allowed</small>
+                </div>
 
-              <div className="form-section">
-                <h4>Work Details</h4>
-                <div className="form-grid three-columns">
-                  <div className="input-group">
-                    <label htmlFor="employee-role">Role</label>
-                    <select
-                      id="employee-role"
-                      value={newEmployee.role}
-                      onChange={(e) => setNewEmployee({...newEmployee, role: e.target.value})}
-                      required
-                    >
-                      <option value="TRAINER">TRAINER</option>
-                      <option value="STAFF">STAFF</option>
-                    </select>
-                  </div>
-                  <div className="input-group">
-                    <label htmlFor="employee-salary">Salary (₺)</label>
-                    <input
-                      id="employee-salary"
-                      type="number"
-                      placeholder="e.g., 30000"
-                      value={newEmployee.salary}
-                      onChange={(e) => setNewEmployee({...newEmployee, salary: e.target.value})}
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label htmlFor="employee-hours">Hours per Week</label>
-                    <input
-                      id="employee-hours"
-                      type="number"
-                      placeholder="e.g., 40"
-                      value={newEmployee.weeklyHours}
-                      onChange={(e) => setNewEmployee({...newEmployee, weeklyHours: e.target.value})}
-                    />
+                <div className="form-grid-full">
+                  <div className="form-section">
+                    <h4>Work Details</h4>
+                    <div className="form-grid">
+                      <div className="input-group">
+                        <label htmlFor="employee-salary">Salary (₺)</label>
+                        <input
+                          id="employee-salary"
+                          type="number"
+                          placeholder="Enter salary amount"
+                          value={newEmployee.salary}
+                          onChange={(e) => setNewEmployee({...newEmployee, salary: e.target.value})}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="input-group">
+                        <label htmlFor="employee-hours">Hours per Week</label>
+                        <input
+                          id="employee-hours"
+                          type="number"
+                          placeholder="Enter work hours"
+                          value={newEmployee.hoursPerWeek}
+                          onChange={(e) => setNewEmployee({...newEmployee, hoursPerWeek: e.target.value})}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="form-grid-full">
+                        <div className="input-group">
+                          <label htmlFor="shift-schedule">Shift Schedule Image URL</label>
+                          <input
+                            id="shift-schedule"
+                            type="text"
+                            placeholder="Enter image URL for shift schedule"
+                            value={newEmployee.shiftSchedule}
+                            onChange={(e) => setNewEmployee({...newEmployee, shiftSchedule: e.target.value})}
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -394,6 +464,15 @@ const EmployeesPanel = () => {
         </div>
       )}
 
+      {showShiftModal && (
+        <div className="modal-overlay" onClick={() => setShowShiftModal(false)}>
+          <div className="modal shift-modal" onClick={e => e.stopPropagation()}>
+            <img src={selectedShift} alt="Shift Schedule" />
+            <button onClick={() => setShowShiftModal(false)} className="shift-button">Close</button>
+          </div>
+        </div>
+      )}
+
       {showConfirmDialog && (
         <div className="modal-overlay">
           <div className="modal">
@@ -401,29 +480,13 @@ const EmployeesPanel = () => {
             <div className="confirmation-content">
               <div className="warning-icon">⚠️</div>
               <p>Are you sure you want to delete the employee:</p>
-              <div className="highlighted-name">{employeeToDelete?.firstName} {employeeToDelete?.lastName}</div>
+              <div className="highlighted-name">{employeeToDelete?.name} {employeeToDelete?.surname}</div>
               <p className="warning-text">This action cannot be undone!</p>
             </div>
             <div className="modal-buttons">
               <button onClick={handleDeleteCancel} className="cancel-button">Cancel</button>
               <button onClick={handleDeleteConfirm} className="delete-confirm-button">Delete</button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {showShiftModal && (
-        <div className="modal-overlay" onClick={handleCloseShiftModal}>
-          <div className="modal shift-modal large" onClick={e => e.stopPropagation()}>
-            <h4>Weekly Shift Schedule</h4>
-            <Table 
-              columns={shiftColumns} 
-              dataSource={selectedEmployeeShifts} 
-              rowKey="id" 
-              pagination={false}
-              size="small"
-            />
-            <Button onClick={handleCloseShiftModal} style={{ marginTop: '15px' }}>Close</Button>
           </div>
         </div>
       )}

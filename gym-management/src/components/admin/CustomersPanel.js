@@ -1,15 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { format } from 'date-fns';
+import React, { useState } from 'react';
 import '../../styles/AdminPanels.css';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { FaCrown, FaGem, FaAward } from 'react-icons/fa';
 import { Button } from 'antd';
 
 const CustomersPanel = () => {
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [customers, setCustomers] = useState([
+    {
+      id: 1,
+      name: 'Nurettin Enes',
+      surname: 'Karakulak',
+      hasMembership: true,
+      membershipExpiry: '2024-06-15',
+      planType: 'Premium Plan',
+      email: 'nurettin.enes@example.com',
+      phone: '+90 555 123 4567'
+    },
+    {
+      id: 2,
+      name: 'Berkay Mustafa',
+      surname: 'Arıkan',
+      hasMembership: true,
+      membershipExpiry: '2024-05-20',
+      planType: 'Basic Plan',
+      email: 'berkay.mustafa@example.com',
+      phone: '+90 555 234 5678'
+    },
+    {
+      id: 3,
+      name: 'Meriç',
+      surname: 'Ütkü',
+      hasMembership: false,
+      membershipExpiry: null,
+      planType: null,
+      email: 'meric.utku@example.com',
+      phone: '+90 555 345 6789'
+    }
+  ]);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -18,32 +45,19 @@ const CustomersPanel = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [newCustomer, setNewCustomer] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    password: '',
+    name: '',
+    surname: '',
     hasMembership: false,
-    planId: null,
-    durationMonths: 1,
-    startDate: new Date().toISOString().split('T')[0],
-    cardHolderName: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: ''
+    membershipExpiry: '',
+    planType: '',
+    email: '',
+    phone: ''
   });
 
   const [searchQuery, setSearchQuery] = useState('');
 
   // Plan seçenekleri
   const planOptions = ['Basic Plan', 'Premium Plan', 'Elite Plan'];
-
-  // Plan ID mapping (to convert from plan name to ID)
-  const planIdMap = {
-    'Basic Plan': 1,
-    'Premium Plan': 2,
-    'Elite Plan': 3
-  };
 
   // Get plan icon based on plan type
   const getPlanIcon = (planType) => {
@@ -76,120 +90,19 @@ const CustomersPanel = () => {
     return value;
   };
 
-  // Card number formatter - adds spaces after every 4 digits
-  const formatCardNumber = (value) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
-
-  // Expiry date formatter - enforces MM/YY format
-  const formatExpiryDate = (value) => {
-    // Remove non-digits and slashes
-    const cleaned = value.replace(/[^\d/]/g, '');
-    
-    if (cleaned.length <= 2) {
-      return cleaned;
-    }
-    
-    // Apply format MM/YY
-    if (cleaned.includes('/')) {
-      const [month, year] = cleaned.split('/');
-      return `${month.slice(0, 2)}/${year.slice(0, 2)}`;
-    } else {
-      return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`;
-    }
-  };
-
-  // Validate month (1-12)
-  const validateMonth = (month) => {
-    const num = parseInt(month, 10);
-    return num > 0 && num <= 12;
-  };
-
-  // Fetch customers from backend on component mount
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Use the correct API endpoint
-        const response = await axios.get('http://localhost:8080/api/users/customers');
-        setCustomers(response.data);
-      } catch (err) {
-        console.error("Error fetching customers:", err);
-        setError('Failed to load customers. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomers();
-  }, []); // Empty dependency array means this runs once on mount
-
-  const handleAddCustomer = async (e) => {
+  const handleAddCustomer = (e) => {
     e.preventDefault();
-    setLoading(true);
-    
-    try {
-      // If membership is not active, set related fields to null
-      const dataToSend = {...newCustomer};
-      if (!dataToSend.hasMembership) {
-        dataToSend.planId = null;
-        dataToSend.durationMonths = null;
-        dataToSend.startDate = null;
-      }
-      
-      // Make API call to register user
-      const response = await axios.post('http://localhost:8080/api/auth/signup', dataToSend);
-      
-      if (response.data.success) {
-        // If successful, add to local state (or just refetch)
-        // Fetch customers to refresh the list
-        const refreshResponse = await axios.get('http://localhost:8080/api/users/customers');
-        setCustomers(refreshResponse.data);
-        
-        // Show success message
-        alert(`Customer ${newCustomer.firstName} ${newCustomer.lastName} added successfully!`);
-        setShowAddForm(false);
-        
-        // Reset form with hasMembership
-        setNewCustomer({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phoneNumber: '',
-          password: '',
-          hasMembership: false,
-          planId: null,
-          durationMonths: 1,
-          startDate: new Date().toISOString().split('T')[0],
-          cardHolderName: '',
-          cardNumber: '',
-          expiryDate: '',
-          cvv: ''
-        });
-      } else {
-        // Handle error from API (e.g., email already exists)
-        alert(`Error: ${response.data.message}`);
-      }
-    } catch (err) {
-      console.error("Error adding customer:", err);
-      alert(`Failed to add customer. ${err.response?.data?.message || 'Please try again.'}`);
-    } finally {
-      setLoading(false);
-    }
+    setCustomers([...customers, { ...newCustomer, id: customers.length + 1 }]);
+    setShowAddForm(false);
+    setNewCustomer({ 
+      name: '', 
+      surname: '', 
+      hasMembership: false, 
+      membershipExpiry: '',
+      planType: '',
+      email: '',
+      phone: ''
+    });
   };
 
   const handleEditClick = () => {
@@ -215,9 +128,18 @@ const CustomersPanel = () => {
   };
 
   const handleSaveEdit = (id, updatedData) => {
-    // TODO: Add API call to backend to update customer
-    console.warn("Edit customer functionality needs backend integration.");
-    // Temporarily update local state
+    // If customer has active membership but no plan type, don't allow the save
+    if (updatedData.hasMembership && !updatedData.planType) {
+      alert("Please select a plan type for customers with active membership.");
+      return;
+    }
+    
+    // If customer has active membership but no expiry date, don't allow the save
+    if (updatedData.hasMembership && !updatedData.membershipExpiry) {
+      alert("Please set an expiry date for customers with active membership.");
+      return;
+    }
+    
     setCustomers(customers.map(customer => 
       customer.id === id ? { ...customer, ...updatedData } : customer
     ));
@@ -225,10 +147,7 @@ const CustomersPanel = () => {
   };
 
   const handleDeleteConfirm = () => {
-    // TODO: Add API call to backend to delete customer
-    console.warn("Delete customer functionality needs backend integration.");
     if (customerToDelete) {
-      // Temporarily remove from local state
       setCustomers(customers.filter(customer => customer.id !== customerToDelete.id));
       setCustomerToDelete(null);
       setShowConfirmDialog(false);
@@ -248,20 +167,10 @@ const CustomersPanel = () => {
 
   // Filter customers based on search query
   const filteredCustomers = customers.filter(customer => {
-    // Use firstName and lastName from CustomerDTO
-    const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.toLowerCase();
+    const fullName = `${customer.name} ${customer.surname}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase()) || 
            (customer.email && customer.email.toLowerCase().includes(searchQuery.toLowerCase()));
   });
-
-  // Display loading or error message
-  if (loading) {
-    return <div className="panel-container loading">Loading customers...</div>;
-  }
-
-  if (error) {
-    return <div className="panel-container error">Error: {error}</div>;
-  }
 
   return (
     <div className="panel-container">
@@ -326,8 +235,8 @@ const CustomersPanel = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
+              <th>Name</th>
+              <th>Surname</th>
               <th>Email</th>
               <th>Phone</th>
               <th>Membership Status</th>
@@ -340,18 +249,173 @@ const CustomersPanel = () => {
               <tr 
                 key={customer.id} 
                 onClick={() => handleSelectCustomer(customer)}
-                className={`${isEditing && !editingCustomer ? 'editable-row' : ''} ${isDeleting ? 'deletable-row' : ''}`}
+                className={
+                  isEditing && !editingCustomer 
+                    ? 'selectable-row' 
+                    : isDeleting 
+                      ? 'deletable-row' 
+                      : ''
+                }
               >
-                <td>{isEditing && editingCustomer?.id === customer.id ? <input type="text" value={editingCustomer.firstName} onChange={(e) => setEditingCustomer({...editingCustomer, firstName: e.target.value})} /> : customer.firstName}</td>
-                <td>{isEditing && editingCustomer?.id === customer.id ? <input type="text" value={editingCustomer.lastName} onChange={(e) => setEditingCustomer({...editingCustomer, lastName: e.target.value})} /> : customer.lastName}</td>
-                <td>{isEditing && editingCustomer?.id === customer.id ? <input type="email" value={editingCustomer.email} onChange={(e) => setEditingCustomer({...editingCustomer, email: e.target.value})} /> : customer.email}</td>
-                <td>{isEditing && editingCustomer?.id === customer.id ? <input type="text" value={editingCustomer.phoneNumber || ''} onChange={(e) => setEditingCustomer({...editingCustomer, phoneNumber: validatePhoneInput(e.target.value, editingCustomer.phoneNumber)})} /> : customer.phoneNumber}</td>
-                <td><StatusBadge isActive={customer.isMembershipActive} /></td>
-                <td>
-                  {getPlanIcon(customer.membershipPlanName)}
-                  {customer.membershipPlanName || 'N/A'}
-                </td>
-                <td>{customer.membershipEndDate ? format(new Date(customer.membershipEndDate), 'yyyy-MM-dd') : 'N/A'}</td>
+                {editingCustomer?.id === customer.id ? (
+                  <>
+                    <td>
+                      <input
+                        type="text"
+                        value={editingCustomer.name}
+                        onChange={(e) => setEditingCustomer({
+                          ...editingCustomer,
+                          name: e.target.value
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={editingCustomer.surname}
+                        onChange={(e) => setEditingCustomer({
+                          ...editingCustomer,
+                          surname: e.target.value
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="email"
+                        value={editingCustomer.email}
+                        onChange={(e) => setEditingCustomer({
+                          ...editingCustomer,
+                          email: e.target.value
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        value={editingCustomer.phone}
+                        onChange={(e) => setEditingCustomer({
+                          ...editingCustomer,
+                          phone: validatePhoneInput(e.target.value, editingCustomer.phone)
+                        })}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        value={editingCustomer.hasMembership}
+                        onChange={(e) => {
+                          const isActive = e.target.value === 'true';
+                          
+                          // If membership is being activated, set defaults
+                          if (isActive) {
+                            // Default plan if none selected
+                            const planType = editingCustomer.planType || planOptions[0];
+                            
+                            // Default expiry date (30 days from now) if none set
+                            let expiryDate = editingCustomer.membershipExpiry;
+                            if (!expiryDate) {
+                              const today = new Date();
+                              const thirtyDaysLater = new Date(today);
+                              thirtyDaysLater.setDate(today.getDate() + 30);
+                              expiryDate = thirtyDaysLater.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                            }
+                            
+                            setEditingCustomer({
+                              ...editingCustomer,
+                              hasMembership: isActive,
+                              planType: planType,
+                              membershipExpiry: expiryDate
+                            });
+                          } else {
+                            setEditingCustomer({
+                              ...editingCustomer,
+                              hasMembership: isActive
+                            });
+                          }
+                        }}
+                      >
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        value={editingCustomer.planType || ''}
+                        onChange={(e) => setEditingCustomer({
+                          ...editingCustomer,
+                          planType: e.target.value
+                        })}
+                        disabled={!editingCustomer.hasMembership}
+                      >
+                        {editingCustomer.hasMembership ? (
+                          <>
+                            {!editingCustomer.planType && 
+                              <option value="" disabled>Select a Plan</option>
+                            }
+                            {planOptions.map(plan => (
+                              <option key={plan} value={plan}>
+                                {plan}
+                              </option>
+                            ))}
+                          </>
+                        ) : (
+                          <option value="">Select a Plan</option>
+                        )}
+                      </select>
+                    </td>
+                    <td>
+                      <div className="edit-actions">
+                        <input
+                          type="date"
+                          value={editingCustomer.membershipExpiry || ''}
+                          onChange={(e) => setEditingCustomer({
+                            ...editingCustomer,
+                            membershipExpiry: e.target.value
+                          })}
+                          disabled={!editingCustomer.hasMembership}
+                          style={{
+                            borderColor: editingCustomer.hasMembership && !editingCustomer.membershipExpiry ? '#e74c3c' : '',
+                            boxShadow: editingCustomer.hasMembership && !editingCustomer.membershipExpiry ? '0 0 0 2px rgba(231, 76, 60, 0.2)' : ''
+                          }}
+                        />
+                        <div className="action-buttons">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveEdit(customer.id, editingCustomer);
+                            }}
+                            className="save-button"
+                          >
+                            Save
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingCustomer(null);
+                            }}
+                            className="cancel-button"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td>{customer.name}</td>
+                    <td>{customer.surname}</td>
+                    <td>{customer.email}</td>
+                    <td>{customer.phone}</td>
+                    <td>
+                      <StatusBadge isActive={customer.hasMembership} />
+                    </td>
+                    <td>
+                      {getPlanIcon(customer.planType)}
+                      {customer.planType || 'N/A'}
+                    </td>
+                    <td>{customer.membershipExpiry || 'N/A'}</td>
+                  </>
+                )}
               </tr>
             ))}
           </tbody>
@@ -363,239 +427,106 @@ const CustomersPanel = () => {
           <div className="modal">
             <h3>Add New Customer</h3>
             <form onSubmit={handleAddCustomer}>
-              <div className="form-section">
-                <h4>Personal Information</h4>
-                <div className="form-grid">
-                  <div className="input-group">
-                    <label htmlFor="customer-firstName">First Name</label>
-                    <input
-                      id="customer-firstName"
-                      type="text"
-                      placeholder="Enter first name"
-                      value={newCustomer.firstName}
-                      onChange={(e) => setNewCustomer({...newCustomer, firstName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="customer-lastName">Last Name</label>
-                    <input
-                      id="customer-lastName"
-                      type="text"
-                      placeholder="Enter last name"
-                      value={newCustomer.lastName}
-                      onChange={(e) => setNewCustomer({...newCustomer, lastName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="customer-email">Email</label>
-                    <input
-                      id="customer-email"
-                      type="email"
-                      placeholder="example@domain.com"
-                      value={newCustomer.email}
-                      onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="customer-phone">Phone Number</label>
-                    <input
-                      id="customer-phone"
-                      type="text"
-                      placeholder="+90 555 123 4567"
-                      value={newCustomer.phoneNumber}
-                      onChange={(e) => setNewCustomer({
-                        ...newCustomer, 
-                        phoneNumber: validatePhoneInput(e.target.value, newCustomer.phoneNumber)
-                      })}
-                      required
-                    />
-                  </div>
-
-                  <div className="input-group">
-                    <label htmlFor="customer-password">Password</label>
-                    <input
-                      id="customer-password"
-                      type="password"
-                      placeholder="Enter password"
-                      value={newCustomer.password}
-                      onChange={(e) => setNewCustomer({...newCustomer, password: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="form-section">
-                <h4>Membership Details</h4>
-                <div className="form-grid-full">
-                  <div className="checkbox-group">
-                    <label className="custom-checkbox">
-                      <input
-                        id="has-membership"
-                        type="checkbox"
-                        checked={newCustomer.hasMembership}
-                        onChange={(e) => setNewCustomer({...newCustomer, hasMembership: e.target.checked})}
-                      />
-                      <span className="checkmark"></span>
-                      <span className="custom-checkbox-label">Active Membership</span>
-                    </label>
-                  </div>
+              <div className="form-grid">
+                <div className="input-group">
+                  <label htmlFor="customer-name">Name</label>
+                  <input
+                    id="customer-name"
+                    type="text"
+                    placeholder="Enter first name"
+                    value={newCustomer.name}
+                    onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})}
+                    required
+                  />
                 </div>
                 
-                {newCustomer.hasMembership && (
-                  <div className="form-grid">
-                    <div className="input-group">
-                      <label htmlFor="membership-plan">Membership Plan</label>
-                      <select
-                        id="membership-plan"
-                        value={newCustomer.planId || ''}
-                        onChange={(e) => {
-                          const planId = e.target.value ? parseInt(e.target.value) : null;
-                          setNewCustomer({...newCustomer, planId: planId})
-                        }}
-                        required={newCustomer.hasMembership}
-                      >
-                        <option value="">Select a Plan</option>
-                        <option value="1">Basic Plan</option>
-                        <option value="2">Premium Plan</option>
-                        <option value="3">Elite Plan</option>
-                      </select>
+                <div className="input-group">
+                  <label htmlFor="customer-surname">Surname</label>
+                  <input
+                    id="customer-surname"
+                    type="text"
+                    placeholder="Enter last name"
+                    value={newCustomer.surname}
+                    onChange={(e) => setNewCustomer({...newCustomer, surname: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="input-group">
+                  <label htmlFor="customer-email">Email</label>
+                  <input
+                    id="customer-email"
+                    type="email"
+                    placeholder="example@domain.com"
+                    value={newCustomer.email}
+                    onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
+                    required
+                  />
+                </div>
+                
+                <div className="input-group">
+                  <label htmlFor="customer-phone">Phone Number</label>
+                  <input
+                    id="customer-phone"
+                    type="text"
+                    placeholder="+90 555 123 4567"
+                    value={newCustomer.phone}
+                    onChange={(e) => setNewCustomer({
+                      ...newCustomer, 
+                      phone: validatePhoneInput(e.target.value, newCustomer.phone)
+                    })}
+                    required
+                  />
+                  <small className="input-hint">Only numbers and a plus sign at the beginning are allowed</small>
+                </div>
+
+                <div className="form-grid-full">
+                  <div className="form-section">
+                    <h4>Membership Details</h4>
+                    <div className="checkbox-group">
+                      <label className="custom-checkbox">
+                        <input
+                          id="has-membership"
+                          type="checkbox"
+                          checked={newCustomer.hasMembership}
+                          onChange={(e) => setNewCustomer({...newCustomer, hasMembership: e.target.checked})}
+                        />
+                        <span className="checkmark"></span>
+                        <span className="custom-checkbox-label">Active Membership</span>
+                      </label>
                     </div>
                     
-                    <div className="input-group">
-                      <label htmlFor="membership-duration">Duration (Months)</label>
-                      <select
-                        id="membership-duration"
-                        value={newCustomer.durationMonths}
-                        onChange={(e) => setNewCustomer({...newCustomer, durationMonths: parseInt(e.target.value)})}
-                        required={newCustomer.hasMembership}
-                      >
-                        <option value="1">1 Month</option>
-                        <option value="3">3 Months</option>
-                        <option value="6">6 Months</option>
-                        <option value="12">12 Months</option>
-                      </select>
-                    </div>
-                    
-                    <div className="input-group">
-                      <label htmlFor="membership-start">Start Date</label>
-                      <input
-                        id="membership-start"
-                        type="date"
-                        value={newCustomer.startDate}
-                        onChange={(e) => setNewCustomer({...newCustomer, startDate: e.target.value})}
-                        required={newCustomer.hasMembership}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="form-section">
-                <h4>Payment Information</h4>
-                <div className="form-grid">
-                  <div className="input-group">
-                    <label htmlFor="card-holder">Card Holder Name</label>
-                    <input
-                      id="card-holder"
-                      type="text"
-                      placeholder="Name on card"
-                      value={newCustomer.cardHolderName}
-                      onChange={(e) => setNewCustomer({...newCustomer, cardHolderName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="card-number">Card Number</label>
-                    <input
-                      id="card-number"
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      value={newCustomer.cardNumber}
-                      onChange={(e) => {
-                        const formattedValue = formatCardNumber(e.target.value);
-                        setNewCustomer({...newCustomer, cardNumber: formattedValue})
-                      }}
-                      maxLength="19" // 16 digits + 3 spaces
-                      required
-                    />
-                    <small className="input-hint">16 digits, spaces will be added automatically</small>
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="card-expiry">Expiry Date (MM/YY)</label>
-                    <input
-                      id="card-expiry"
-                      type="text"
-                      placeholder="MM/YY"
-                      value={newCustomer.expiryDate}
-                      onChange={(e) => {
-                        // Auto-format to MM/YY
-                        const rawValue = e.target.value;
+                    {newCustomer.hasMembership && (
+                      <div className="form-grid">
+                        <div className="input-group">
+                          <label htmlFor="plan-type">Membership Plan</label>
+                          <select
+                            id="plan-type"
+                            value={newCustomer.planType}
+                            onChange={(e) => setNewCustomer({...newCustomer, planType: e.target.value})}
+                            required
+                          >
+                            <option value="">Select a Plan</option>
+                            {planOptions.map(plan => (
+                              <option key={plan} value={plan}>
+                                {plan}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         
-                        // If backspace was pressed, just trim the value
-                        if (rawValue.length < newCustomer.expiryDate.length) {
-                          setNewCustomer({...newCustomer, expiryDate: rawValue});
-                          return;
-                        }
-                        
-                        // Apply formatting
-                        let formattedValue = rawValue.replace(/[^\d/]/g, '');
-                        
-                        // Insert slash after month if not exists
-                        if (formattedValue.length === 2 && !formattedValue.includes('/')) {
-                          formattedValue += '/';
-                        } else if (formattedValue.length > 2) {
-                          // Ensure format is MM/YY even if user types without slash
-                          if (!formattedValue.includes('/')) {
-                            formattedValue = `${formattedValue.substring(0, 2)}/${formattedValue.substring(2)}`;
-                          }
-                          
-                          // Split and validate parts
-                          const [month, year] = formattedValue.split('/');
-                          
-                          // Ensure month is valid (1-12)
-                          if (month.length === 2 && !validateMonth(month)) {
-                            return; // Don't update if invalid month
-                          }
-                          
-                          // Restrict to MM/YY format
-                          formattedValue = `${month.slice(0, 2)}/${year ? year.slice(0, 2) : ''}`;
-                        }
-                        
-                        setNewCustomer({...newCustomer, expiryDate: formattedValue});
-                      }}
-                      maxLength="5" // MM/YY = 5 chars
-                      required
-                    />
-                    <small className="input-hint">Format: MM/YY (e.g., 12/25)</small>
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="card-cvv">CVV</label>
-                    <input
-                      id="card-cvv"
-                      type="text"
-                      placeholder="123"
-                      value={newCustomer.cvv}
-                      onChange={(e) => {
-                        // Only allow 3 digits
-                        const cvv = e.target.value.replace(/\D/g, '').substring(0, 3);
-                        setNewCustomer({...newCustomer, cvv: cvv ? parseInt(cvv) : ''});
-                      }}
-                      maxLength="3"
-                      required
-                      inputMode="numeric" // Opens numeric keyboard on mobile
-                      pattern="[0-9]{3}" // HTML5 validation for 3 digits
-                    />
-                    <small className="input-hint">3 digits from the back of your card</small>
+                        <div className="input-group">
+                          <label htmlFor="expiry-date">Expiry Date</label>
+                          <input
+                            id="expiry-date"
+                            type="date"
+                            value={newCustomer.membershipExpiry}
+                            onChange={(e) => setNewCustomer({...newCustomer, membershipExpiry: e.target.value})}
+                            required
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
