@@ -1,5 +1,6 @@
 package com.gymmanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,6 +23,9 @@ public class MarketSalesInvoice {
     @Column(name = "user_id", nullable = false)
     private Long userId;
     
+    @Column(name = "order_no", nullable = false, unique = true)
+    private String orderNo;
+    
     @Column(name = "total_items", nullable = false)
     private Integer totalItems;
     
@@ -31,6 +35,7 @@ public class MarketSalesInvoice {
     @Column(name = "sale_date")
     private LocalDateTime saleDate;
     
+    @JsonManagedReference
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<MarketProductSale> productSales;
 } 

@@ -7,5 +7,6 @@ import java.util.List;
 
 @Repository
 public interface MarketSalesInvoiceRepository extends JpaRepository<MarketSalesInvoice, Long> {
-    List<MarketSalesInvoice> findByUserId(Long userId);
+    List<MarketSalesInvoice> findByUserIdOrderBySaleDateDesc(Long userId);
+    long countByOrderNoStartingWith(String prefix);
 } 

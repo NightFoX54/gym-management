@@ -1,5 +1,6 @@
 package com.gymmanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class MarketProductSale {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)
     private MarketSalesInvoice invoice;

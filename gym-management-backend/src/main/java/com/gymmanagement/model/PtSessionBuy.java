@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -27,4 +28,7 @@ public class PtSessionBuy {
     
     @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalPrice;
+    
+    @Column(name = "purchase_date", nullable = false)
+    private LocalDateTime purchaseDate;
 } 

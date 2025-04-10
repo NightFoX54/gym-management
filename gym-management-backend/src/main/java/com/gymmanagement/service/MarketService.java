@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +49,19 @@ public class MarketService {
         return productRepository.save(product);
     }
     
+    @Transactional
     public void deleteProduct(Long id) {
+        // First check if product exists
+        MarketProduct product = productRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        
+        // Check if the product has been sold using repository directly
+        boolean hasBeenSold = productSaleRepository.existsByProductId(id);
+        
+        if (hasBeenSold) {
+            throw new RuntimeException("Cannot delete product with ID " + id + " because it has sales records associated with it.");
+        }
+        
         productRepository.deleteById(id);
     }
     
@@ -64,6 +78,11 @@ public class MarketService {
         invoice.setTotalItems(cartItems.stream().mapToInt(item -> (Integer) item.get("quantity")).sum());
         invoice.setTotalPrice(totalPrice);
         invoice.setSaleDate(LocalDateTime.now());
+        
+        // Generate unique order number (format: GYM-yyyyMMdd-XXXX)
+        String orderPrefix = "GYM-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String orderNo = generateUniqueOrderNumber(orderPrefix);
+        invoice.setOrderNo(orderNo);
         
         // Save invoice to get ID
         MarketSalesInvoice savedInvoice = salesInvoiceRepository.save(invoice);
@@ -105,7 +124,17 @@ public class MarketService {
         return savedInvoice;
     }
     
+    private String generateUniqueOrderNumber(String prefix) {
+        // Get the count of orders created today
+        long count = salesInvoiceRepository.countByOrderNoStartingWith(prefix) + 1;
+        
+        // Format as 4-digit number with leading zeros
+        String suffix = String.format("%04d", count);
+        
+        return prefix + "-" + suffix;
+    }
+    
     public List<MarketSalesInvoice> getUserPurchaseHistory(Long userId) {
-        return salesInvoiceRepository.findByUserId(userId);
+        return salesInvoiceRepository.findByUserIdOrderBySaleDateDesc(userId);
     }
 } 
