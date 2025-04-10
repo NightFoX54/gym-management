@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +24,7 @@ public class GroupClassesSale {
     
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+    
+    @Column(name = "sale_date", nullable = false)
+    private LocalDate saleDate;
 } 
