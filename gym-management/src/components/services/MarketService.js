@@ -1,10 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../Navbar';
 import '../../styles/ServiceDetail.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Market({ isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
+  const [membershipPlans, setMembershipPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -13,6 +17,30 @@ function Market({ isDarkMode, setIsDarkMode }) {
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
   }, [isDarkMode]);
+  
+  // Fetch membership plans
+  useEffect(() => {
+    const fetchMembershipPlans = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get('http://localhost:8080/api/membership-management/plans');
+        setMembershipPlans(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching membership plans:', err);
+        setError('Failed to load membership plans.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMembershipPlans();
+  }, []);
+
+  // Helper functions to get specific plans
+  const getBasicPlan = () => membershipPlans.find(plan => plan.planName.toLowerCase().includes('basic'));
+  const getPremiumPlan = () => membershipPlans.find(plan => plan.planName.toLowerCase().includes('premium'));
+  const getElitePlan = () => membershipPlans.find(plan => plan.planName.toLowerCase().includes('elite'));
 
   const marketCategories = [
     {
@@ -70,8 +98,12 @@ function Market({ isDarkMode, setIsDarkMode }) {
             <div className="service-benefits">
               <h3>Member Benefits</h3>
               <ul>
-                <li>Premium Plan Members: 10% discount on all purchases</li>
-                <li>Elite Plan Members: 15% discount on all purchases</li>
+                {!isLoading && !error && getPremiumPlan() && (
+                  <li>Premium Plan Members: {getPremiumPlan().marketDiscount}% discount on all purchases</li>
+                )}
+                {!isLoading && !error && getElitePlan() && (
+                  <li>Elite Plan Members: {getElitePlan().marketDiscount}% discount on all purchases</li>
+                )}
                 <li>Expert staff guidance on product selection</li>
                 <li>Regular new product launches and seasonal sales</li>
                 <li>Special pre-order options for upcoming products</li>
@@ -97,36 +129,54 @@ function Market({ isDarkMode, setIsDarkMode }) {
 
           <div className="pricing-section">
             <h3>Membership Discounts</h3>
-            <div className="pricing-grid">
-              <div className="pricing-card">
-                <h4>Basic Members</h4>
-                <p className="price">Regular Prices</p>
-                <ul>
-                  <li>Access to all products</li>
-                  <li>Regular promotional offers</li>
-                  <li>Product guidance</li>
-                </ul>
+            {isLoading ? (
+              <p>Loading membership discount information...</p>
+            ) : error ? (
+              <p className="error-message">{error}</p>
+            ) : (
+              <div className="pricing-grid">
+                <div className="pricing-card">
+                  <h4>Basic Members</h4>
+                  <p className="price">
+                    {getBasicPlan()?.marketDiscount > 0 
+                      ? `${getBasicPlan().marketDiscount}% Off` 
+                      : "Regular Prices"}
+                  </p>
+                  <ul>
+                    <li>Access to all products</li>
+                    <li>Regular promotional offers</li>
+                    <li>Product guidance</li>
+                  </ul>
+                </div>
+                <div className="pricing-card">
+                  <h4>Premium Members</h4>
+                  <p className="price">
+                    {getPremiumPlan() 
+                      ? `${getPremiumPlan().marketDiscount}% Off` 
+                      : "10% Off"}
+                  </p>
+                  <ul>
+                    <li>{getPremiumPlan() ? `${getPremiumPlan().marketDiscount}% discount on all purchases` : "10% discount on all purchases"}</li>
+                    <li>Early access to new products</li>
+                    <li>Monthly special deals</li>
+                  </ul>
+                </div>
+                <div className="pricing-card featured">
+                  <h4>Elite Members</h4>
+                  <p className="price">
+                    {getElitePlan() 
+                      ? `${getElitePlan().marketDiscount}% Off` 
+                      : "15% Off"}
+                  </p>
+                  <ul>
+                    <li>{getElitePlan() ? `${getElitePlan().marketDiscount}% discount on all purchases` : "15% discount on all purchases"}</li>
+                    <li>Priority access to new launches</li>
+                    <li>Exclusive seasonal offers</li>
+                    <li>Personal shopping assistance</li>
+                  </ul>
+                </div>
               </div>
-              <div className="pricing-card">
-                <h4>Premium Members</h4>
-                <p className="price">10% Off</p>
-                <ul>
-                  <li>10% discount on all purchases</li>
-                  <li>Early access to new products</li>
-                  <li>Monthly special deals</li>
-                </ul>
-              </div>
-              <div className="pricing-card featured">
-                <h4>Elite Members</h4>
-                <p className="price">15% Off</p>
-                <ul>
-                  <li>15% discount on all purchases</li>
-                  <li>Priority access to new launches</li>
-                  <li>Exclusive seasonal offers</li>
-                  <li>Personal shopping assistance</li>
-                </ul>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="booking-section">

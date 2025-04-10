@@ -97,22 +97,7 @@ function RecoveryWellness({ isDarkMode, setIsDarkMode }) {
             </div>
           </div>
 
-          <div className="pricing-section">
-            <h3>Recovery & Wellness Access</h3>
-            <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
-              <h4>Recovery & Wellness Experience</h4>
-              <p className="price">Starting from ₺100/session</p>
-              <ul>
-                <li>Access to all recovery facilities</li>
-                <li>Professional therapeutic treatments</li>
-                <li>State-of-the-art recovery equipment</li>
-                <li>Sauna and steam room access</li>
-                <li>Cold plunge pool therapy</li>
-                <li>Dedicated stretching and relaxation areas</li>
-              </ul>
-              <p className="package-note">* Basic recovery facilities included with all memberships. Premium members (₺1300/mo) receive 4 specialized recovery sessions monthly. Unlimited access to all recovery amenities included with Elite (₺2000/mo) membership. Day passes and treatment packages available.</p>
-            </div>
-          </div>
+          
 
           <div className="booking-section">
             <h2>Experience Our Recovery & Wellness Facilities</h2>

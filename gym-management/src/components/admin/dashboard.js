@@ -21,7 +21,7 @@ const Dashboard = () => {
           >
             <i className="fas fa-users"></i>
             <h3>Customers</h3>
-            <p>Manage customer accounts and memberships</p>
+            <p>Manage gym customers and their memberships</p>
           </div>
           <div 
             className="feature-item clickable" 
@@ -62,6 +62,14 @@ const Dashboard = () => {
             <i className="fas fa-chart-line"></i>
             <h3>Financial</h3>
             <p>Track revenue, expenses and generate reports</p>
+          </div>
+          <div 
+            className="feature-item clickable" 
+            onClick={() => handleNavigation('/contact')}
+          >
+            <i className="fas fa-envelope"></i>
+            <h3>Contact Messages</h3>
+            <p>View and manage contact form messages</p>
           </div>
         </div>
       </div>

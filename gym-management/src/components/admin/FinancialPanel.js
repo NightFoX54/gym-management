@@ -1,57 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import '../../styles/AdminPanels.css';
+import axios from 'axios';
 
 const FinancialPanel = () => {
   const [timeFrame, setTimeFrame] = useState('daily');
-  const [financialData] = useState({
+  const [financialData, setFinancialData] = useState({
     daily: {
-      income: 2500,
-      expenses: 1200,
-      revenue: 1300,
-      topSources: [
-        { source: 'Memberships', amount: 1500 },
-        { source: 'Personal Training', amount: 600 },
-        { source: 'Supplements', amount: 400 }
-      ],
-      topExpenses: [
-        { category: 'Staff Salaries', amount: 800 },
-        { category: 'Utilities', amount: 250 },
-        { category: 'Equipment Maintenance', amount: 150 }
-      ]
+      income: 0,
+      expenses: 0,
+      revenue: 0,
+      topSources: [],
+      topExpenses: []
     },
     weekly: {
-      income: 15000,
-      expenses: 8000,
-      revenue: 7000,
-      topSources: [
-        { source: 'Memberships', amount: 9000 },
-        { source: 'Personal Training', amount: 4000 },
-        { source: 'Supplements', amount: 2000 }
-      ],
-      topExpenses: [
-        { category: 'Staff Salaries', amount: 5000 },
-        { category: 'Utilities', amount: 1800 },
-        { category: 'Equipment Maintenance', amount: 1200 }
-      ]
+      income: 0,
+      expenses: 0,
+      revenue: 0,
+      topSources: [],
+      topExpenses: []
     },
     monthly: {
-      income: 60000,
-      expenses: 35000,
-      revenue: 25000,
-      topSources: [
-        { source: 'Memberships', amount: 35000 },
-        { source: 'Personal Training', amount: 15000 },
-        { source: 'Supplements', amount: 10000 }
-      ],
-      topExpenses: [
-        { category: 'Staff Salaries', amount: 20000 },
-        { category: 'Utilities', amount: 8000 },
-        { category: 'Equipment Maintenance', amount: 7000 }
-      ]
+      income: 0,
+      expenses: 0,
+      revenue: 0,
+      topSources: [],
+      topExpenses: []
     }
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:8080/api/financial/dashboard');
+        
+        // Log the response for debugging
+        console.log('API Response:', response.data);
+        
+        // Get data from response
+        const { expenses, incomes } = response.data;
+        
+        // Restructure data to match expected format
+        const processedData = {
+          daily: {
+            income: incomes.dailyTotal || 0,
+            expenses: expenses.dailyTotal || 0,
+            revenue: (incomes.dailyTotal || 0) - (expenses.dailyTotal || 0),
+            topSources: Array.isArray(incomes.daily) 
+              ? incomes.daily.slice(0, 3).map(item => ({
+                  source: item.category,
+                  amount: item.amount
+                }))
+              : [],
+            topExpenses: Array.isArray(expenses.daily) 
+              ? expenses.daily.slice(0, 3) 
+              : []
+          },
+          weekly: {
+            income: incomes.weeklyTotal || 0,
+            expenses: expenses.weeklyTotal || 0,
+            revenue: (incomes.weeklyTotal || 0) - (expenses.weeklyTotal || 0),
+            topSources: Array.isArray(incomes.weekly) 
+              ? incomes.weekly.slice(0, 3).map(item => ({
+                  source: item.category,
+                  amount: item.amount
+                }))
+              : [],
+            topExpenses: Array.isArray(expenses.weekly) 
+              ? expenses.weekly.slice(0, 3) 
+              : []
+          },
+          monthly: {
+            income: incomes.monthlyTotal || 0,
+            expenses: expenses.monthlyTotal || 0,
+            revenue: (incomes.monthlyTotal || 0) - (expenses.monthlyTotal || 0),
+            topSources: Array.isArray(incomes.monthly) 
+              ? incomes.monthly.slice(0, 3).map(item => ({
+                  source: item.category,
+                  amount: item.amount
+                }))
+              : [],
+            topExpenses: Array.isArray(expenses.monthly) 
+              ? expenses.monthly.slice(0, 3) 
+              : []
+          }
+        };
+        
+        setFinancialData(processedData);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching financial data:', err);
+        setError('Failed to fetch financial data. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchFinancialData();
+  }, []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -184,35 +233,41 @@ const FinancialPanel = () => {
     doc.save(`GymFlex_Financial_Report_${timeFrame}_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
+  if (loading) {
+    return <div className="loading">Loading financial data...</div>;
+  }
+
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
+
   return (
     <div className="panel-container">
       <div className="panel-header">
-        <h2>Financial Overview</h2>
-        <div className="header-actions">
-          <div className="timeframe-selector">
-            <button 
-              className={`timeframe-btn ${timeFrame === 'daily' ? 'active' : ''}`}
-              onClick={() => setTimeFrame('daily')}
-            >
-              Daily
-            </button>
-            <button 
-              className={`timeframe-btn ${timeFrame === 'weekly' ? 'active' : ''}`}
-              onClick={() => setTimeFrame('weekly')}
-            >
-              Weekly
-            </button>
-            <button 
-              className={`timeframe-btn ${timeFrame === 'monthly' ? 'active' : ''}`}
-              onClick={() => setTimeFrame('monthly')}
-            >
-              Monthly
-            </button>
-          </div>
-          <button className="print-btn" onClick={handlePrint}>
-            <i className="fas fa-download"></i> Download Report
+        <h2>Financial Dashboard</h2>
+        <div className="time-filter">
+          <button 
+            className={timeFrame === 'daily' ? 'active' : ''} 
+            onClick={() => setTimeFrame('daily')}
+          >
+            Daily
+          </button>
+          <button 
+            className={timeFrame === 'weekly' ? 'active' : ''} 
+            onClick={() => setTimeFrame('weekly')}
+          >
+            Weekly
+          </button>
+          <button 
+            className={timeFrame === 'monthly' ? 'active' : ''} 
+            onClick={() => setTimeFrame('monthly')}
+          >
+            Monthly
           </button>
         </div>
+        <button className="print-btn" onClick={handlePrint}>
+          <i className="fas fa-download"></i> Download Report
+        </button>
       </div>
 
       <div className="financial-summary">

@@ -1,10 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../Navbar';
 import '../../styles/ServiceDetail.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function GroupClasses({ isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
+  const [classPrice, setClassPrice] = useState(null);
+  const [membershipPlans, setMembershipPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Only scroll to top on initial load
   useEffect(() => {
@@ -15,6 +20,35 @@ function GroupClasses({ isDarkMode, setIsDarkMode }) {
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
   }, [isDarkMode]);
+
+  // Fetch group class price and membership plans
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch group class price (General Price with ID 2)
+        const priceResponse = await axios.get('http://localhost:8080/api/general-prices/2');
+        
+        // Fetch membership plans
+        const plansResponse = await axios.get('http://localhost:8080/api/membership-management/plans');
+        
+        setClassPrice(priceResponse.data);
+        setMembershipPlans(plansResponse.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load pricing information.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Get premium and elite plan details
+  const getPremiumPlan = () => membershipPlans.find(plan => plan.planName.toLowerCase().includes('premium'));
+  const getElitePlan = () => membershipPlans.find(plan => plan.planName.toLowerCase().includes('elite'));
 
   const classOptions = [
     {
@@ -99,19 +133,31 @@ function GroupClasses({ isDarkMode, setIsDarkMode }) {
 
           <div className="pricing-section">
             <h3>Group Class Access</h3>
-            <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
-              <h4>Group Fitness Experience</h4>
-              <p className="price">Starting from ₺50/class</p>
-              <ul>
-                <li>Over 40 weekly classes across multiple disciplines</li>
-                <li>Expert certified instructors</li>
-                <li>State-of-the-art studios with premium equipment</li>
-                <li>Classes for all fitness levels from beginner to advanced</li>
-                <li>Convenient scheduling from early morning to evening</li>
-                <li>Ability to book classes up to 7 days in advance</li>
-              </ul>
-              <p className="package-note">* Unlimited group classes are included with Premium (₺1300/mo) and Elite (₺2000/mo) membership plans. Basic members (₺800/mo) receive 4 classes per month. Drop-in and class pack options available for non-members.</p>
-            </div>
+            {isLoading ? (
+              <p>Loading pricing information...</p>
+            ) : error ? (
+              <p className="error-message">{error}</p>
+            ) : (
+              <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
+                <h4>Group Fitness Experience</h4>
+                <p className="price">Starting from ₺{classPrice?.price || 50}/class</p>
+                <ul>
+                  <li>Over 40 weekly classes across multiple disciplines</li>
+                  <li>Expert certified instructors</li>
+                  <li>State-of-the-art studios with premium equipment</li>
+                  <li>Classes for all fitness levels from beginner to advanced</li>
+                  <li>Convenient scheduling from early morning to evening</li>
+                  <li>Ability to book classes up to 7 days in advance</li>
+                </ul>
+                <p className="package-note">
+                  * Unlimited group classes are included with 
+                  {getPremiumPlan() && ` Premium (₺${getPremiumPlan().planPrice}/mo)`} 
+                  {getPremiumPlan() && getElitePlan() && ' and'} 
+                  {getElitePlan() && ` Elite (₺${getElitePlan().planPrice}/mo)`} 
+                  {(getPremiumPlan() || getElitePlan()) && ' membership plans.'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="booking-section">

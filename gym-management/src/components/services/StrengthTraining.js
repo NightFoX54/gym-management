@@ -97,22 +97,7 @@ function StrengthTraining({ isDarkMode, setIsDarkMode }) {
             </div>
           </div>
 
-          <div className="pricing-section">
-            <h3>Strength Training Access</h3>
-            <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
-              <h4>Strength Training Experience</h4>
-              <p className="price">Starting from $150/day pass</p>
-              <ul>
-                <li>Access to all strength training equipment</li>
-                <li>Free weight and machine zones</li>
-                <li>Olympic lifting platforms</li>
-                <li>Functional training area</li>
-                <li>Specialized strength accessories</li>
-                <li>Workout guidance from floor staff</li>
-              </ul>
-              <p className="package-note">* Full access to strength training facilities included with all membership plans. Premium ($1300/mo) and Elite ($2000/mo) members receive complimentary form check sessions and personalized equipment recommendations. Day passes available for non-members.</p>
-            </div>
-          </div>
+        
 
           <div className="booking-section">
             <h2>Ready to Build Serious Strength?</h2>

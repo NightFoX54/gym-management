@@ -20,18 +20,32 @@ function ForgotPassword({ isDarkMode = false, setIsDarkMode = () => {} }) {
     setMessage({ type: '', text: '' });
 
     try {
-      // API call will be implemented here
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated API call
-      
-      setMessage({
-        type: 'success',
-        text: 'Password reset instructions have been sent to your email.'
+      const response = await fetch('http://localhost:8080/api/password/forgot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
+
+      const data = await response.json();
       
-      // Redirect to login page after 3 seconds
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      if (data.success) {
+        setMessage({
+          type: 'success',
+          text: 'Password reset instructions have been sent to your email.'
+        });
+        
+        // Redirect to login page after 3 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        setMessage({
+          type: 'error',
+          text: data.message || 'An error occurred. Please try again.'
+        });
+      }
     } catch (error) {
       setMessage({
         type: 'error',

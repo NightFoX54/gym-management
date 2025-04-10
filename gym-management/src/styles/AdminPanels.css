@@ -1726,10 +1726,8 @@
 }
 
 .dark-mode .panel-actions .ant-btn-primary:hover {
-  background-color: #ff6b6b !important;
-  border-color: #ff6b6b !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+  background-color: #ff5f6d;
+  border-color: #ff5f6d;
 }
 
 /* Add button styles */
@@ -1861,4 +1859,568 @@
 .confirm-dialog p {
   margin-bottom: 1.5rem;
   line-height: 1.5;
-} 
+}
+
+.salary-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-right: 1rem;
+}
+
+.last-salary-date {
+  font-size: 0.9rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.pay-salary-button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.pay-salary-button:hover {
+  background-color: #2ecc71;
+}
+
+.pay-salary-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Add or update these specific styles for the time-filter buttons */
+.time-filter {
+  display: flex;
+  margin: 0 20px;
+}
+
+.time-filter button {
+  background-color: #f1f1f1;
+  border: none;
+  padding: 8px 16px;
+  margin-right: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.time-filter button.active {
+  background-color: #2c3e50;
+  color: white;
+}
+
+.time-filter button:hover:not(.active) {
+  background-color: #e0e0e0;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.print-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.print-btn:hover {
+  background-color: #45a049;
+}
+
+/* Dark mode styles for time-filter buttons */
+.dark-mode .time-filter button {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-mode .time-filter button.active {
+  background-color: #ff4757;
+  color: white;
+  border-color: #ff4757;
+}
+
+.dark-mode .time-filter button:hover:not(.active) {
+  background-color: #3a3a3a;
+}
+
+/* Reset password button styles */
+.reset-password-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #555;
+  border: 1px solid #d9d9d9;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  gap: 6px;
+}
+
+.reset-password-button:hover {
+  background-color: #e0e0e0;
+  color: #333;
+  border-color: #bbb;
+}
+
+.reset-password-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Dark mode for reset password button */
+.dark-mode .reset-password-button {
+  background-color: #2a2a2a !important;
+  color: #e0e0e0 !important;
+  border-color: #555 !important;
+}
+
+.dark-mode .reset-password-button:hover {
+  background-color: #ff4757 !important;
+  color: #fff !important;
+  border-color: #ff4757 !important;
+}
+
+.dark-mode .reset-password-button:focus {
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
+}
+
+/* Enhanced Modal styles for both light and dark mode */
+.ant-modal-content {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.ant-modal-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ant-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ant-modal-body {
+  padding: 24px;
+}
+
+.ant-modal-body p {
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.ant-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Password reset warning modal specific styles */
+.password-reset-modal .ant-modal-body {
+  padding-top: 20px;
+}
+
+.warning-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.warning-icon {
+  font-size: 48px;
+  color: #ff4d4f;
+}
+
+.warning-message {
+  padding: 12px 16px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  color: #cf1322;
+  font-weight: 500;
+}
+
+.new-password-box {
+  background-color: #f9f9f9;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+  padding: 12px 16px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 16px;
+  margin: 16px 0;
+}
+
+
+/* Custom Modal Styles */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.custom-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 450px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.custom-modal-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+.custom-modal-body {
+  padding: 24px;
+}
+
+.custom-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Password Reset Modal Specific Styles */
+.password-reset-modal .warning-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.password-reset-modal .warning-icon {
+  font-size: 48px;
+  color: #ff4d4f;
+}
+
+.password-reset-modal .warning-message {
+  padding: 12px 16px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  color: #cf1322;
+  font-weight: 500;
+}
+
+.password-reset-modal .new-password-box {
+  background-color: #f9f9f9;
+  border: 1px dashed #d9d9d9;
+  border-radius: 4px;
+  padding: 12px 16px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 16px;
+  margin: 16px 0;
+}
+
+.password-reset-modal .cancel-button {
+  background-color: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.password-reset-modal .cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+.password-reset-modal .confirm-button {
+  background-color: #ff4d4f;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.password-reset-modal .confirm-button:hover {
+  background-color: #ff7875;
+}
+
+/* Dark Mode Styles for Custom Modal */
+.dark-mode .custom-modal {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .custom-modal-header {
+  border-bottom-color: #333;
+}
+
+.dark-mode .custom-modal-header h3 {
+  color: #fff;
+}
+
+.dark-mode .close-button {
+  color: #bbb;
+}
+
+.dark-mode .close-button:hover {
+  color: #fff;
+}
+
+.dark-mode .custom-modal-footer {
+  border-top-color: #333;
+}
+
+.dark-mode .password-reset-modal .warning-icon {
+  color: #ff7875;
+}
+
+.dark-mode .password-reset-modal .warning-message {
+  background-color: rgba(255, 77, 79, 0.15);
+  border-color: rgba(255, 77, 79, 0.3);
+  color: #ff7875;
+}
+
+.dark-mode .password-reset-modal .new-password-box {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .password-reset-modal .cancel-button {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .password-reset-modal .cancel-button:hover {
+  background-color: #3a3a3a;
+}
+
+.dark-mode .password-reset-modal .confirm-button {
+  background-color: #ff4757;
+}
+
+.dark-mode .password-reset-modal .confirm-button:hover {
+  background-color: #ff5f6d;
+}
+
+/* Contact Panel Styles */
+.status-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-indicator.read {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
+.status-indicator.unread {
+  background-color: #3498db;
+  color: white;
+}
+
+.unread-row {
+  background-color: rgba(52, 152, 219, 0.05);
+  font-weight: 500;
+}
+
+.message-cell {
+  max-width: 300px;
+}
+
+.message-content {
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.mark-read-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mark-read-button:hover {
+  background-color: #2980b9;
+}
+
+.filter-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.filter-buttons button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-buttons button.active {
+  background-color: #2c3e50;
+  color: white;
+  border-color: #2c3e50;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-controls select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+.pagination-button, .pagination-number {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-number.active {
+  background-color: #2c3e50;
+  color: white;
+  border-color: #2c3e50;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dark-mode .filter-buttons button {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .filter-buttons button.active {
+  background-color: #ff4757;
+  border-color: #ff4757;
+}
+
+.dark-mode .pagination-button, 
+.dark-mode .pagination-number {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .pagination-number.active {
+  background-color: #ff4757;
+  border-color: #ff4757;
+}
+
+.dark-mode .sort-controls select {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-mode .status-indicator.read {
+  background-color: #444;
+  color: #ddd;
+}
+
+.dark-mode .unread-row {
+  background-color: rgba(255, 71, 87, 0.05);
+}

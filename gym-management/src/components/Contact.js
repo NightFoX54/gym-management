@@ -9,6 +9,12 @@ function Contact({ isDarkMode, setIsDarkMode }) {
     subject: '',
     message: ''
   });
+  
+  // Add states for the modal
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,13 +26,77 @@ function Contact({ isDarkMode, setIsDarkMode }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: Add form submission logic here
-    console.log('Form submitted:', formData);
+    
+    // Show loading state
+    setIsLoading(true);
+    
+    fetch('http://localhost:8080/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Form submitted successfully:', data);
+      // Reset form after successful submission
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+      
+      // Show success message in modal
+      setIsSuccess(true);
+      setModalMessage('Thank you for your message! We will get back to you soon.');
+      setShowModal(true);
+    })
+    .catch(error => {
+      console.error('Error submitting form:', error);
+      // Show error message in modal
+      setIsSuccess(false);
+      setModalMessage('There was an error submitting your form. Please try again later.');
+      setShowModal(true);
+    })
+    .finally(() => {
+      // Hide loading state
+      setIsLoading(false);
+    });
+  };
+
+  // Function to close the modal
+  const closeModal = () => {
+    setShowModal(false);
   };
 
   return (
     <div className={isDarkMode ? 'dark-mode' : ''}>
       <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+
+      {/* Feedback Modal */}
+      {showModal && (
+        <div className="feedback-modal-overlay">
+          <div className={`feedback-modal ${isSuccess ? 'success' : 'error'}`}>
+            <div className="modal-header">
+              <h3>{isSuccess ? 'Success!' : 'Error'}</h3>
+              <button className="close-button" onClick={closeModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>{modalMessage}</p>
+            </div>
+            <div className="modal-footer">
+              <button className="modal-button" onClick={closeModal}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="contact-page">
         <div className="contact-header">
@@ -129,7 +199,13 @@ function Contact({ isDarkMode, setIsDarkMode }) {
                 ></textarea>
               </div>
 
-              <button type="submit" className="submit-button">Send Message</button>
+              <button 
+                type="submit" 
+                className="submit-button"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Sending...' : 'Send Message'}
+              </button>
             </form>
           </div>
         </div>

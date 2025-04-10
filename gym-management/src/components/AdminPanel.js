@@ -7,6 +7,7 @@ import Dashboard from './admin/dashboard';
 import FinancialPanel from './admin/FinancialPanel';
 import MembershipPanel from './admin/MembershipPanel';
 import ExpensesPanel from './admin/ExpensesPanel';
+import ContactPanel from './admin/ContactPanel';
 import '../styles/AdminPanel.css';
 import { logout } from '../utils/auth';
 
@@ -29,6 +30,7 @@ const AdminPanel = ({ children, activeTab = 'dashboard', isDarkMode, setIsDarkMo
     { id: 'employees', label: 'Trainers', icon: 'fa-user-tie', path: '/admin/employees' },
     { id: 'expenses', label: 'Expenses', icon: 'fa-receipt', path: '/admin/expenses' },
     { id: 'financial', label: 'Financial', icon: 'fa-chart-line', path: '/admin/financial' },
+    { id: 'contact', label: 'Contact Messages', icon: 'fa-envelope', path: '/admin/contact' },
   ];
 
   return (
@@ -67,6 +69,7 @@ const AdminPanel = ({ children, activeTab = 'dashboard', isDarkMode, setIsDarkMo
           <Route path="/financial" element={<FinancialPanel />} />
           <Route path="/membership" element={<MembershipPanel />} />
           <Route path="/expenses" element={<ExpensesPanel />} />
+          <Route path="/contact" element={<ContactPanel />} />
         </Routes>
       </div>
     </div>

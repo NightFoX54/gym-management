@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/AdminPanels.css';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
@@ -13,7 +13,9 @@ const EmployeesPanel = () => {
       phone: '+90 555 987 6543',
       salary: 32000,
       hoursPerWeek: 40,
-      shiftSchedule: '/s1.jpg'
+      shiftSchedule: '/s1.jpg',
+      personalTrainings: 12,
+      groupClasses: 8
     },
     {
       id: 2,
@@ -23,7 +25,9 @@ const EmployeesPanel = () => {
       phone: '+90 555 876 5432',
       salary: 28000,
       hoursPerWeek: 38,
-      shiftSchedule: '/s2.jpg'
+      shiftSchedule: '/s2.jpg',
+      personalTrainings: 8,
+      groupClasses: 4
     },
     {
       id: 3,
@@ -33,9 +37,15 @@ const EmployeesPanel = () => {
       phone: '+90 555 765 4321',
       salary: 35000,
       hoursPerWeek: 42,
-      shiftSchedule: '/s3.jpg'
+      shiftSchedule: '/s3.jpg',
+      personalTrainings: 15,
+      groupClasses: 6
     }
   ]);
+
+  // New state variables for salary payment functionality
+  const [lastSalaryDate, setLastSalaryDate] = useState(null);
+  const [isPayingSalaries, setIsPayingSalaries] = useState(false);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showShiftModal, setShowShiftModal] = useState(false);
@@ -45,6 +55,9 @@ const EmployeesPanel = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  // Add the missing newEmployee state
   const [newEmployee, setNewEmployee] = useState({
     name: '',
     surname: '',
@@ -52,9 +65,58 @@ const EmployeesPanel = () => {
     phone: '',
     salary: '',
     hoursPerWeek: '',
-    shiftSchedule: ''
+    shiftSchedule: '',
+    personalTrainings: 0,
+    groupClasses: 0
   });
-  const [searchQuery, setSearchQuery] = useState('');
+
+  // New function to fetch employees data from API
+  const fetchEmployeeData = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/employees/trainers');
+      const data = await response.json();
+      
+      if (data.employees) {
+        setEmployees(data.employees);
+      }
+      
+      if (data.lastSalaryDate) {
+        setLastSalaryDate(data.lastSalaryDate);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+      // Keep using mock data if API fails
+    }
+  };
+
+  // New function to pay salaries
+  const handlePaySalaries = async () => {
+    setIsPayingSalaries(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/employees/pay-salaries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setLastSalaryDate(data.date);
+        fetchEmployeeData(); // Refresh the employee data
+      }
+    } catch (error) {
+      console.error('Error paying salaries:', error);
+    } finally {
+      setIsPayingSalaries(false);
+    }
+  };
+
+  useEffect(() => {
+    // Call API to fetch employee data when component mounts
+    fetchEmployeeData();
+  }, []);
 
   // Phone number validation function
   const validatePhoneInput = (value, previousValue) => {
@@ -71,19 +133,41 @@ const EmployeesPanel = () => {
     return value;
   };
 
-  const handleAddEmployee = (e) => {
+  const handleAddEmployee = async (e) => {
     e.preventDefault();
-    setEmployees([...employees, { ...newEmployee, id: employees.length + 1 }]);
-    setShowAddForm(false);
-    setNewEmployee({ 
-      name: '', 
-      surname: '', 
-      email: '', 
-      phone: '', 
-      salary: '', 
-      hoursPerWeek: '', 
-      shiftSchedule: '' 
-    });
+    try {
+      const response = await fetch('http://localhost:8080/api/employees/trainers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newEmployee),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh employee data
+        fetchEmployeeData();
+        setShowAddForm(false);
+        setNewEmployee({
+          name: '',
+          surname: '',
+          email: '',
+          phone: '',
+          salary: '',
+          hoursPerWeek: '',
+          shiftSchedule: '',
+          personalTrainings: 0,
+          groupClasses: 0
+        });
+      } else {
+        alert(`Failed to add employee: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      alert('Error adding employee. Please try again.');
+    }
   };
 
   const handleShowShift = (shiftSchedule) => {
@@ -113,18 +197,51 @@ const EmployeesPanel = () => {
     }
   };
 
-  const handleSaveEdit = (id, updatedData) => {
-    setEmployees(employees.map(employee => 
-      employee.id === id ? { ...employee, ...updatedData } : employee
-    ));
-    setEditingEmployee(null);
+  const handleSaveEdit = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/employees/trainers/${editingEmployee.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingEmployee),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh employee data
+        fetchEmployeeData();
+        setIsEditing(false);
+        setEditingEmployee(null);
+      } else {
+        alert(`Failed to update employee: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating employee:', error);
+      alert('Error updating employee. Please try again.');
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    if (employeeToDelete) {
-      setEmployees(employees.filter(employee => employee.id !== employeeToDelete.id));
-      setEmployeeToDelete(null);
-      setShowConfirmDialog(false);
+  const handleDeleteConfirm = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/employees/trainers/${employeeToDelete.id}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Refresh employee data
+        fetchEmployeeData();
+        setShowConfirmDialog(false);
+        setEmployeeToDelete(null);
+      } else {
+        alert(`Failed to delete employee: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      alert('Error deleting employee. Please try again.');
     }
   };
 
@@ -136,8 +253,8 @@ const EmployeesPanel = () => {
   // Filter employees based on search query
   const filteredEmployees = employees.filter(employee => {
     const fullName = `${employee.name} ${employee.surname}`.toLowerCase();
-    return fullName.includes(searchQuery.toLowerCase()) || 
-           (employee.email && employee.email.toLowerCase().includes(searchQuery.toLowerCase()));
+    return fullName.includes(searchTerm.toLowerCase()) || 
+           (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase()));
   });
 
   // Prevent row click when clicking the shift button
@@ -155,8 +272,8 @@ const EmployeesPanel = () => {
             <input
               type="text"
               placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
           </div>
@@ -181,6 +298,18 @@ const EmployeesPanel = () => {
             >
               Add Employee
             </Button>
+          </div>
+          <div className="salary-actions">
+            {lastSalaryDate && (
+              <span className="last-salary-date">Last salary payment: {lastSalaryDate}</span>
+            )}
+            <button 
+              className="pay-salary-button" 
+              onClick={handlePaySalaries}
+              disabled={isPayingSalaries}
+            >
+              {isPayingSalaries ? 'Processing...' : 'Pay Salaries'}
+            </button>
           </div>
         </div>
       </div>
@@ -215,6 +344,8 @@ const EmployeesPanel = () => {
               <th>Phone</th>
               <th>Salary (₺)</th>
               <th>Hours/Week</th>
+              <th>Personal Trainings</th>
+              <th>Group Classes</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -293,6 +424,8 @@ const EmployeesPanel = () => {
                         })}
                       />
                     </td>
+                    <td>{employee.personalTrainings || 0}</td>
+                    <td>{employee.groupClasses || 0}</td>
                     <td>
                       <div className="edit-actions">
                         <input
@@ -308,7 +441,7 @@ const EmployeesPanel = () => {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleSaveEdit(employee.id, editingEmployee);
+                              handleSaveEdit();
                             }}
                             className="save-button"
                           >
@@ -335,6 +468,8 @@ const EmployeesPanel = () => {
                     <td>{employee.phone}</td>
                     <td>₺{employee.salary.toLocaleString()}</td>
                     <td>{employee.hoursPerWeek}h</td>
+                    <td>{employee.personalTrainings || 0}</td>
+                    <td>{employee.groupClasses || 0}</td>
                     <td>
                       <button 
                         onClick={(e) => handleShiftButtonClick(e, employee.shiftSchedule)}
@@ -356,98 +491,103 @@ const EmployeesPanel = () => {
           <div className="modal">
             <h3>Add New Employee</h3>
             <form onSubmit={handleAddEmployee}>
-              <div className="form-grid">
-                <div className="input-group">
-                  <label htmlFor="employee-name">Name</label>
-                  <input
-                    id="employee-name"
-                    type="text"
-                    placeholder="Enter first name"
-                    value={newEmployee.name}
-                    onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="input-group">
-                  <label htmlFor="employee-surname">Surname</label>
-                  <input
-                    id="employee-surname"
-                    type="text"
-                    placeholder="Enter last name"
-                    value={newEmployee.surname}
-                    onChange={(e) => setNewEmployee({...newEmployee, surname: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="input-group">
-                  <label htmlFor="employee-email">Email</label>
-                  <input
-                    id="employee-email"
-                    type="email"
-                    placeholder="example@domain.com"
-                    value={newEmployee.email}
-                    onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div className="input-group">
-                  <label htmlFor="employee-phone">Phone Number</label>
-                  <input
-                    id="employee-phone"
-                    type="text"
-                    placeholder="+90 555 123 4567"
-                    value={newEmployee.phone}
-                    onChange={(e) => setNewEmployee({
-                      ...newEmployee, 
-                      phone: validatePhoneInput(e.target.value, newEmployee.phone)
-                    })}
-                    required
-                  />
-                  <small className="input-hint">Only numbers and a plus sign at the beginning are allowed</small>
-                </div>
+              <div className="add-employee-form">
+                <div className="form-content">
+                  <div className="form-grid">
+                    <div className="input-group">
+                      <label htmlFor="employee-name">Name</label>
+                      <input
+                        id="employee-name"
+                        type="text"
+                        placeholder="Enter first name"
+                        value={newEmployee.name}
+                        onChange={(e) => setNewEmployee({...newEmployee, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="input-group">
+                      <label htmlFor="employee-surname">Surname</label>
+                      <input
+                        id="employee-surname"
+                        type="text"
+                        placeholder="Enter last name"
+                        value={newEmployee.surname}
+                        onChange={(e) => setNewEmployee({...newEmployee, surname: e.target.value})}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="input-group">
+                      <label htmlFor="employee-email">Email</label>
+                      <input
+                        id="employee-email"
+                        type="email"
+                        placeholder="Enter email"
+                        value={newEmployee.email}
+                        onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
+                        required
+                      />
+                      <small className="input-hint">Default password will be set as <strong>trainer123</strong></small>
+                    </div>
+                    
+                    <div className="input-group">
+                      <label htmlFor="employee-phone">Phone Number</label>
+                      <input
+                        id="employee-phone"
+                        type="text"
+                        placeholder="+90 555 123 4567"
+                        value={newEmployee.phone}
+                        onChange={(e) => setNewEmployee({
+                          ...newEmployee, 
+                          phone: validatePhoneInput(e.target.value, newEmployee.phone)
+                        })}
+                        required
+                      />
+                      <small className="input-hint">Only numbers and a plus sign at the beginning are allowed</small>
+                    </div>
 
-                <div className="form-grid-full">
-                  <div className="form-section">
-                    <h4>Work Details</h4>
-                    <div className="form-grid">
-                      <div className="input-group">
-                        <label htmlFor="employee-salary">Salary (₺)</label>
-                        <input
-                          id="employee-salary"
-                          type="number"
-                          placeholder="Enter salary amount"
-                          value={newEmployee.salary}
-                          onChange={(e) => setNewEmployee({...newEmployee, salary: e.target.value})}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="input-group">
-                        <label htmlFor="employee-hours">Hours per Week</label>
-                        <input
-                          id="employee-hours"
-                          type="number"
-                          placeholder="Enter work hours"
-                          value={newEmployee.hoursPerWeek}
-                          onChange={(e) => setNewEmployee({...newEmployee, hoursPerWeek: e.target.value})}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="form-grid-full">
-                        <div className="input-group">
-                          <label htmlFor="shift-schedule">Shift Schedule Image URL</label>
-                          <input
-                            id="shift-schedule"
-                            type="text"
-                            placeholder="Enter image URL for shift schedule"
-                            value={newEmployee.shiftSchedule}
-                            onChange={(e) => setNewEmployee({...newEmployee, shiftSchedule: e.target.value})}
-                            required
-                          />
+                    <div className="form-grid-full">
+                      <div className="form-section">
+                        <h4>Work Details</h4>
+                        <div className="form-grid">
+                          <div className="input-group">
+                            <label htmlFor="employee-salary">Salary (₺)</label>
+                            <input
+                              id="employee-salary"
+                              type="number"
+                              placeholder="Enter salary amount"
+                              value={newEmployee.salary}
+                              onChange={(e) => setNewEmployee({...newEmployee, salary: e.target.value})}
+                              required
+                            />
+                          </div>
+                          
+                          <div className="input-group">
+                            <label htmlFor="employee-hours">Hours per Week</label>
+                            <input
+                              id="employee-hours"
+                              type="number"
+                              placeholder="Enter work hours"
+                              value={newEmployee.hoursPerWeek}
+                              onChange={(e) => setNewEmployee({...newEmployee, hoursPerWeek: e.target.value})}
+                              required
+                            />
+                          </div>
+                          
+                          <div className="form-grid-full">
+                            <div className="input-group">
+                              <label htmlFor="shift-schedule">Shift Schedule Image URL</label>
+                              <input
+                                id="shift-schedule"
+                                type="text"
+                                placeholder="Enter image URL for shift schedule"
+                                value={newEmployee.shiftSchedule}
+                                onChange={(e) => setNewEmployee({...newEmployee, shiftSchedule: e.target.value})}
+                                required
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

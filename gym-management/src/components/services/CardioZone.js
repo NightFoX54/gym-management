@@ -97,22 +97,7 @@ function CardioZone({ isDarkMode, setIsDarkMode }) {
             </div>
           </div>
 
-          <div className="pricing-section">
-            <h3>Cardio Zone Access</h3>
-            <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
-              <h4>Cardio Training Experience</h4>
-              <p className="price">Starting from ₺150/day pass</p>
-              <ul>
-                <li>Full access to all cardio equipment</li>
-                <li>High-tech performance tracking</li>
-                <li>Multiple workout options for all fitness levels</li>
-                <li>Entertainment systems on premium machines</li>
-                <li>Spacious, well-ventilated workout area</li>
-                <li>Instructor assistance upon request</li>
-              </ul>
-              <p className="package-note">* Unlimited access to the Cardio Zone included with all membership plans. Premium (₺1300/mo) and Elite (₺2000/mo) members get priority booking for popular machines during peak hours. Day passes and weekly passes available for non-members.</p>
-            </div>
-          </div>
+        
 
           <div className="booking-section">
             <h2>Ready to Boost Your Cardiovascular Fitness?</h2>

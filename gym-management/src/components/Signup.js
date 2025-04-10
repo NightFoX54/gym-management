@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Signup.css';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaGem, FaCrown, FaAward, FaCreditCard } from 'react-icons/fa';
@@ -38,68 +38,92 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
     expiryDate: '',
     cvv: ''
   });
+  const [plans, setPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
-  const plans = [
-    {
-      id: 1,
-      name: 'Basic Plan',
-      price: 800,
-      duration: 'Monthly',
-      features: [
-        'Access to gym equipment',
-        'Locker room access',
-        'Basic fitness assessment',
-        '2 Guest passes per month'
-      ]
-    },
-    {
-      id: 2,
-      name: 'Premium Plan',
-      price: 1300,
-      duration: 'Monthly',
-      features: [
-        'All Basic Plan features',
-        'Unlimited group classes',
-        'Personal trainer consultation',
-        'Nutrition guidance',
-        '4 Guest passes per month'
-      ]
-    },
-    {
-      id: 3,
-      name: 'Elite Plan',
-      price: 2000,
-      duration: 'Monthly',
-      features: [
-        'All Premium Plan features',
-        '2 Personal training sessions/month',
-        'Access to spa facilities',
-        'Priority class booking',
-        'Unlimited guest passes'
-      ]
-    }
-  ];
-
-  const durations = [
-    { value: 'monthly', label: 'Monthly', discount: 0 },
-    { value: '3months', label: '3 Months', discount: 0.10 },
-    { value: '6months', label: '6 Months', discount: 0.20 },
-    { value: '1year', label: '1 Year', discount: 0.28 }
-  ];
-
-  const calculatePrice = (basePrice, duration) => {
-    const durationMultiplier = {
-      'monthly': 1,
-      '3months': 3,
-      '6months': 6,
-      '1year': 12
+  // Fetch membership plans from the backend
+  useEffect(() => {
+    const fetchMembershipPlans = async () => {
+      try {
+        setIsLoading(true);
+        const response = await api.get('/membership-management/plans');
+        
+        if (response.data && response.data.length > 0) {
+          setPlans(response.data);
+        } else {
+          // Fallback to default plans if no data is returned
+          setPlans([
+            {
+              id: 1,
+              planName: 'Basic Plan',
+              planPrice: 800,
+              guestPassCount: 2,
+              monthlyPtSessions: 0,
+              groupClassCount: 0,
+              marketDiscount: 0
+            },
+            {
+              id: 2,
+              planName: 'Premium Plan',
+              planPrice: 1300,
+              guestPassCount: 4,
+              monthlyPtSessions: 1, 
+              groupClassCount: -1, // Unlimited
+              marketDiscount: 5
+            },
+            {
+              id: 3,
+              planName: 'Elite Plan',
+              planPrice: 2000,
+              guestPassCount: -1, // Unlimited
+              monthlyPtSessions: 2,
+              groupClassCount: -1, // Unlimited
+              marketDiscount: 10
+            }
+          ]);
+        }
+        setLoadError(null);
+      } catch (error) {
+        console.error('Error fetching membership plans:', error);
+        setLoadError('Failed to load membership plans. Using default values.');
+        // Set default plans as fallback
+        setPlans([
+          {
+            id: 1,
+            planName: 'Basic Plan',
+            planPrice: 800,
+            guestPassCount: 2,
+            monthlyPtSessions: 0,
+            groupClassCount: 0,
+            marketDiscount: 0
+          },
+          {
+            id: 2,
+            planName: 'Premium Plan',
+            planPrice: 1300,
+            guestPassCount: 4,
+            monthlyPtSessions: 1,
+            groupClassCount: -1, // Unlimited
+            marketDiscount: 5
+          },
+          {
+            id: 3,
+            planName: 'Elite Plan',
+            planPrice: 2000,
+            guestPassCount: -1, // Unlimited
+            monthlyPtSessions: 2,
+            groupClassCount: -1, // Unlimited
+            marketDiscount: 10
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    
-    const multiplier = durationMultiplier[duration];
-    const discount = durations.find(d => d.value === duration).discount;
-    const totalPrice = basePrice * multiplier * (1 - discount);
-    return Math.round(totalPrice);
-  };
+
+    fetchMembershipPlans();
+  }, []);
 
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
@@ -371,12 +395,80 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
     }
   };
 
+  // Updated to get features based on plan data from backend
+  const getPlanFeatures = (plan) => {
+    const features = [
+      'Access to gym equipment',
+      'Locker room access',
+      'Basic fitness assessment'
+    ];
+    
+    // Add guest passes feature
+    if (plan.guestPassCount === -1) {
+      features.push('Unlimited guest passes');
+    } else if (plan.guestPassCount > 0) {
+      features.push(`${plan.guestPassCount} Guest passes per month`);
+    }
+    
+    // Add personal training sessions if available
+    if (plan.monthlyPtSessions > 0) {
+      features.push(`${plan.monthlyPtSessions} Personal training sessions/month`);
+    }
+    
+    // Add group classes if available
+    if (plan.groupClassCount === -1) {
+      features.push('Unlimited group classes');
+    } else if (plan.groupClassCount > 0) {
+      features.push(`${plan.groupClassCount} Group classes per month`);
+    }
+    
+    // Add market discount if available
+    if (plan.marketDiscount > 0) {
+      features.push(`${plan.marketDiscount}% Discount on market products`);
+    }
+    
+    // Add priority booking for Elite plan
+    if (plan.id === 3) {
+      features.push('Priority class booking');
+      features.push('Access to spa facilities');
+    }
+    
+    // Add nutrition guidance for Premium and Elite plans
+    if (plan.id === 2 || plan.id === 3) {
+      features.push('Nutrition guidance');
+    }
+    
+    return features;
+  };
+
+  const durations = [
+    { value: 'monthly', label: 'Monthly', discount: 0 },
+    { value: '3months', label: '3 Months', discount: 0.10 },
+    { value: '6months', label: '6 Months', discount: 0.20 },
+    { value: '1year', label: '1 Year', discount: 0.28 }
+  ];
+
+  const calculatePrice = (basePrice, duration) => {
+    const durationMultiplier = {
+      'monthly': 1,
+      '3months': 3,
+      '6months': 6,
+      '1year': 12
+    };
+    
+    const multiplier = durationMultiplier[duration];
+    const discount = durations.find(d => d.value === duration).discount;
+    const totalPrice = basePrice * multiplier * (1 - discount);
+    return Math.round(totalPrice);
+  };
+
   const renderStep = () => {
     switch(step) {
       case 1:
         return (
           <div className="plans-container">
             <h2>Choose Your Membership Plan</h2>
+            {loadError && <div className="error-message">{loadError}</div>}
             <div className="duration-selector">
               {durations.map((duration) => (
                 <button
@@ -389,40 +481,46 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                 </button>
               ))}
             </div>
-            <div className="plans-grid">
-              {plans.map((plan) => (
-                <div 
-                  key={plan.id} 
-                  className={`plan-card ${selectedPlan?.id === plan.id ? 'selected' : ''}`}
-                  onClick={() => handlePlanSelect(plan)}
-                >
-                  <h3>
-                    {plan.id === 1 && <FaGem className="plan-icon" />}
-                    {plan.id === 2 && <FaCrown className="plan-icon" />}
-                    {plan.id === 3 && <FaAward className="plan-icon" />}
-                    {plan.name}
-                  </h3>
-                  <div className="price">
-                    <span className="amount">₺{calculatePrice(plan.price, selectedDuration)}</span>
-                    <span className="duration">/{selectedDuration}</span>
+            {isLoading ? (
+              <div className="loading-container">
+                <p>Loading membership plans...</p>
+              </div>
+            ) : (
+              <div className="plans-grid">
+                {plans.map((plan) => (
+                  <div 
+                    key={plan.id} 
+                    className={`plan-card ${selectedPlan?.id === plan.id ? 'selected' : ''}`}
+                    onClick={() => handlePlanSelect(plan)}
+                  >
+                    <h3>
+                      {plan.id === 1 && <FaGem className="plan-icon" />}
+                      {plan.id === 2 && <FaCrown className="plan-icon" />}
+                      {plan.id === 3 && <FaAward className="plan-icon" />}
+                      {plan.planName}
+                    </h3>
+                    <div className="price">
+                      <span className="amount">₺{calculatePrice(plan.planPrice, selectedDuration)}</span>
+                      <span className="duration">/{selectedDuration}</span>
+                    </div>
+                    <div className="monthly-price">
+                      (₺{Math.round(calculatePrice(plan.planPrice, selectedDuration) / 
+                        (selectedDuration === 'monthly' ? 1 : 
+                        selectedDuration === '3months' ? 3 : 
+                        selectedDuration === '6months' ? 6 : 12))} /month)
+                    </div>
+                    <ul className="features-list">
+                      {getPlanFeatures(plan).map((feature, index) => (
+                        <li key={index}>{feature}</li>
+                      ))}
+                    </ul>
+                    <div className="plan-button-container">
+                      <button className="select-plan-btn">Select Plan</button>
+                    </div>
                   </div>
-                  <div className="monthly-price">
-                    (₺{Math.round(calculatePrice(plan.price, selectedDuration) / 
-                      (selectedDuration === 'monthly' ? 1 : 
-                       selectedDuration === '3months' ? 3 : 
-                       selectedDuration === '6months' ? 6 : 12))} /month)
-                  </div>
-                  <ul className="features-list">
-                    {plan.features.map((feature, index) => (
-                      <li key={index}>{feature}</li>
-                    ))}
-                  </ul>
-                  <div className="plan-button-container">
-                    <button className="select-plan-btn">Select Plan</button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -535,10 +633,10 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                   {selectedPlan.id === 1 && <FaGem className="plan-icon" />}
                   {selectedPlan.id === 2 && <FaCrown className="plan-icon" />}
                   {selectedPlan.id === 3 && <FaAward className="plan-icon" />}
-                  <p className="plan-name">{selectedPlan.name}</p>
+                  <p className="plan-name">{selectedPlan.planName}</p>
                 </div>
                 <p className="plan-price">
-                  ₺{calculatePrice(selectedPlan.price, selectedDuration)}/{selectedDuration}
+                  ₺{calculatePrice(selectedPlan.planPrice, selectedDuration)}/{selectedDuration}
                 </p>
               </div>
               

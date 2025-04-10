@@ -95,22 +95,7 @@ function NutritionCounseling({ isDarkMode, setIsDarkMode }) {
             </div>
           </div>
 
-          <div className="pricing-section">
-            <h3>Nutrition Service Access</h3>
-            <div className="pricing-card featured" style={{ maxWidth: '100%', margin: '0 auto' }}>
-              <h4>Nutrition Counseling Experience</h4>
-              <p className="price">Starting from ₺200/session</p>
-              <ul>
-                <li>Personalized nutritional assessment and analysis</li>
-                <li>Custom meal planning and dietary guidance</li>
-                <li>Expert certified nutritionists</li>
-                <li>Weight management strategies</li>
-                <li>Supplement recommendations</li>
-                <li>Ongoing support and follow-up</li>
-              </ul>
-              <p className="package-note">* Basic nutrition consultation included with Elite (₺2000/mo) membership. Premium members (₺1300/mo) receive 50% discount on all nutrition services. Individual sessions and packages available.</p>
-            </div>
-          </div>
+      
 
           <div className="booking-section">
             <h2>Ready to Transform Your Body?</h2>

@@ -224,4 +224,92 @@
 
 .dark-mode-btn:hover {
   transform: scale(1.1);
+}
+
+/* Modal Styles */
+.feedback-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.feedback-modal {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+.dark-mode .feedback-modal {
+  background-color: #333;
+  color: white;
+}
+
+.feedback-modal.success .modal-header {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.feedback-modal.error .modal-header {
+  background-color: #f44336;
+  color: white;
+}
+
+.modal-header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-body {
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  background-color: #f5f5f5;
+  text-align: right;
+}
+
+.dark-mode .modal-footer {
+  background-color: #444;
+}
+
+.modal-button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.modal-button:hover {
+  background-color: #0069d9;
 } 
