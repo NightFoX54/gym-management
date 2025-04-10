@@ -26,7 +26,7 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   
-  // New state variables for password change
+  // New state variables for password
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
@@ -245,7 +245,7 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!tempImage) {
       alert('Please select an image first.');
       return;
@@ -253,24 +253,82 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
 
     setIsUploading(true);
     setUploadProgress(0);
-
-    // Simulated upload process
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          setShowImageModal(false);
-          setProfile(prev => ({
-            ...prev,
-            profileImage: tempImage
-          }));
-          setTempImage(null);
-          return 100;
-        }
-        return prev + 10;
+    
+    try {
+      // Start progress animation
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 200);
+      
+      // Create a form data object for the file upload
+      // Convert base64 to Blob
+      const base64Response = await fetch(tempImage);
+      const blob = await base64Response.blob();
+      
+      // Create file from blob
+      const fileName = `profile_${userId}.${blob.type.split('/')[1]}`;
+      const imageFile = new File([blob], fileName, { type: blob.type });
+      
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      
+      // Upload the image to the server
+      const response = await fetch(`http://localhost:8080/api/upload/profile-photo`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: formData
       });
-    }, 200);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to upload image: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Update the user profile with the new image path
+      const updateResponse = await fetch(`http://localhost:8080/api/members/${userId}/update-photo`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify({ profilePhotoPath: data.filePath })
+      });
+      
+      if (!updateResponse.ok) {
+        throw new Error(`Failed to update profile photo: ${updateResponse.status}`);
+      }
+      
+      // Complete the progress
+      setUploadProgress(100);
+      
+      // Update the profile with the new image
+      setProfile(prev => ({
+        ...prev,
+        profileImage: data.filePath
+      }));
+      
+      // Close the modal and clean up
+      setSuccessMessage('Profile photo updated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+      setShowImageModal(false);
+      setTempImage(null);
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      setErrorMessage(`Failed to upload image: ${err.message}`);
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCancel = () => {

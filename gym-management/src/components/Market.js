@@ -23,6 +23,10 @@ import {
   Paper,
   Divider,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from '@mui/material';
 import {
   Search,
@@ -35,7 +39,7 @@ import {
   Checkroom,
   SportsTennis,
 } from '@mui/icons-material';
-import { FaArrowLeft, FaTag, FaMoon, FaSun } from 'react-icons/fa';
+import { FaArrowLeft, FaTag, FaMoon, FaSun, FaCreditCard, FaLock } from 'react-icons/fa';
 
 const Market = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -54,6 +58,16 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
   const [discountPlanName, setDiscountPlanName] = useState('');
   const [loadingDiscount, setLoadingDiscount] = useState(true);
   const [discountError, setDiscountError] = useState(null);
+  const [previousOrders, setPreviousOrders] = useState([]);
+  const [isPreviousOrdersOpen, setIsPreviousOrdersOpen] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [ordersError, setOrdersError] = useState(null);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCVC, setCardCVC] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [paymentErrors, setPaymentErrors] = useState({});
 
   // Get user info from localStorage with better debugging
   const userInfoString = localStorage.getItem('user');
@@ -173,6 +187,17 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
     fetchMemberDiscount();
   }, [userId, userInfo.token]);
 
+  // Add this useEffect near your other useEffect hooks
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [setIsDarkMode]);
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.productName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || 
@@ -182,6 +207,11 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
 
   // Cart operations
   const addToCart = (product) => {
+    // Check if product is out of stock
+    if (product.stock <= 0) {
+      return; // Prevent adding out-of-stock items
+    }
+    
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
       setCart(cart.map(item =>
@@ -227,22 +257,153 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   const toggleDarkModeMember = () => {
-    setIsDarkMode(!isDarkMode);
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   };
 
-  // Handle checkout
-  const handleCheckout = async () => {
-    if (cart.length === 0) return;
+  // Format card number with spaces after every 4 digits
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = matches && matches[0] || '';
+    const parts = [];
     
-    console.log('Checking out with user ID:', userId);
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+    
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return value;
+    }
+  };
+
+  // Format expiry date as MM/YY
+  const formatExpiryDate = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    
+    if (v.length > 2) {
+      return `${v.substring(0, 2)}/${v.substring(2, 4)}`;
+    }
+    
+    return v;
+  };
+  
+  // Handle input changes with appropriate validation
+  const handleCardNumberChange = (e) => {
+    const formattedValue = formatCardNumber(e.target.value);
+    setCardNumber(formattedValue);
+    
+    if (paymentErrors.cardNumber && formattedValue.replace(/\s/g, '').length === 16) {
+      setPaymentErrors({...paymentErrors, cardNumber: ''});
+    }
+  };
+  
+  const handleExpiryChange = (e) => {
+    const formattedValue = formatExpiryDate(e.target.value);
+    setCardExpiry(formattedValue);
+    
+    if (paymentErrors.cardExpiry && formattedValue.length === 5) {
+      setPaymentErrors({...paymentErrors, cardExpiry: ''});
+    }
+  };
+  
+  const handleCVCChange = (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setCardCVC(value);
+    
+    if (paymentErrors.cardCVC && value.length >= 3) {
+      setPaymentErrors({...paymentErrors, cardCVC: ''});
+    }
+  };
+  
+  const handleCardNameChange = (e) => {
+    setCardName(e.target.value);
+    
+    if (paymentErrors.cardName && e.target.value.trim().length > 0) {
+      setPaymentErrors({...paymentErrors, cardName: ''});
+    }
+  };
+
+  // Validate payment form
+  const validatePaymentForm = () => {
+    const errors = {};
+    
+    if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
+      errors.cardNumber = 'Please enter a valid 16-digit card number';
+    }
+    
+    if (!cardExpiry || cardExpiry.length < 5) {
+      errors.cardExpiry = 'Please enter a valid expiry date (MM/YY)';
+    } else {
+      const [month, year] = cardExpiry.split('/');
+      if (parseInt(month) < 1 || parseInt(month) > 12) {
+        errors.cardExpiry = 'Month must be between 1-12';
+      }
+      
+      const currentYear = new Date().getFullYear() % 100;
+      if (parseInt(year) < currentYear) {
+        errors.cardExpiry = 'Card has expired';
+      }
+    }
+    
+    if (!cardCVC || cardCVC.length < 3) {
+      errors.cardCVC = 'Please enter a valid CVC (3-4 digits)';
+    }
+    
+    if (!cardName.trim()) {
+      errors.cardName = 'Please enter the name on card';
+    }
+    
+    return errors;
+  };
+  
+  // Submit payment and complete checkout
+  const handlePaymentSubmit = () => {
+    const errors = validatePaymentForm();
+    
+    if (Object.keys(errors).length > 0) {
+      setPaymentErrors(errors);
+      return;
+    }
+    
+    // Close payment dialog and process order
+    setIsPaymentDialogOpen(false);
+    
+    // Reset payment form
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCVC('');
+    setCardName('');
+    setPaymentErrors({});
+    
+    // Process the actual checkout
+    processCheckout();
+  };
+
+  // Modified checkout flow
+  const handleCheckout = () => {
+    if (cart.length === 0) return;
     
     // Check if user is logged in
     if (!userId) {
-      console.log('User ID is missing or invalid');
       setCheckoutError('You must be logged in to checkout. Please log in and try again.');
       return;
     }
     
+    // Open payment dialog instead of directly processing
+    setIsPaymentDialogOpen(true);
+  };
+  
+  // Process actual checkout (after payment)
+  const processCheckout = async () => {
     setCheckoutLoading(true);
     setCheckoutError(null);
     
@@ -308,6 +469,58 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
     } finally {
       setCheckoutLoading(false);
     }
+  };
+
+  // Fetch previous orders
+  const fetchPreviousOrders = async () => {
+    if (!userId) {
+      setOrdersError('You must be logged in to view your orders');
+      return;
+    }
+
+    try {
+      setLoadingOrders(true);
+      setOrdersError(null);
+      
+      console.log(`Fetching previous orders for user ID: ${userId}`);
+      const response = await fetch(`http://localhost:8080/api/market/purchases/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${userInfo.token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch previous orders');
+      }
+      
+      const data = await response.json();
+      console.log('Previous orders data:', data);
+      
+      setPreviousOrders(data);
+    } catch (err) {
+      console.error('Error fetching previous orders:', err);
+      setOrdersError(err.message);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  // Open previous orders drawer and fetch data
+  const handleOpenPreviousOrders = () => {
+    setIsPreviousOrdersOpen(true);
+    fetchPreviousOrders();
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   return (
@@ -428,7 +641,7 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                   bgcolor: '#ff4757',
                   '&:hover': { bgcolor: '#ff6b81' },
                   py: 1.5,
-                  mt: 2
+                  mb: 2
                 }}
               >
                 <Badge 
@@ -446,6 +659,26 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                     View Cart
                   </Typography>
                 </Badge>
+              </Button>
+
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<FaTag />}
+                onClick={handleOpenPreviousOrders}
+                sx={{
+                  borderColor: '#ff4757',
+                  color: '#ff4757',
+                  '&:hover': { 
+                    bgcolor: 'rgba(255, 71, 87, 0.1)',
+                    borderColor: '#ff6b81' 
+                  },
+                  py: 1.5
+                }}
+              >
+                <Typography variant="button">
+                  Previous Orders
+                </Typography>
               </Button>
             </Paper>
           </Grid>
@@ -515,11 +748,55 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                             display: 'flex', 
                             flexDirection: 'column',
                             bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+                            position: 'relative', // Added for sold out overlay
                             '&:hover': {
                               boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
                             }
                           }}
                         >
+                          {/* Sold Out Overlay */}
+                          {product.stock <= 0 && (
+                            <Box 
+                              sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 1,
+                                '&::before': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  bgcolor: 'rgba(0,0,0,0.5)',
+                                  borderRadius: '4px'
+                                }
+                              }}
+                            >
+                              <Typography 
+                                variant="h5" 
+                                sx={{ 
+                                  color: 'white', 
+                                  fontWeight: 'bold',
+                                  px: 3,
+                                  py: 1,
+                                  bgcolor: '#ff4757',
+                                  borderRadius: '4px',
+                                  transform: 'rotate(-15deg)',
+                                  zIndex: 2
+                                }}
+                              >
+                                SOLD OUT
+                              </Typography>
+                            </Box>
+                          )}
+                          
                           <CardMedia
                             component="img"
                             height="200"
@@ -528,7 +805,8 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                             sx={{ 
                               objectFit: 'contain',
                               p: 2,
-                              bgcolor: isDarkMode ? '#2c2c2c' : '#f8f9fa'
+                              bgcolor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+                              opacity: product.stock <= 0 ? 0.6 : 1 // Dim the image if out of stock
                             }}
                           />
                           <CardContent sx={{ flexGrow: 1 }}>
@@ -554,27 +832,53 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
                             >
                               {product.description}
                             </Typography>
-                            <Typography 
-                              variant="h6" 
-                              sx={{ 
-                                color: '#ff4757',
-                                fontWeight: 'bold',
-                                mb: 2
-                              }}
-                            >
-                              ₺{product.price.toFixed(2)}
-                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                              <Typography 
+                                variant="h6" 
+                                sx={{ 
+                                  color: '#ff4757',
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                ₺{product.price.toFixed(2)}
+                              </Typography>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  color: product.stock <= 0 
+                                    ? '#ff4757' 
+                                    : product.stock < 5 
+                                      ? '#ffa502' 
+                                      : isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)',
+                                  fontWeight: product.stock < 5 ? 'bold' : 'normal'
+                                }}
+                              >
+                                {product.stock <= 0 
+                                  ? 'Out of stock' 
+                                  : product.stock < 5 
+                                    ? `Only ${product.stock} left` 
+                                    : `Stock: ${product.stock}`
+                                }
+                              </Typography>
+                            </Box>
                             <Button
                               fullWidth
                               variant="contained"
                               startIcon={<Add />}
                               onClick={() => addToCart(product)}
+                              disabled={product.stock <= 0}
                               sx={{
-                                bgcolor: '#ff4757',
-                                '&:hover': { bgcolor: '#ff6b81' },
+                                bgcolor: product.stock <= 0 ? 'rgba(255,71,87,0.5)' : '#ff4757',
+                                '&:hover': { 
+                                  bgcolor: product.stock <= 0 ? 'rgba(255,71,87,0.5)' : '#ff6b81' 
+                                },
+                                '&.Mui-disabled': {
+                                  color: 'white',
+                                  opacity: 0.7
+                                }
                               }}
                             >
-                              Add to Cart
+                              {product.stock <= 0 ? 'Sold Out' : 'Add to Cart'}
                             </Button>
                           </CardContent>
                         </Card>
@@ -793,6 +1097,334 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
           )}
         </Box>
       </Drawer>
+
+      {/* Previous Orders Drawer */}
+      <Drawer
+        anchor="right"
+        open={isPreviousOrdersOpen}
+        onClose={() => setIsPreviousOrdersOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: 450 },
+            bgcolor: isDarkMode ? '#1a1a1a !important' : '#fff !important',
+            color: isDarkMode ? '#fff' : 'inherit',
+          }
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">Your Previous Orders</Typography>
+            <IconButton onClick={() => setIsPreviousOrdersOpen(false)} sx={{ color: isDarkMode ? '#fff' : 'inherit' }}>
+              <FaArrowLeft />
+            </IconButton>
+          </Box>
+          
+          <Divider sx={{ mb: 2 }} />
+          
+          {loadingOrders ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+              <CircularProgress sx={{ color: '#ff4757' }} />
+            </Box>
+          ) : ordersError ? (
+            <Box sx={{ 
+              textAlign: 'center', 
+              my: 2, 
+              p: 2, 
+              bgcolor: 'rgba(231, 76, 60, 0.2)', 
+              borderRadius: 2,
+              color: isDarkMode ? '#fff' : 'inherit'
+            }}>
+              <Typography variant="subtitle1" color="error">
+                {ordersError}
+              </Typography>
+              <Button 
+                variant="contained" 
+                sx={{ mt: 2, bgcolor: '#ff4757', '&:hover': { bgcolor: '#ff6b81' } }}
+                onClick={fetchPreviousOrders}
+              >
+                Try Again
+              </Button>
+            </Box>
+          ) : previousOrders.length === 0 ? (
+            <Box sx={{ textAlign: 'center', my: 5 }}>
+              <FaTag style={{ fontSize: 60, color: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)', marginBottom: 16 }} />
+              <Typography variant="h6">You haven't made any purchases yet</Typography>
+              <Button 
+                variant="contained" 
+                sx={{ mt: 2, bgcolor: '#ff4757', '&:hover': { bgcolor: '#ff6b81' } }}
+                onClick={() => setIsPreviousOrdersOpen(false)}
+              >
+                Continue Shopping
+              </Button>
+            </Box>
+          ) : (
+            <List>
+              {previousOrders.map((order) => (
+                <Paper 
+                  key={order.id}
+                  elevation={2}
+                  sx={{ 
+                    mb: 3,
+                    overflow: 'hidden',
+                    bgcolor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+                    borderRadius: 2
+                  }}
+                >
+                  <Box sx={{ 
+                    p: 2, 
+                    bgcolor: '#ff4757', 
+                    color: 'white',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center' 
+                  }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                      Order #{order.orderNo || 'N/A'}
+                    </Typography>
+                    <Typography variant="body2">
+                      {formatDate(order.saleDate)}
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ p: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2">Items:</Typography>
+                      <Typography variant="body2">{order.totalItems}</Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Total:</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>₺{order.totalPrice.toFixed(2)}</Typography>
+                    </Box>
+                    
+                    <Divider sx={{ my: 1 }} />
+                    
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                      Products:
+                    </Typography>
+                    
+                    <List sx={{ p: 0 }}>
+                      {order.productSales && order.productSales.map((sale) => (
+                        <ListItem key={sale.id} sx={{ px: 0, py: 1 }}>
+                          <ListItemText
+                            primary={sale.product.productName}
+                            secondary={`Quantity: ${sale.quantity}`}
+                          />
+                          <Typography variant="body2">
+                            ₺{(sale.product.price * sale.quantity).toFixed(2)}
+                          </Typography>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                </Paper>
+              ))}
+            </List>
+          )}
+        </Box>
+      </Drawer>
+
+      {/* Payment Dialog */}
+      <Dialog
+        open={isPaymentDialogOpen}
+        onClose={() => setIsPaymentDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '95%', sm: 400 },
+            maxWidth: '450px',
+            bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+            color: isDarkMode ? '#fff' : 'inherit',
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          borderBottom: 1,
+          borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+        }}>
+          <FaCreditCard style={{ marginRight: '8px' }} />
+          Payment Details
+        </DialogTitle>
+        
+        <DialogContent sx={{ py: 3, px: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+            <Typography variant="subtitle1">Total Amount:</Typography>
+            <Typography variant="h6" sx={{ color: '#ff4757', fontWeight: 'bold' }}>
+              ₺{(getTotalPrice() * (1 - memberDiscount / 100)).toFixed(2)}
+            </Typography>
+          </Box>
+          
+          <TextField
+            fullWidth
+            label="Name on Card"
+            value={cardName}
+            onChange={handleCardNameChange}
+            margin="dense"
+            error={!!paymentErrors.cardName}
+            helperText={paymentErrors.cardName}
+            sx={{
+              mb: 2,
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.23)' : undefined,
+                },
+                '&:hover fieldset': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.4)' : undefined,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#ff4757',
+                },
+              },
+              '& .MuiInputBase-input': {
+                color: isDarkMode ? '#fff' : undefined,
+              },
+            }}
+          />
+          
+          <TextField
+            fullWidth
+            label="Card Number"
+            value={cardNumber}
+            onChange={handleCardNumberChange}
+            placeholder="1234 5678 9012 3456"
+            inputProps={{ maxLength: 19 }}
+            margin="dense"
+            error={!!paymentErrors.cardNumber}
+            helperText={paymentErrors.cardNumber}
+            sx={{
+              mb: 2,
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.23)' : undefined,
+                },
+                '&:hover fieldset': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.4)' : undefined,
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#ff4757',
+                },
+              },
+              '& .MuiInputBase-input': {
+                color: isDarkMode ? '#fff' : undefined,
+              },
+            }}
+          />
+          
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <TextField
+              label="Expiry Date"
+              value={cardExpiry}
+              onChange={handleExpiryChange}
+              placeholder="MM/YY"
+              inputProps={{ maxLength: 5 }}
+              margin="dense"
+              error={!!paymentErrors.cardExpiry}
+              helperText={paymentErrors.cardExpiry}
+              sx={{
+                width: '50%',
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.23)' : undefined,
+                  },
+                  '&:hover fieldset': {
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.4)' : undefined,
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff4757',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+              }}
+            />
+            
+            <TextField
+              label="CVC"
+              value={cardCVC}
+              onChange={handleCVCChange}
+              placeholder="123"
+              inputProps={{ maxLength: 4 }}
+              margin="dense"
+              error={!!paymentErrors.cardCVC}
+              helperText={paymentErrors.cardCVC}
+              sx={{
+                width: '50%',
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.23)' : undefined,
+                  },
+                  '&:hover fieldset': {
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.4)' : undefined,
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff4757',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+              }}
+            />
+          </Box>
+          
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            mt: 3,
+            p: 1,
+            borderRadius: 1,
+            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+          }}>
+            <FaLock style={{ marginRight: '8px', color: '#ff4757' }} />
+            <Typography variant="body2" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }}>
+              Your payment information is secure and encrypted
+            </Typography>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button 
+            onClick={() => setIsPaymentDialogOpen(false)}
+            variant="outlined"
+            sx={{
+              borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+              color: isDarkMode ? '#fff' : 'inherit',
+              '&:hover': {
+                borderColor: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
+                bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handlePaymentSubmit}
+            variant="contained"
+            sx={{
+              bgcolor: '#ff4757',
+              '&:hover': { bgcolor: '#ff6b81' },
+              ml: 2
+            }}
+          >
+            Pay Now
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

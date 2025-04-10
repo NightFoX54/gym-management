@@ -17,27 +17,43 @@ const Dashboard = () => {
         <div className="feature-list">
           <div 
             className="feature-item clickable" 
-            onClick={() => handleNavigation('/market')}
-          >
-            <i className="fas fa-store"></i>
-            <h3>Market</h3>
-            <p>Manage products, inventory and supplier relations</p>
-          </div>
-          <div 
-            className="feature-item clickable" 
             onClick={() => handleNavigation('/customers')}
           >
             <i className="fas fa-users"></i>
             <h3>Customers</h3>
-            <p>Manage memberships and customer information</p>
+            <p>Manage customer accounts and memberships</p>
+          </div>
+          <div 
+            className="feature-item clickable" 
+            onClick={() => handleNavigation('/membership')}
+          >
+            <i className="fas fa-id-card"></i>
+            <h3>Membership and Pricing</h3>
+            <p>Manage membership plans and service prices</p>
+          </div>
+          <div 
+            className="feature-item clickable" 
+            onClick={() => handleNavigation('/market')}
+          >
+            <i className="fas fa-shopping-cart"></i>
+            <h3>Market</h3>
+            <p>Manage product inventory and sales</p>
           </div>
           <div 
             className="feature-item clickable" 
             onClick={() => handleNavigation('/employees')}
           >
             <i className="fas fa-user-tie"></i>
-            <h3>Employees</h3>
+            <h3>Trainers</h3>
             <p>Handle staff records and schedules</p>
+          </div>
+          <div 
+            className="feature-item clickable" 
+            onClick={() => handleNavigation('/expenses')}
+          >
+            <i className="fas fa-receipt"></i>
+            <h3>Expenses</h3>
+            <p>Track and manage your gym expenses</p>
           </div>
           <div 
             className="feature-item clickable" 

@@ -1760,4 +1760,105 @@
   border-color: #ff6b6b !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+/* Filter section styles */
+.filter-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filter-button, .reset-filter-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.filter-button:hover {
+  background-color: #2980b9;
+}
+
+.reset-filter-button {
+  background-color: #95a5a6;
+}
+
+.reset-filter-button:hover {
+  background-color: #7f8c8d;
+}
+
+/* Dark mode for filter section */
+.dark-mode .filter-section {
+  background-color: #2a2a2a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .filter-section h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .filter-button {
+  background-color: #ff4757;
+}
+
+.dark-mode .filter-button:hover {
+  background-color: #e71d36;
+}
+
+.dark-mode .reset-filter-button {
+  background-color: #555;
+}
+
+.dark-mode .reset-filter-button:hover {
+  background-color: #444;
+}
+
+/* Loading and empty states */
+.loading-cell {
+  text-align: center;
+  padding: 2rem;
+  color: #777;
+  font-style: italic;
+}
+
+.empty-table-message {
+  text-align: center;
+  padding: 2rem;
+  color: #777;
+  font-style: italic;
+}
+
+.dark-mode .loading-cell,
+.dark-mode .empty-table-message {
+  color: #aaa;
+}
+
+/* Confirm dialog styles */
+.confirm-dialog {
+  max-width: 400px;
+}
+
+.confirm-dialog p {
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
 } 

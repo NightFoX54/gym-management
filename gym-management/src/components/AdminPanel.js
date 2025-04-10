@@ -5,10 +5,12 @@ import EmployeesPanel from './admin/EmployeesPanel';
 import MarketPanel from './admin/MarketPanel';
 import Dashboard from './admin/dashboard';
 import FinancialPanel from './admin/FinancialPanel';
+import MembershipPanel from './admin/MembershipPanel';
+import ExpensesPanel from './admin/ExpensesPanel';
 import '../styles/AdminPanel.css';
 import { logout } from '../utils/auth';
 
-const AdminPanel = ({ isDarkMode, setIsDarkMode }) => {
+const AdminPanel = ({ children, activeTab = 'dashboard', isDarkMode, setIsDarkMode }) => {
   const location = useLocation();
 
   const toggleDarkMode = () => {
@@ -19,29 +21,25 @@ const AdminPanel = ({ isDarkMode, setIsDarkMode }) => {
     logout();
   };
 
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'fa-tachometer-alt', path: '/admin' },
+    { id: 'customers', label: 'Customers', icon: 'fa-users', path: '/admin/customers' },
+    { id: 'membership', label: 'Membership and Pricing', icon: 'fa-id-card', path: '/admin/membership' },
+    { id: 'market', label: 'Market', icon: 'fa-shopping-cart', path: '/admin/market' },
+    { id: 'employees', label: 'Trainers', icon: 'fa-user-tie', path: '/admin/employees' },
+    { id: 'expenses', label: 'Expenses', icon: 'fa-receipt', path: '/admin/expenses' },
+    { id: 'financial', label: 'Financial', icon: 'fa-chart-line', path: '/admin/financial' },
+  ];
+
   return (
     <div className={`admin-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <nav className="admin-nav">
-        <NavLink to="/admin" end>
-          <i className="fas fa-home"></i>
-          <span>Dashboard</span>
-        </NavLink>
-        <NavLink to="/admin/market">
-          <i className="fas fa-store"></i>
-          <span>Market</span>
-        </NavLink>
-        <NavLink to="/admin/customers">
-          <i className="fas fa-users"></i>
-          <span>Customers</span>
-        </NavLink>
-        <NavLink to="/admin/employees">
-          <i className="fas fa-user-tie"></i>
-          <span>Employees</span>
-        </NavLink>
-        <NavLink to="/admin/financial">
-          <i className="fas fa-chart-line"></i>
-          <span>Financial</span>
-        </NavLink>
+        {navItems.map(item => (
+          <NavLink key={item.id} to={item.path} end>
+            <i className={`fas ${item.icon}`}></i>
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
         <div className="dark-mode-toggle-container1">
           <i className="fas fa-sun"></i>
           <div 
@@ -67,6 +65,8 @@ const AdminPanel = ({ isDarkMode, setIsDarkMode }) => {
           <Route path="/customers" element={<CustomersPanel />} />
           <Route path="/employees" element={<EmployeesPanel />} />
           <Route path="/financial" element={<FinancialPanel />} />
+          <Route path="/membership" element={<MembershipPanel />} />
+          <Route path="/expenses" element={<ExpensesPanel />} />
         </Routes>
       </div>
     </div>

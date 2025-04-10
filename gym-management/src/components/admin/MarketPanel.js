@@ -254,7 +254,15 @@ const MarketPanel = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete product');
+        // Check if this is a constraint violation error
+        const errorData = await response.json().catch(() => null);
+        
+        if (response.status === 500 && errorData?.message?.includes('constraint')) {
+          message.error('Cannot delete this product because it has been sold. Products with sales history cannot be removed.');
+        } else {
+          throw new Error('Failed to delete product');
+        }
+        return;
       }
 
       // Update the local state

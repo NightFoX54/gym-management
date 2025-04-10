@@ -634,4 +634,83 @@
 
 .dark-mode .confirm-button:disabled {
   background-color: #555555;
+}
+
+.payment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  animation: fadeIn 0.3s ease;
+}
+
+.payment-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  animation: slideUp 0.3s ease;
+}
+
+.dark-mode .payment-modal {
+  background: #2c2c2c;
+  color: white;
+}
+
+.payment-form {
+  margin: 20px 0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;
+  transition: border-color 0.3s;
+}
+
+.dark-mode .form-group input {
+  background-color: #333;
+  border-color: #555;
+  color: white;
+}
+
+.form-group input.error {
+  border-color: #ff4757;
+}
+
+.error-message {
+  color: #ff4757;
+  font-size: 14px;
+  display: block;
+  margin-top: 5px;
+}
+
+.payment-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-group.small {
+  flex: 1;
 } 

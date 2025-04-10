@@ -563,6 +563,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
   return (
     <>
+      {/*
       <button
         className="notification-button-member card-animate stagger-8"
         onClick={toggleNotificationsMember}
@@ -574,7 +575,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
           </span>
         )}
       </button>
-
+      */}
       <div className="notification-section-member">
         {showNotifications && (
           <div className="notification-dropdown-member card-animate stagger-9">
@@ -628,12 +629,8 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
                   src={member.profilePhoto}
                   alt="Profile"
                   className="profile-photo-member"
-                  onClick={handleImageClickMember}
                 />
               )}
-              <div className="photo-overlay" onClick={handleImageClickMember}>
-                <FaCamera />
-              </div>
               <input
                 type="file"
                 ref={fileInputRef}

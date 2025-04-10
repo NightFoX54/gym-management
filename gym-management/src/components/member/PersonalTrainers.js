@@ -88,6 +88,9 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
 
   const [trainerRatings, setTrainerRatings] = useState({});
 
+  // Add state for personal training price
+  const [personalTrainingPrice, setPersonalTrainingPrice] = useState(200); // Default fallback value
+
   // Get the logged in user data from localStorage
   const userString = localStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : {};
@@ -169,10 +172,45 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
     fetchTrainerRatings();
   }, []);
 
+  // Add new useEffect to fetch personal training price
+  useEffect(() => {
+    const fetchPersonalTrainingPrice = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/general-prices/1');
+        if (response.data && response.data.price) {
+          setPersonalTrainingPrice(response.data.price);
+        }
+      } catch (error) {
+        console.error('Error fetching personal training price:', error);
+        // Keep using default price if fetch fails
+      }
+    };
+    
+    fetchPersonalTrainingPrice();
+  }, []);
+
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    console.log("Dark mode toggled to:", !isDarkMode);
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+    console.log("Dark mode toggled to:", newDarkMode);
   };
+
+  // Add this useEffect near your other useEffect hooks
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [setIsDarkMode]);
 
   const handleBookSession = (trainer) => {
     console.log("Selected trainer:", trainer);
@@ -552,8 +590,8 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
     
     setBuyMoreStatus('processing');
     
-    // Calculate price with discount
-    let unitPrice = 200; // Single session price in TL
+    // Calculate price with discount using fetched price
+    let unitPrice = personalTrainingPrice; // Use fetched price instead of hardcoded value
     let discount = 0;
     
     if (selectedSessionPackage === 5) {
@@ -1271,14 +1309,14 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
                           onClick={() => setSelectedSessionPackage(1)}
                         >
                           1 Session
-                          <span className="package-price-pt">200 TL</span>
+                          <span className="package-price-pt">{personalTrainingPrice} TL</span>
                         </button>
                         <button 
                           className={`package-button-pt ${selectedSessionPackage === 5 ? 'selected-package-pt' : ''}`}
                           onClick={() => setSelectedSessionPackage(5)}
                         >
                           5 Sessions
-                          <span className="package-price-pt">900 TL</span>
+                          <span className="package-price-pt">{(personalTrainingPrice * 5 * 0.9).toFixed(0)} TL</span>
                           <span className="discount-badge-pt">10% off</span>
                         </button>
                         <button 
@@ -1286,7 +1324,7 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
                           onClick={() => setSelectedSessionPackage(10)}
                         >
                           10 Sessions
-                          <span className="package-price-pt">1,700 TL</span>
+                          <span className="package-price-pt">{(personalTrainingPrice * 10 * 0.85).toFixed(0)} TL</span>
                           <span className="discount-badge-pt">15% off</span>
                         </button>
                         <button 
@@ -1294,7 +1332,7 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
                           onClick={() => setSelectedSessionPackage(20)}
                         >
                           20 Sessions
-                          <span className="package-price-pt">3,200 TL</span>
+                          <span className="package-price-pt">{(personalTrainingPrice * 20 * 0.8).toFixed(0)} TL</span>
                           <span className="discount-badge-pt">20% off</span>
                         </button>
                       </div>

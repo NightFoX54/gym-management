@@ -38,6 +38,9 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   // Add a separate state for renewal form errors
   const [renewalError, setRenewalError] = useState('');
 
+  // Add this state for card holder's name
+  const [cardHolderName, setCardHolderName] = useState('');
+
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
     setIsDarkMode(savedDarkMode);
@@ -191,6 +194,12 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
       return; // Stop execution here
     }
     
+    // 1.5 Validate card holder name
+    if (!cardHolderName.trim()) {
+      setRenewalError("Please enter the card holder's name");
+      return;
+    }
+    
     // 2. Validate card number (should be 16 digits, or 19 chars with spaces)
     const cleanedCardNumber = cardNumber.replace(/\s/g, '');
     if (cleanedCardNumber.length !== 16) {
@@ -251,6 +260,7 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
         body: JSON.stringify({
           durationMonths: durationMonths,
           paymentDetails: {
+            cardHolderName: cardHolderName,
             cardNumber: cleanedCardNumber.slice(-4), // Only send last 4 digits for security
             expiryDate: expiryDate,
             cvc: "***" // Don't send actual CVC for security
@@ -277,6 +287,7 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
       }));
 
       // Reset form fields
+      setCardHolderName('');
       setCardNumber('');
       setExpiryDate('');
       setCvc('');
@@ -343,6 +354,11 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
 
   const handleCvcChange = (e) => {
     setCvc(formatCvc(e.target.value));
+  };
+
+  // Add this handler function for card holder name
+  const handleCardHolderNameChange = (e) => {
+    setCardHolderName(e.target.value);
   };
 
   return (
@@ -509,6 +525,16 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
                   <h4>Payment Details</h4>
                 </div>
                 <div className="payment-form-membershipstatus">
+                  <div className="form-group-membershipstatus">
+                    <label htmlFor="cardHolderName">Card Holder Name <span className="required">*</span></label>
+                    <input 
+                      id="cardHolderName"
+                      type="text" 
+                      placeholder="Name on card" 
+                      value={cardHolderName}
+                      onChange={handleCardHolderNameChange}
+                    />
+                  </div>
                   <div className="form-group-membershipstatus">
                     <label htmlFor="cardNumber">Card Number <span className="required">*</span></label>
                     <input 
