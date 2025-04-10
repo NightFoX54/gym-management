@@ -518,7 +518,7 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
               <Logout />
             </ListItemIcon>
             <ListItemText 
-              primary="Çıkış Yap"
+              primary="Logout" 
               sx={{
                 '& .MuiListItemText-primary': {
                   fontWeight: 500,
