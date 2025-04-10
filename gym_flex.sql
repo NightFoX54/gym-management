@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 09 Nis 2025, 23:18:58
+-- Üretim Zamanı: 10 Nis 2025, 13:03:07
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -85,6 +85,47 @@ CREATE TABLE `employee_info` (
 -- --------------------------------------------------------
 
 --
+-- Tablo için tablo yapısı `expenses`
+--
+
+CREATE TABLE `expenses` (
+  `id` int NOT NULL,
+  `expenses_category_id` int NOT NULL,
+  `amount` decimal(38,2) NOT NULL,
+  `date` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `expenses`
+--
+
+INSERT INTO `expenses` (`id`, `expenses_category_id`, `amount`, `date`) VALUES
+(2, 4, 12345.00, '2025-04-10');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `expenses_categories`
+--
+
+CREATE TABLE `expenses_categories` (
+  `id` int NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `expenses_categories`
+--
+
+INSERT INTO `expenses_categories` (`id`, `name`) VALUES
+(1, 'Market Purchases'),
+(2, 'Utilities'),
+(3, 'Equipment Maintenance'),
+(4, 'Staff Salaries');
+
+-- --------------------------------------------------------
+
+--
 -- Tablo için tablo yapısı `free_pt_use`
 --
 
@@ -101,7 +142,46 @@ CREATE TABLE `free_pt_use` (
 --
 
 INSERT INTO `free_pt_use` (`id`, `member_id`, `session_id`, `session_request_id`, `use_time`) VALUES
-(1, 13, NULL, 3, '2025-04-09 21:58:21');
+(3, 13, NULL, 6, '2025-04-10 01:38:59');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `general_prices`
+--
+
+CREATE TABLE `general_prices` (
+  `id` int NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `price` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `general_prices`
+--
+
+INSERT INTO `general_prices` (`id`, `name`, `price`) VALUES
+(1, 'personal training', 201.00),
+(2, 'group classes', 20.00);
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `group_classes_sale`
+--
+
+CREATE TABLE `group_classes_sale` (
+  `id` int NOT NULL,
+  `enrollment_id` int NOT NULL,
+  `price` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `group_classes_sale`
+--
+
+INSERT INTO `group_classes_sale` (`id`, `enrollment_id`, `price`) VALUES
+(1, 3, 20.00);
 
 -- --------------------------------------------------------
 
@@ -195,7 +275,8 @@ CREATE TABLE `group_workout_enrolls` (
 
 INSERT INTO `group_workout_enrolls` (`id`, `session_id`, `member_id`, `enrollment_date`, `status`) VALUES
 (1, 1, 13, NULL, NULL),
-(2, 2, 13, NULL, NULL);
+(2, 2, 13, NULL, NULL),
+(3, 1, 55, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -282,9 +363,9 @@ CREATE TABLE `market_products` (
 --
 
 INSERT INTO `market_products` (`id`, `image_path`, `product_name`, `category_id`, `price`, `stock`, `description`) VALUES
-(1, '/protein.png', 'Whey Protein Powder', 1, 599.99, 41, 'High-quality whey protein powder for muscle recovery - 2000g'),
-(2, '/bcaa.png', 'BCAA Amino Acids', 1, 299.99, 60, 'Essential amino acids for muscle growth and recovery - 400g'),
-(3, '/preworkout.png', 'Pre-Workout Energy', 1, 349.99, 38, 'Advanced pre-workout formula for maximum performance - 300g'),
+(1, '/protein.png', 'Whey Protein Powder', 1, 599.99, 37, 'High-quality whey protein powder for muscle recovery - 2000g'),
+(2, '/bcaa.png', 'BCAA Amino Acids', 1, 299.99, 53, 'Essential amino acids for muscle growth and recovery - 400g'),
+(3, '/preworkout.png', 'Pre-Workout Energy', 1, 349.99, 37, 'Advanced pre-workout formula for maximum performance - 300g'),
 (4, '/yoga-mat.png', 'Premium Yoga Mat', 2, 199.99, 25, 'Non-slip, eco-friendly yoga mat with alignment lines'),
 (5, '/dumbbells.png', 'Adjustable Dumbbell Set', 2, 1499.99, 12, 'Space-saving adjustable dumbbells 2-24kg each'),
 (6, '/bands.png', 'Resistance Bands Set', 2, 249.99, 30, 'Set of 5 resistance bands with different strength levels'),
@@ -294,7 +375,7 @@ INSERT INTO `market_products` (`id`, `image_path`, `product_name`, `category_id`
 (10, '/bottle.png', 'Sports Water Bottle', 4, 89.99, 120, 'BPA-free sports water bottle with time markings - 1L'),
 (11, '/gym-bag.png', 'Gym Bag', 4, 259.99, 40, 'Spacious gym bag with wet compartment and shoe pocket'),
 (12, '/gloves.png', 'Lifting Gloves', 4, 129.99, 65, 'Premium weightlifting gloves with wrist support'),
-(20, '/uploads/images/15cec89f-7031-418c-995a-b44a188af64a.png', 'deneme', 2, 111.00, 10, '..');
+(20, '/uploads/images/c3b03e2c-fddc-45b4-844c-94bfbdc780cb.png', 'deneme', 2, 111.00, 0, '..');
 
 -- --------------------------------------------------------
 
@@ -318,7 +399,17 @@ INSERT INTO `market_product_sales` (`id`, `invoice_id`, `product_id`, `quantity`
 (2, 2, 1, 1),
 (3, 3, 1, 1),
 (4, 4, 20, 1),
-(5, 5, 1, 1);
+(5, 5, 1, 1),
+(6, 6, 1, 1),
+(7, 7, 2, 1),
+(8, 7, 3, 1),
+(9, 8, 2, 1),
+(10, 8, 1, 1),
+(11, 9, 1, 1),
+(12, 9, 2, 1),
+(13, 10, 1, 1),
+(14, 10, 2, 1),
+(15, 11, 2, 3);
 
 -- --------------------------------------------------------
 
@@ -344,19 +435,26 @@ CREATE TABLE `market_sales_invoices` (
   `user_id` bigint NOT NULL,
   `total_items` int NOT NULL,
   `total_price` decimal(10,2) NOT NULL,
-  `sale_date` datetime DEFAULT CURRENT_TIMESTAMP
+  `sale_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `order_no` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Tablo döküm verisi `market_sales_invoices`
 --
 
-INSERT INTO `market_sales_invoices` (`id`, `user_id`, `total_items`, `total_price`, `sale_date`) VALUES
-(1, 2, 1, 509.99, '2025-03-16 21:57:11'),
-(2, 16, 1, 509.99, '2025-03-16 22:53:19'),
-(3, 13, 1, 539.99, '2025-04-05 20:22:06'),
-(4, 13, 1, 99.90, '2025-04-05 20:22:42'),
-(5, 13, 1, 539.99, '2025-04-08 19:05:35');
+INSERT INTO `market_sales_invoices` (`id`, `user_id`, `total_items`, `total_price`, `sale_date`, `order_no`) VALUES
+(1, 2, 1, 509.99, '2025-03-16 21:57:11', ''),
+(2, 16, 1, 509.99, '2025-03-16 22:53:19', ''),
+(3, 13, 1, 539.99, '2025-04-05 20:22:06', ''),
+(4, 13, 1, 99.90, '2025-04-05 20:22:42', ''),
+(5, 13, 1, 539.99, '2025-04-08 19:05:35', ''),
+(6, 13, 1, 539.99, '2025-04-10 09:44:17', ''),
+(7, 13, 2, 584.98, '2025-04-10 09:46:43', ''),
+(8, 13, 2, 809.98, '2025-04-10 09:55:37', 'GYM-20250410-0001'),
+(9, 13, 2, 809.98, '2025-04-10 09:55:57', 'GYM-20250410-0002'),
+(10, 13, 2, 809.98, '2025-04-10 10:36:39', 'GYM-20250410-0003'),
+(11, 13, 3, 809.97, '2025-04-10 10:36:54', 'GYM-20250410-0004');
 
 -- --------------------------------------------------------
 
@@ -382,7 +480,7 @@ CREATE TABLE `memberships` (
 --
 
 INSERT INTO `memberships` (`id`, `user_id`, `plan_id`, `discount_amount`, `paid_amount`, `start_date`, `end_date`, `is_frozen`, `freeze_start_date`, `freeze_end_date`) VALUES
-(9, 13, 2, 5148.00, 27352.00, '2025-03-16', '2027-04-16', 0, NULL, NULL),
+(9, 13, 2, 5538.30, 30864.70, '2025-03-16', '2027-07-16', 0, NULL, NULL),
 (10, 14, 3, 2400.00, 9600.00, '2025-03-16', '2025-09-16', 0, NULL, NULL),
 (11, 15, 3, 2400.00, 9600.00, '2025-03-16', '2025-09-16', 0, NULL, NULL),
 (12, 16, 3, 2400.00, 9600.00, '2025-03-16', '2025-09-16', 0, NULL, NULL),
@@ -410,9 +508,29 @@ CREATE TABLE `membership_plans` (
 --
 
 INSERT INTO `membership_plans` (`id`, `plan_name`, `plan_price`, `guest_pass_count`, `monthly_pt_sessions`, `group_class_count`, `market_discount`) VALUES
-(1, 'Basic Plan', 800.00, 2, 0, 0, 0),
-(2, 'Premium Plan', 1300.00, 4, 1, -1, 10),
+(1, 'Basic Plan', 801.00, 2, 0, 0, 0),
+(2, 'Premium Plan', 1301.00, 4, 1, -1, 10),
 (3, 'Elite Plan', 2000.00, -1, 2, -1, 15);
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `membership_renewals`
+--
+
+CREATE TABLE `membership_renewals` (
+  `id` int NOT NULL,
+  `membership_id` bigint NOT NULL,
+  `paid_amount` decimal(10,2) NOT NULL,
+  `renewal_date` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `membership_renewals`
+--
+
+INSERT INTO `membership_renewals` (`id`, `membership_id`, `paid_amount`, `renewal_date`) VALUES
+(1, 9, 3512.70, '2025-04-10');
 
 -- --------------------------------------------------------
 
@@ -497,28 +615,16 @@ CREATE TABLE `pt_session_buy` (
   `id` bigint NOT NULL,
   `client_id` bigint NOT NULL,
   `amount_of_sessions` int NOT NULL,
-  `total_price` decimal(10,2) NOT NULL
+  `total_price` decimal(10,2) NOT NULL,
+  `purchase_date` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Tablo döküm verisi `pt_session_buy`
 --
 
-INSERT INTO `pt_session_buy` (`id`, `client_id`, `amount_of_sessions`, `total_price`) VALUES
-(1, 3, 1, 200.00);
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `salary_payments`
---
-
-CREATE TABLE `salary_payments` (
-  `id` bigint NOT NULL,
-  `employee_id` bigint NOT NULL,
-  `paid_amount` decimal(10,2) NOT NULL,
-  `payment_date` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `pt_session_buy` (`id`, `client_id`, `amount_of_sessions`, `total_price`, `purchase_date`) VALUES
+(2, 3, 1, 200.00, '2025-04-10 12:41:59');
 
 -- --------------------------------------------------------
 
@@ -587,7 +693,7 @@ CREATE TABLE `trainer_clients` (
 
 INSERT INTO `trainer_clients` (`id`, `trainer_id`, `client_id`, `registration_date`, `remaining_sessions`) VALUES
 (1, 3, 2, '2025-03-15 21:10:10', 8),
-(3, 3, 13, '2025-04-06 20:24:56', 11);
+(3, 3, 13, '2025-04-06 20:24:56', 10);
 
 -- --------------------------------------------------------
 
@@ -610,7 +716,7 @@ CREATE TABLE `trainer_registration_requests` (
 --
 
 INSERT INTO `trainer_registration_requests` (`id`, `trainer_id`, `client_id`, `request_message`, `requested_meeting_date`, `requested_meeting_time`, `is_modified_by_trainer`) VALUES
-(7, 3, 13, 'I\'d like to book a training session', '2025-04-15', '10:31:00', 0);
+(9, 3, 14, 'I\'d like to book a training session', '2025-04-13', '15:42:00', 0);
 
 -- --------------------------------------------------------
 
@@ -639,8 +745,7 @@ INSERT INTO `trainer_sessions` (`id`, `trainer_id`, `client_id`, `session_date`,
 (4, 3, 13, '2025-04-08', '11:28:00', 'Automatically created from registration request #3', 'Initial Consultation'),
 (5, 3, 13, '2025-04-08', '11:28:00', 'Automatically created from registration request #3', 'Initial Consultation'),
 (6, 3, 13, '2025-04-09', '05:42:00', '', 'Personal Training'),
-(7, 3, 13, '2025-04-10', '05:43:00', '', 'Personal Training'),
-(8, 3, 13, '2025-04-17', '10:22:00', 'Automatically created from registration request #6', 'Initial Consultation');
+(7, 3, 13, '2025-04-14', '05:43:00', '', 'Personal Training');
 
 -- --------------------------------------------------------
 
@@ -662,9 +767,8 @@ CREATE TABLE `trainer_session_requests` (
 --
 
 INSERT INTO `trainer_session_requests` (`id`, `trainer_id`, `client_id`, `request_message`, `requested_meeting_date`, `requested_meeting_time`) VALUES
-(1, 3, 13, '', '2025-04-17', '05:19:00'),
-(2, 3, 13, '', '2025-04-10', '04:33:00'),
-(3, 3, 13, '', '2025-04-10', '23:00:00');
+(5, 3, 13, '', '2025-04-18', '16:32:00'),
+(6, 3, 13, '', '2025-04-18', '16:40:00');
 
 -- --------------------------------------------------------
 
@@ -678,6 +782,13 @@ CREATE TABLE `trainer_session_reschedule_request` (
   `new_session_date` date NOT NULL,
   `new_session_time` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `trainer_session_reschedule_request`
+--
+
+INSERT INTO `trainer_session_reschedule_request` (`id`, `session_id`, `new_session_date`, `new_session_time`) VALUES
+(6, 7, '2025-04-15', '05:43:00');
 
 -- --------------------------------------------------------
 
@@ -729,7 +840,7 @@ INSERT INTO `users` (`id`, `first_name`, `last_name`, `profile_photo_path`, `ema
 (1, 'Admin', 'User', '	/uploads/images/default-avatar.jpg	', 'admin@gymflex.com', NULL, 'ADMIN', '2025-03-15 01:50:43', '$2a$10$iZe2uBOqAzOxwqsNL80SIe90LOhfnGyhQ70Ht3tzjh4wIk5RTNr/S'),
 (2, 'Member', 'User', '	/uploads/images/default-avatar.jpg	', 'member@gymflex.com', NULL, 'MEMBER', '2025-03-15 01:50:43', '$2a$10$cUtC6MRZ9DT8DoOtCb.C6uPZS5XRO8WcaRuZ3b/ihEIkW8j.2Wkgi'),
 (3, 'Trainer', 'User', '	/uploads/images/default-avatar.jpg	', 'trainer@gymflex.com', NULL, 'TRAINER', '2025-03-15 01:50:43', '$2a$10$a7vrShLBpgQ35TdWGI7i4uGKmI5AEMgcQMdPgi5fk3zbQhAS/sjfu'),
-(13, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkayyy5445@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$3DE8aEsYovh4i5x3osK3.eFYt725cCGRUZzTFfcTGA/hqQUr2RDhu'),
+(13, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkayyy5445@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$1JPuYCAhlHl2zW7/GD7IqOmkCxUdVX0Q9w/8brlNfnVtiYj1RglOK'),
 (14, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$wHy72hXdOg6nxTrDyceFSezZm17bqSfxcMA3/Pr.Er.atZ9zbipqO'),
 (15, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay112233@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:24:37', '$2a$10$LIWsqpC/CqIIfqDmnFJUpuZvGbyvPPlU8hklt2JofubVYFrMX2ts.'),
 (16, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay123123@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:26:01', '$2a$10$/Z7JudNXYosrwAR7J2w9rOBR5xXJ7B/jOsh9Us7oyBJo85MTP79ou'),
@@ -873,6 +984,19 @@ ALTER TABLE `employee_info`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Tablo için indeksler `expenses`
+--
+ALTER TABLE `expenses`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `expenses_category_id` (`expenses_category_id`);
+
+--
+-- Tablo için indeksler `expenses_categories`
+--
+ALTER TABLE `expenses_categories`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Tablo için indeksler `free_pt_use`
 --
 ALTER TABLE `free_pt_use`
@@ -880,6 +1004,19 @@ ALTER TABLE `free_pt_use`
   ADD KEY `member_id` (`member_id`),
   ADD KEY `session_id` (`session_id`),
   ADD KEY `session_request_id` (`session_request_id`);
+
+--
+-- Tablo için indeksler `general_prices`
+--
+ALTER TABLE `general_prices`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Tablo için indeksler `group_classes_sale`
+--
+ALTER TABLE `group_classes_sale`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `enrollment_id` (`enrollment_id`);
 
 --
 -- Tablo için indeksler `group_workouts`
@@ -975,6 +1112,13 @@ ALTER TABLE `membership_plans`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Tablo için indeksler `membership_renewals`
+--
+ALTER TABLE `membership_renewals`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `membership_id` (`membership_id`);
+
+--
 -- Tablo için indeksler `member_training_plans`
 --
 ALTER TABLE `member_training_plans`
@@ -1003,13 +1147,6 @@ ALTER TABLE `personal_training_ratings`
 ALTER TABLE `pt_session_buy`
   ADD PRIMARY KEY (`id`),
   ADD KEY `client_id` (`client_id`);
-
---
--- Tablo için indeksler `salary_payments`
---
-ALTER TABLE `salary_payments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `employee_id` (`employee_id`);
 
 --
 -- Tablo için indeksler `services`
@@ -1139,10 +1276,34 @@ ALTER TABLE `employee_info`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 
 --
+-- Tablo için AUTO_INCREMENT değeri `expenses`
+--
+ALTER TABLE `expenses`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `expenses_categories`
+--
+ALTER TABLE `expenses_categories`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `free_pt_use`
 --
 ALTER TABLE `free_pt_use`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `general_prices`
+--
+ALTER TABLE `general_prices`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `group_classes_sale`
+--
+ALTER TABLE `group_classes_sale`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `group_workouts`
@@ -1166,7 +1327,7 @@ ALTER TABLE `group_workout_categories`
 -- Tablo için AUTO_INCREMENT değeri `group_workout_enrolls`
 --
 ALTER TABLE `group_workout_enrolls`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `group_workout_levels`
@@ -1190,13 +1351,13 @@ ALTER TABLE `market_categories`
 -- Tablo için AUTO_INCREMENT değeri `market_products`
 --
 ALTER TABLE `market_products`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `market_product_sales`
 --
 ALTER TABLE `market_product_sales`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `market_purchases`
@@ -1208,7 +1369,7 @@ ALTER TABLE `market_purchases`
 -- Tablo için AUTO_INCREMENT değeri `market_sales_invoices`
 --
 ALTER TABLE `market_sales_invoices`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `memberships`
@@ -1221,6 +1382,12 @@ ALTER TABLE `memberships`
 --
 ALTER TABLE `membership_plans`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `membership_renewals`
+--
+ALTER TABLE `membership_renewals`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `member_training_plans`
@@ -1244,13 +1411,7 @@ ALTER TABLE `personal_training_ratings`
 -- Tablo için AUTO_INCREMENT değeri `pt_session_buy`
 --
 ALTER TABLE `pt_session_buy`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- Tablo için AUTO_INCREMENT değeri `salary_payments`
---
-ALTER TABLE `salary_payments`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `services`
@@ -1274,31 +1435,31 @@ ALTER TABLE `slider_settings`
 -- Tablo için AUTO_INCREMENT değeri `trainer_clients`
 --
 ALTER TABLE `trainer_clients`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_registration_requests`
 --
 ALTER TABLE `trainer_registration_requests`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_sessions`
 --
 ALTER TABLE `trainer_sessions`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_session_requests`
 --
 ALTER TABLE `trainer_session_requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_session_reschedule_request`
 --
 ALTER TABLE `trainer_session_reschedule_request`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_settings`
@@ -1359,12 +1520,24 @@ ALTER TABLE `employee_info`
   ADD CONSTRAINT `employee_info_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
+-- Tablo kısıtlamaları `expenses`
+--
+ALTER TABLE `expenses`
+  ADD CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`expenses_category_id`) REFERENCES `expenses_categories` (`id`);
+
+--
 -- Tablo kısıtlamaları `free_pt_use`
 --
 ALTER TABLE `free_pt_use`
   ADD CONSTRAINT `free_pt_use_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `free_pt_use_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `trainer_sessions` (`id`),
   ADD CONSTRAINT `free_pt_use_ibfk_3` FOREIGN KEY (`session_request_id`) REFERENCES `trainer_session_requests` (`id`);
+
+--
+-- Tablo kısıtlamaları `group_classes_sale`
+--
+ALTER TABLE `group_classes_sale`
+  ADD CONSTRAINT `group_classes_sale_ibfk_1` FOREIGN KEY (`enrollment_id`) REFERENCES `group_workout_enrolls` (`id`);
 
 --
 -- Tablo kısıtlamaları `group_workouts`
@@ -1427,6 +1600,12 @@ ALTER TABLE `memberships`
   ADD CONSTRAINT `memberships_ibfk_2` FOREIGN KEY (`plan_id`) REFERENCES `membership_plans` (`id`);
 
 --
+-- Tablo kısıtlamaları `membership_renewals`
+--
+ALTER TABLE `membership_renewals`
+  ADD CONSTRAINT `membership_renewals_ibfk_1` FOREIGN KEY (`membership_id`) REFERENCES `memberships` (`id`);
+
+--
 -- Tablo kısıtlamaları `member_training_plans`
 --
 ALTER TABLE `member_training_plans`
@@ -1451,12 +1630,6 @@ ALTER TABLE `personal_training_ratings`
 --
 ALTER TABLE `pt_session_buy`
   ADD CONSTRAINT `pt_session_buy_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `trainer_clients` (`id`);
-
---
--- Tablo kısıtlamaları `salary_payments`
---
-ALTER TABLE `salary_payments`
-  ADD CONSTRAINT `salary_payments_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_info` (`id`);
 
 --
 -- Tablo kısıtlamaları `trainer_clients`
