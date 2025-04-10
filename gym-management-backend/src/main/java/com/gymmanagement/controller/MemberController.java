@@ -245,16 +245,21 @@ public class MemberController {
             // Get renewal duration from request
             Integer durationMonths = Integer.parseInt(renewalData.get("durationMonths").toString());
             
-            // Calculate new end date
+            // Calculate new end date based on whether current end date is past
             LocalDate currentEndDate = membership.getEndDate();
-            LocalDate newEndDate = currentEndDate.plusMonths(durationMonths);
+            LocalDate today = LocalDate.now();
+            
+            // If end date is in the past, use today's date as the base date
+            // Otherwise, use the current end date
+            LocalDate baseDate = currentEndDate.isBefore(today) ? today : currentEndDate;
+            LocalDate newEndDate = baseDate.plusMonths(durationMonths);
             
             // Calculate discount based on duration
             BigDecimal basePrice = plan.getPlanPrice();
             BigDecimal totalPrice = basePrice.multiply(BigDecimal.valueOf(durationMonths));
             BigDecimal discountAmount = BigDecimal.ZERO;
             
-            // Apply discount based on duration (same logic as in UserService)
+            // Apply discount based on duration
             if (durationMonths == 3) {
                 discountAmount = totalPrice.multiply(BigDecimal.valueOf(0.10)); // 10% discount
             } else if (durationMonths == 6) {
@@ -265,12 +270,8 @@ public class MemberController {
             
             BigDecimal finalAmount = totalPrice.subtract(discountAmount);
             
-            // Update membership
+            // Update membership end date ONLY
             membership.setEndDate(newEndDate);
-            
-            // Add to existing amounts
-            membership.setDiscountAmount(membership.getDiscountAmount().add(discountAmount));
-            membership.setPaidAmount(membership.getPaidAmount().add(finalAmount));
             
             // Save updated membership
             membershipRepository.save(membership);
@@ -292,8 +293,6 @@ public class MemberController {
             response.put("renewalMonths", durationMonths);
             response.put("discountAmount", discountAmount);
             response.put("paidAmount", finalAmount);
-            response.put("totalDiscountAmount", membership.getDiscountAmount());
-            response.put("totalPaidAmount", membership.getPaidAmount());
             response.put("message", "Membership renewed successfully");
             
             return ResponseEntity.ok(response);
@@ -372,6 +371,32 @@ public class MemberController {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to update profile photo: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    @PostMapping("/{memberId}/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@PathVariable Long memberId) {
+        try {
+            // Get the user by ID
+            User user = userRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + memberId));
+            
+            // Set the new password (member123) with proper hashing
+            user.setPassword(passwordEncoder.encode("member123"));
+            
+            // Save updated user
+            userRepository.save(user);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Password reset successfully");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Failed to reset password");
+            errorResponse.put("message", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 } 

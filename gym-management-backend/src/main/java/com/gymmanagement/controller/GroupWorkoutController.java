@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/group-workouts")
@@ -389,6 +390,7 @@ public class GroupWorkoutController {
                 GroupClassesSale sale = new GroupClassesSale();
                 sale.setEnrollmentId(enrollment.getId());
                 sale.setPrice(price);
+                sale.setSaleDate(LocalDate.now());
                 
                 groupClassesSaleRepository.save(sale);
             }
