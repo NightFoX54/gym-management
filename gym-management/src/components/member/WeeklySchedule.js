@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/WeeklySchedule.css';
 import axios from 'axios';
 
-const WeeklySchedule = ({ isDarkMode, toggleDarkModeMember }) => {
+const WeeklySchedule = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -92,6 +92,27 @@ const WeeklySchedule = ({ isDarkMode, toggleDarkModeMember }) => {
   useEffect(() => {
     updateCalendarDays();
   }, [currentDate]);
+
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [setIsDarkMode]);
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+    if (newDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  };
 
   const updateCalendarDays = () => {
     const year = currentDate.getFullYear();
@@ -215,7 +236,7 @@ const WeeklySchedule = ({ isDarkMode, toggleDarkModeMember }) => {
 
           <button 
             className={`dark-mode-toggle-weeklyschedule ${isDarkMode ? 'active' : ''}`} 
-            onClick={toggleDarkModeMember}
+            onClick={toggleDarkMode}
           >
             <FaSun className="toggle-icon-weeklyschedule sun-weeklyschedule" />
             <div className="toggle-circle-weeklyschedule"></div>
