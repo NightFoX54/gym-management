@@ -428,6 +428,7 @@ public class TrainerService {
         rescheduleRequestRepository.deleteById(requestId);
     }
 
+    // Keep existing method as is - it returns ratings for all trainers
     public Map<Long, Double> getTrainerRatings() {
         Map<Long, Double> trainerRatings = new HashMap<>();
         
@@ -456,5 +457,56 @@ public class TrainerService {
         });
         
         return trainerRatings;
+    }
+    
+    // New method for detailed ratings of a specific trainer
+    public Map<String, Object> getTrainerRatingDetails(Long trainerId) {
+        Map<String, Object> trainerRatingDetails = new HashMap<>();
+        
+        // Get all trainer sessions for this trainer
+        List<TrainerSession> trainerSessions = sessionRepository.findByTrainerId(trainerId);
+        
+        // Get ratings for each session
+        List<PersonalTrainingRating> ratings = new ArrayList<>();
+        for (TrainerSession session : trainerSessions) {
+            Optional<PersonalTrainingRating> ratingOpt = ratingRepository.findBySessionId(session.getId());
+            ratingOpt.ifPresent(ratings::add);
+        }
+        
+        // Calculate average rating
+        double averageRating = ratings.isEmpty() ? 0 : 
+            ratings.stream().mapToDouble(rating -> rating.getRating().doubleValue()).average().orElse(0);
+        
+        // Count ratings by value (1 through 5)
+        Map<Integer, Integer> ratingDistribution = new HashMap<>();
+        for (int i = 1; i <= 5; i++) {
+            final int ratingValue = i;
+            ratingDistribution.put(i, (int) ratings.stream()
+                .filter(r -> r.getRating() == ratingValue).count());
+        }
+        
+        // Get recent reviews (limit to 10)
+        List<Map<String, Object>> recentReviews = ratings.stream()
+            .sorted((r1, r2) -> r2.getId().compareTo(r1.getId())) // Sort by ID descending (recent first)
+            .limit(10)
+            .map(rating -> {
+                Map<String, Object> review = new HashMap<>();
+                review.put("id", rating.getId());
+                review.put("clientName", rating.getMember().getFirstName() + " " + rating.getMember().getLastName());
+                review.put("rating", rating.getRating());
+                review.put("comment", rating.getComment());
+                review.put("date", rating.getSession().getSessionDate().toString());
+                return review;
+            })
+            .collect(Collectors.toList());
+        
+        // Build response
+        trainerRatingDetails.put("trainerId", trainerId);
+        trainerRatingDetails.put("averageRating", averageRating);
+        trainerRatingDetails.put("totalReviews", ratings.size());
+        trainerRatingDetails.put("ratingDistribution", ratingDistribution);
+        trainerRatingDetails.put("recentReviews", recentReviews);
+        
+        return trainerRatingDetails;
     }
 }
