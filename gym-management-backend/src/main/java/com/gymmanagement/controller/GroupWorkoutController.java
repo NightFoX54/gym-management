@@ -2,6 +2,11 @@ package com.gymmanagement.controller;
 
 import com.gymmanagement.model.*;
 import com.gymmanagement.service.GroupWorkoutService;
+import com.gymmanagement.repository.MembershipRepository;
+import com.gymmanagement.repository.UserRepository;
+import com.gymmanagement.repository.MembershipPlanRepository;
+import com.gymmanagement.repository.GeneralPriceRepository;
+import com.gymmanagement.repository.GroupClassesSaleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/group-workouts")
@@ -18,6 +24,21 @@ public class GroupWorkoutController {
 
     @Autowired
     private GroupWorkoutService groupWorkoutService;
+
+    @Autowired
+    private MembershipRepository membershipRepository;
+
+    @Autowired
+    private MembershipPlanRepository membershipPlanRepository;
+
+    @Autowired
+    private GeneralPriceRepository generalPriceRepository;
+
+    @Autowired
+    private GroupClassesSaleRepository groupClassesSaleRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/categories")
     public ResponseEntity<?> getAllCategories() {
@@ -304,6 +325,80 @@ public class GroupWorkoutController {
         try {
             groupWorkoutService.deleteGroupWorkout(id);
             return ResponseEntity.ok(Collections.singletonMap("message", "Group workout deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/user/{userId}/check-payment-required")
+    public ResponseEntity<?> checkPaymentRequired(@PathVariable Long userId) {
+        try {
+            // Get user by ID first
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+            
+            // Then get user's membership using the user object
+            Optional<Membership> membershipOpt = membershipRepository.findByUser(user);
+            
+            if (membershipOpt.isEmpty()) {
+                return ResponseEntity.ok(Map.of(
+                    "paymentRequired", true,
+                    "message", "No active membership found"
+                ));
+            }
+            
+            Membership membership = membershipOpt.get();
+            MembershipPlan plan = membership.getPlan();
+            
+            // Check if group classes are free for this plan (-1 means unlimited free classes)
+            boolean paymentRequired = plan.getGroupClassCount() == 0;
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("paymentRequired", paymentRequired);
+            
+            if (paymentRequired) {
+                // Get price from general_prices table (ID 2 for group classes)
+                GeneralPrice groupClassPrice = generalPriceRepository.findById(2)
+                    .orElseThrow(() -> new RuntimeException("Group class price not found"));
+                    
+                response.put("price", groupClassPrice.getPrice());
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/enroll-with-payment")
+    public ResponseEntity<?> enrollUserWithPayment(@RequestBody Map<String, Object> request) {
+        try {
+            Long userId = Long.parseLong(request.get("userId").toString());
+            Integer sessionId = Integer.parseInt(request.get("sessionId").toString());
+            Boolean isPaid = Boolean.parseBoolean(request.get("isPaid").toString());
+            
+            // Enroll the user
+            GroupWorkoutEnroll enrollment = groupWorkoutService.enrollUserInSession(userId, sessionId);
+            
+            // If it's a paid enrollment, save the payment record
+            if (isPaid && request.get("price") != null) {
+                BigDecimal price = new BigDecimal(request.get("price").toString());
+                
+                GroupClassesSale sale = new GroupClassesSale();
+                sale.setEnrollmentId(enrollment.getId());
+                sale.setPrice(price);
+                
+                groupClassesSaleRepository.save(sale);
+            }
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Successfully enrolled in session");
+            response.put("enrollmentId", enrollment.getId());
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("error", e.getMessage()));

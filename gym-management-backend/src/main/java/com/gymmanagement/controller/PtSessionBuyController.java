@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +58,7 @@ public class PtSessionBuyController {
             ptSessionBuy.setClient(trainerClient);
             ptSessionBuy.setAmountOfSessions(sessionAmount);
             ptSessionBuy.setTotalPrice(finalPrice);
+            ptSessionBuy.setPurchaseDate(LocalDateTime.now());
             
             // Save the purchase
             PtSessionBuy savedPurchase = ptSessionBuyRepository.save(ptSessionBuy);
@@ -72,6 +74,7 @@ public class PtSessionBuyController {
             response.put("discount", discount);
             response.put("finalPrice", finalPrice);
             response.put("sessionAmount", sessionAmount);
+            response.put("purchaseDate", savedPurchase.getPurchaseDate());
             response.put("remainingSessions", trainerClient.getRemainingSessions());
             response.put("message", "Sessions purchased successfully");
             

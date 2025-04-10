@@ -4,8 +4,10 @@ import com.gymmanagement.dto.PasswordChangeRequest;
 import com.gymmanagement.model.Membership;
 import com.gymmanagement.model.MembershipPlan;
 import com.gymmanagement.model.User;
+import com.gymmanagement.model.MembershipRenewal;
 import com.gymmanagement.repository.MembershipRepository;
 import com.gymmanagement.repository.UserRepository;
+import com.gymmanagement.repository.MembershipRenewalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/members")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT})
 public class MemberController {
 
     @Autowired
@@ -30,6 +32,9 @@ public class MemberController {
     
     @Autowired
     private MembershipRepository membershipRepository;
+
+    @Autowired
+    private MembershipRenewalRepository membershipRenewalRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -270,6 +275,13 @@ public class MemberController {
             // Save updated membership
             membershipRepository.save(membership);
             
+            // Create and save membership renewal record
+            MembershipRenewal renewal = new MembershipRenewal();
+            renewal.setMembershipId(membership.getId());
+            renewal.setPaidAmount(finalAmount);
+            renewal.setRenewalDate(LocalDate.now());
+            membershipRenewalRepository.save(renewal);
+            
             // Prepare response
             Map<String, Object> response = new HashMap<>();
             response.put("id", membership.getId());
@@ -323,6 +335,43 @@ public class MemberController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to update password: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/update-photo")
+    public ResponseEntity<?> updateProfilePhoto(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        try {
+            // Get the profilePhotoPath from the request body
+            String profilePhotoPath = request.get("profilePhotoPath");
+            
+            if (profilePhotoPath == null || profilePhotoPath.isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Profile photo path is required");
+                return ResponseEntity.badRequest().body(error);
+            }
+            
+            // Find the user by ID
+            Optional<User> userOptional = userRepository.findById(id);
+            if (!userOptional.isPresent()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "User not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            }
+            
+            // Update the user's profile photo path
+            User user = userOptional.get();
+            user.setProfilePhotoPath(profilePhotoPath);
+            userRepository.save(user);
+            
+            // Return success response
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Profile photo updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to update profile photo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 } 
