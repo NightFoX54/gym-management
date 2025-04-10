@@ -404,6 +404,35 @@ public class TrainerController {
 
     @GetMapping("/ratings")
     public ResponseEntity<Map<Long, Double>> getTrainerRatings() {
-        return ResponseEntity.ok(trainerService.getTrainerRatings());
+        try {
+            Map<Long, Double> ratings = trainerService.getTrainerRatings();
+            return ResponseEntity.ok(ratings);
+        } catch (Exception e) {
+            System.err.println("Error fetching trainer ratings: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping("/ratings/{trainerId}")
+    public ResponseEntity<?> getTrainerRatingDetails(@PathVariable Long trainerId) {
+        try {
+            // First check if trainer exists
+            User trainer = userRepository.findById(trainerId)
+                .orElseThrow(() -> new RuntimeException("Trainer not found with id: " + trainerId));
+            
+            if (!trainer.getRole().equals("TRAINER")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "User with ID " + trainerId + " is not a trainer"));
+            }
+            
+            Map<String, Object> ratingDetails = trainerService.getTrainerRatingDetails(trainerId);
+            return ResponseEntity.ok(ratingDetails);
+        } catch (Exception e) {
+            System.err.println("Error fetching trainer rating details: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to fetch trainer rating details: " + e.getMessage()));
+        }
     }
 }
