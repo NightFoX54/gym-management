@@ -601,8 +601,15 @@ const WorkoutsPage = ({ isDarkMode }) => {
       onClose={() => setExerciseDialogOpen(false)}
       maxWidth="sm"
       fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+          color: isDarkMode ? '#fff' : undefined,
+        }
+      }}
     >
-      <DialogTitle>
+      <DialogTitle sx={{ color: isDarkMode ? '#fff' : undefined }}>
         {editingExerciseIndex !== null ? 'Edit Exercise' : 'Add Exercise'}
       </DialogTitle>
       <DialogContent>
@@ -614,6 +621,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
               name="exerciseName"
               value={currentExercise.exerciseName}
               onChange={handleExerciseInputChange}
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+              }}
             />
           </Grid>
           <Grid item xs={6}>
@@ -624,6 +643,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
               type="number"
               value={currentExercise.sets}
               onChange={handleExerciseInputChange}
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+              }}
             />
           </Grid>
           <Grid item xs={6}>
@@ -634,13 +665,40 @@ const WorkoutsPage = ({ isDarkMode }) => {
               value={currentExercise.repRange}
               onChange={handleExerciseInputChange}
               placeholder="e.g., 8-12 reps"
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.5)' : undefined,
+                  opacity: 1,
+                },
+              }}
             />
           </Grid>
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setExerciseDialogOpen(false)}>Cancel</Button>
-        <Button onClick={handleSaveExercise} variant="contained">Save</Button>
+        <Button onClick={() => setExerciseDialogOpen(false)} sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined }}>
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSaveExercise} 
+          variant="contained" 
+          sx={{
+            bgcolor: '#ff4757',
+            '&:hover': { bgcolor: '#ff3747' }
+          }}
+        >
+          Save
+        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -692,6 +750,16 @@ const WorkoutsPage = ({ isDarkMode }) => {
                   '&:hover fieldset': { borderColor: '#ff4757' },
                   '&.Mui-focused fieldset': { borderColor: '#ff4757' },
                 },
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
               }}
               error={!!errors.name}
               helperText={errors.name}
@@ -699,7 +767,21 @@ const WorkoutsPage = ({ isDarkMode }) => {
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth required error={!!errors.type}>
+            <FormControl fullWidth required error={!!errors.type} sx={{
+              // Fix for dark mode visibility for select elements
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+              },
+              '& .MuiSelect-select': {
+                color: isDarkMode ? '#fff' : undefined,
+              },
+              '& .MuiSvgIcon-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+            }}>
               <InputLabel>Workout Type</InputLabel>
               <Select
                 name="type"
@@ -717,11 +799,25 @@ const WorkoutsPage = ({ isDarkMode }) => {
                   </MenuItem>
                 ))}
               </Select>
-              {errors.type && <FormHelperText>{errors.type}</FormHelperText>}
+              {errors.type && <FormHelperText sx={{ color: isDarkMode ? 'rgba(255,82,82,1)' : undefined }}>{errors.type}</FormHelperText>}
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth required error={!!errors.difficulty}>
+            <FormControl fullWidth required error={!!errors.difficulty} sx={{
+              // Fix for dark mode visibility for select elements
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+              },
+              '& .MuiSelect-select': {
+                color: isDarkMode ? '#fff' : undefined,
+              },
+              '& .MuiSvgIcon-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+            }}>
               <InputLabel>Difficulty Level</InputLabel>
               <Select
                 name="difficulty"
@@ -739,7 +835,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
                   </MenuItem>
                 ))}
               </Select>
-              {errors.difficulty && <FormHelperText>{errors.difficulty}</FormHelperText>}
+              {errors.difficulty && <FormHelperText sx={{ color: isDarkMode ? 'rgba(255,82,82,1)' : undefined }}>{errors.difficulty}</FormHelperText>}
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -756,6 +852,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
                     <AccessTime sx={{ color: '#ff4757' }} />
                   </InputAdornment>
                 ),
+              }}
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
               }}
               error={!!errors.duration}
               helperText={errors.duration}
@@ -777,6 +885,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
                   </InputAdornment>
                 ),
               }}
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+              }}
               error={!!errors.calories}
               helperText={errors.calories}
             />
@@ -791,10 +911,26 @@ const WorkoutsPage = ({ isDarkMode }) => {
               value={newWorkout.description}
               onChange={handleInputChange}
               placeholder="Enter workout description, goals, and instructions..."
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.5)' : undefined,
+                  opacity: 1,
+                },
+              }}
             />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant="subtitle1" gutterBottom sx={{ color: isDarkMode ? '#fff' : undefined }}>
               Equipment
             </Typography>
             <TextField
@@ -816,6 +952,22 @@ const WorkoutsPage = ({ isDarkMode }) => {
                 });
               }}
               placeholder="e.g., Dumbbells, Barbell, Resistance Bands, Kettlebell"
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.5)' : undefined,
+                  opacity: 1,
+                },
+              }}
             />
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
               {newWorkout.equipment.map((item, index) => (
@@ -836,7 +988,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
             </Box>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant="subtitle1" gutterBottom sx={{ color: isDarkMode ? '#fff' : undefined }}>
               Target Muscles
             </Typography>
             <TextField
@@ -858,6 +1010,22 @@ const WorkoutsPage = ({ isDarkMode }) => {
                 });
               }}
               placeholder="e.g., Chest, Back, Legs, Shoulders, Arms, Core"
+              sx={{
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.5)' : undefined,
+                  opacity: 1,
+                },
+              }}
             />
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
               {newWorkout.targetMuscles.map((muscle, index) => (
@@ -879,7 +1047,7 @@ const WorkoutsPage = ({ isDarkMode }) => {
           </Grid>
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography variant="subtitle1">
+              <Typography variant="subtitle1" sx={{ color: isDarkMode ? '#fff' : undefined }}>
                 Exercises
               </Typography>
               <Button
@@ -902,30 +1070,36 @@ const WorkoutsPage = ({ isDarkMode }) => {
             {newWorkout.exercises && newWorkout.exercises.length > 0 ? (
               <Box sx={{ mt: 1 }}>
                 {newWorkout.exercises.map((exercise, index) => (
-                  <Card key={index} sx={{ p: 2, mb: 2, borderRadius: '12px' }}>
+                  <Card key={index} sx={{ 
+                    p: 2, 
+                    mb: 2, 
+                    borderRadius: '12px',
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.08)' : undefined,
+                    color: isDarkMode ? '#fff' : undefined,
+                  }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="subtitle2" fontWeight="bold">
+                      <Typography variant="subtitle2" fontWeight="bold" sx={{ color: isDarkMode ? '#fff' : undefined }}>
                         {exercise.exerciseName}
                       </Typography>
                       <Box>
-                        <IconButton size="small" onClick={() => handleOpenExerciseDialog(exercise, index)}>
+                        <IconButton size="small" onClick={() => handleOpenExerciseDialog(exercise, index)} sx={{ color: isDarkMode ? '#ff6b81' : '#ff4757' }}>
                           <Edit fontSize="small" />
                         </IconButton>
-                        <IconButton size="small" onClick={() => handleDeleteExercise(index)}>
+                        <IconButton size="small" onClick={() => handleDeleteExercise(index)} sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#666' }}>
                           <Delete fontSize="small" />
                         </IconButton>
                       </Box>
                     </Box>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                      <Chip size="small" label={`${exercise.sets} sets`} />
-                      <Chip size="small" label={exercise.repRange} />
+                      <Chip size="small" label={`${exercise.sets} sets`} sx={{ color: isDarkMode ? '#fff' : undefined }} />
+                      <Chip size="small" label={exercise.repRange} sx={{ color: isDarkMode ? '#fff' : undefined }} />
                     </Box>
                   </Card>
                 ))}
               </Box>
             ) : (
               <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '12px', bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'text.secondary' }}>
                   No exercises added yet. Click "Add Exercise" to begin.
                 </Typography>
               </Paper>
@@ -967,6 +1141,314 @@ const WorkoutsPage = ({ isDarkMode }) => {
           }}
         >
           {selectedWorkout ? 'Update Workout' : 'Create Workout'}
+        </LoadingButton>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renderGroupWorkoutDialog = () => (
+    <Dialog
+      open={openGroupDialog}
+      onClose={handleCloseGroupDialog}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '16px',
+          bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
+          backgroundImage: 'none',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          background: 'linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%)',
+          color: 'white',
+          borderRadius: '16px 16px 0 0',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {selectedGroupWorkout ? <Edit /> : <AddIcon />}
+          {selectedGroupWorkout ? 'Update Group Workout' : 'Create New Group Workout'}
+        </Box>
+      </DialogTitle>
+      <DialogContent sx={{ mt: 2, pb: 3 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Group Workout Name"
+              name="name"
+              value={newGroupWorkout.name || ""}
+              onChange={handleGroupWorkoutInputChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FitnessCenter sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  '&:hover fieldset': { borderColor: '#ff4757' },
+                  '&.Mui-focused fieldset': { borderColor: '#ff4757' },
+                },
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+              }}
+              error={!!errors.name}
+              helperText={errors.name}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth margin="normal" required sx={{
+              // Fix for dark mode visibility for select elements
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+              },
+              '& .MuiSelect-select': {
+                color: isDarkMode ? '#fff' : undefined,
+              },
+              '& .MuiSvgIcon-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiFormHelperText-root': {
+                color: isDarkMode ? 'rgba(255,82,82,1)' : undefined,
+              }
+            }}>
+              <InputLabel>Category</InputLabel>
+              <Select
+                name="category_id"
+                value={newGroupWorkout.category_id}
+                onChange={handleGroupWorkoutInputChange}
+                error={!!errors.category_id}
+              >
+                {groupWorkoutCategories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.categoryName || category.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.category_id && <FormHelperText error>{errors.category_id}</FormHelperText>}
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth margin="normal" required sx={{
+              // Fix for dark mode visibility for select elements
+              '& .MuiInputLabel-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+              },
+              '& .MuiSelect-select': {
+                color: isDarkMode ? '#fff' : undefined,
+              },
+              '& .MuiSvgIcon-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+              },
+              '& .MuiFormHelperText-root': {
+                color: isDarkMode ? 'rgba(255,82,82,1)' : undefined,
+              }
+            }}>
+              <InputLabel>Difficulty Level</InputLabel>
+              <Select
+                name="level_id"
+                value={newGroupWorkout.level_id}
+                onChange={handleGroupWorkoutInputChange}
+                error={!!errors.level_id}
+              >
+                {workoutLevels.map((level) => (
+                  <MenuItem key={level.id} value={level.id}>
+                    {level.levelName || level.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.level_id && <FormHelperText error>{errors.level_id}</FormHelperText>}
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Capacity"
+              name="capacity"
+              type="number"
+              value={newGroupWorkout.capacity}
+              onChange={handleGroupWorkoutInputChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <People sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ 
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiFormHelperText-root': {
+                  color: isDarkMode ? 'rgba(255,82,82,1)' : undefined,
+                }
+              }}
+              error={!!errors.capacity}
+              helperText={errors.capacity}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Duration (minutes)"
+              name="duration"
+              type="number"
+              value={newGroupWorkout.duration}
+              onChange={handleGroupWorkoutInputChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Timer sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ 
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiFormHelperText-root': {
+                  color: isDarkMode ? 'rgba(255,82,82,1)' : undefined,
+                }
+              }}
+              error={!!errors.duration}
+              helperText={errors.duration}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Image URL"
+              name="image_path"
+              value={newGroupWorkout.image_path}
+              onChange={handleGroupWorkoutInputChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Image sx={{ color: '#ff4757' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ 
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.5)' : undefined,
+                  opacity: 1,
+                },
+              }}
+              placeholder="Enter URL to an image for this group workout"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Description"
+              name="description"
+              multiline
+              rows={4}
+              value={newGroupWorkout.description}
+              onChange={handleGroupWorkoutInputChange}
+              sx={{ 
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+                // Fix for dark mode visibility
+                '& .MuiInputLabel-root': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: isDarkMode ? '#fff' : undefined,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
+                },
+                '& .MuiInputBase-input::placeholder': {
+                  color: isDarkMode ? 'rgba(255,255,255,0.5)' : undefined,
+                  opacity: 1,
+                },
+              }}
+              placeholder="Enter detailed description, instructions, and goals for this group workout..."
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions
+        sx={{
+          p: 3,
+          bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
+          borderTop: '1px solid',
+          borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        }}
+      >
+        <LoadingButton
+          onClick={handleCloseGroupDialog}
+          variant="outlined"
+          sx={{
+            borderColor: '#ff4757',
+            color: '#ff4757',
+            '&:hover': {
+              borderColor: '#ff3747',
+              backgroundColor: 'rgba(255,71,87,0.1)',
+            },
+          }}
+        >
+          Cancel
+        </LoadingButton>
+        <LoadingButton
+          onClick={handleSubmitGroupWorkout}
+          loading={actionLoading}
+          variant="contained"
+          sx={{
+            background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
+            '&:hover': {
+              background: 'linear-gradient(45deg, #ff6b81, #ff4757)',
+            },
+          }}
+        >
+          {selectedGroupWorkout ? 'Update Group Workout' : 'Create Group Workout'}
         </LoadingButton>
       </DialogActions>
     </Dialog>
@@ -1028,208 +1510,6 @@ const WorkoutsPage = ({ isDarkMode }) => {
     setActiveTab(newValue);
     setPage(1);
   };
-
-  const renderGroupWorkoutDialog = () => (
-    <Dialog
-      open={openGroupDialog}
-      onClose={handleCloseGroupDialog}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          borderRadius: '16px',
-          bgcolor: isDarkMode ? '#1a1a1a' : '#fff',
-          backgroundImage: 'none',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          background: 'linear-gradient(135deg, #2c3e50 0%, #1a1a2e 100%)',
-          color: 'white',
-          borderRadius: '16px 16px 0 0',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {selectedGroupWorkout ? <Edit /> : <AddIcon />}
-          {selectedGroupWorkout ? 'Update Group Workout' : 'Create New Group Workout'}
-        </Box>
-      </DialogTitle>
-      <DialogContent sx={{ mt: 2, pb: 3 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Group Workout Name"
-              name="name"
-              value={newGroupWorkout.name || ""}
-              onChange={handleGroupWorkoutInputChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <FitnessCenter sx={{ color: '#ff4757' }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '12px',
-                  '&:hover fieldset': { borderColor: '#ff4757' },
-                  '&.Mui-focused fieldset': { borderColor: '#ff4757' },
-                },
-              }}
-              error={!!errors.name}
-              helperText={errors.name}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Category</InputLabel>
-              <Select
-                name="category_id"
-                value={newGroupWorkout.category_id}
-                onChange={handleGroupWorkoutInputChange}
-                error={!!errors.category_id}
-              >
-                {groupWorkoutCategories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.categoryName || category.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.category_id && <FormHelperText error>{errors.category_id}</FormHelperText>}
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Difficulty Level</InputLabel>
-              <Select
-                name="level_id"
-                value={newGroupWorkout.level_id}
-                onChange={handleGroupWorkoutInputChange}
-                error={!!errors.level_id}
-              >
-                {workoutLevels.map((level) => (
-                  <MenuItem key={level.id} value={level.id}>
-                    {level.levelName || level.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.level_id && <FormHelperText error>{errors.level_id}</FormHelperText>}
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Capacity"
-              name="capacity"
-              type="number"
-              value={newGroupWorkout.capacity}
-              onChange={handleGroupWorkoutInputChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <People sx={{ color: '#ff4757' }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              error={!!errors.capacity}
-              helperText={errors.capacity}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Duration (minutes)"
-              name="duration"
-              type="number"
-              value={newGroupWorkout.duration}
-              onChange={handleGroupWorkoutInputChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Timer sx={{ color: '#ff4757' }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              error={!!errors.duration}
-              helperText={errors.duration}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Image URL"
-              name="image_path"
-              value={newGroupWorkout.image_path}
-              onChange={handleGroupWorkoutInputChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Image sx={{ color: '#ff4757' }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              placeholder="Enter URL to an image for this group workout"
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Description"
-              name="description"
-              multiline
-              rows={4}
-              value={newGroupWorkout.description}
-              onChange={handleGroupWorkoutInputChange}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              placeholder="Enter detailed description, instructions, and goals for this group workout..."
-            />
-          </Grid>
-        </Grid>
-      </DialogContent>
-      <DialogActions
-        sx={{
-          p: 3,
-          bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-          borderTop: '1px solid',
-          borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-        }}
-      >
-        <LoadingButton
-          onClick={handleCloseGroupDialog}
-          variant="outlined"
-          sx={{
-            borderColor: '#ff4757',
-            color: '#ff4757',
-            '&:hover': {
-              borderColor: '#ff3747',
-              backgroundColor: 'rgba(255,71,87,0.1)',
-            },
-          }}
-        >
-          Cancel
-        </LoadingButton>
-        <LoadingButton
-          onClick={handleSubmitGroupWorkout}
-          loading={actionLoading}
-          variant="contained"
-          sx={{
-            background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
-            '&:hover': {
-              background: 'linear-gradient(45deg, #ff6b81, #ff4757)',
-            },
-          }}
-        >
-          {selectedGroupWorkout ? 'Update Group Workout' : 'Create Group Workout'}
-        </LoadingButton>
-      </DialogActions>
-    </Dialog>
-  );
 
   const renderWorkoutTypeSwitch = () => (
     <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>

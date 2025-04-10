@@ -208,39 +208,49 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     }
   };
 
-  // Add function to fetch trainer ratings
+  // Update function to fetch trainer ratings
   const fetchTrainerRatings = async () => {
     setRatingLoading(true);
     try {
       const trainerId = 3; // This should be retrieved from authentication context
-      // In a real application, you would call your API endpoint
-      // For now, we'll simulate a response with mock data
+      const response = await axios.get(`http://localhost:8080/api/trainer/ratings/${trainerId}`);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock data for demonstration - Updated to be trainer-focused reviews
-      const mockRatingData = {
-        averageRating: 4.7,
-        totalRatings: 58,
-        recentRatings: [
-          { id: 1, clientName: 'Ali Yilmaz', rating: 5, comment: 'Best trainer I\'ve ever had! You helped me reach my fitness goals in just 3 months.', date: '2023-05-15' },
-          { id: 2, clientName: 'Ayse Demir', rating: 4.5, comment: 'Your training programs are very effective. I\'ve seen significant improvements in my stamina.', date: '2023-05-10' },
-          { id: 3, clientName: 'Mehmet Kaya', rating: 5, comment: 'I appreciate your professional approach and the personal attention you give during sessions.', date: '2023-05-05' },
-          { id: 4, clientName: 'Zeynep Ak', rating: 4, comment: 'Great motivator! You always know how to push me just the right amount.', date: '2023-04-28' },
-        ],
-        ratingBreakdown: {
-          5: 38,
-          4: 15,
-          3: 3,
-          2: 1,
-          1: 1
-        }
-      };
-      
-      setRatingData(mockRatingData);
+      if (response.status === 200) {
+        const ratingsData = response.data;
+        
+        // Process the data to match our component's expected structure
+        const processedData = {
+          averageRating: ratingsData.averageRating || 0,
+          totalRatings: ratingsData.totalReviews || 0,
+          recentRatings: ratingsData.recentReviews || [],
+          ratingBreakdown: ratingsData.ratingDistribution || {
+            5: 0, 4: 0, 3: 0, 2: 0, 1: 0
+          }
+        };
+        
+        setRatingData(processedData);
+      } else {
+        // If API call fails, use empty data
+        setRatingData({
+          averageRating: 0,
+          totalRatings: 0,
+          recentRatings: [],
+          ratingBreakdown: {
+            5: 0, 4: 0, 3: 0, 2: 0, 1: 0
+          }
+        });
+      }
     } catch (error) {
       console.error('Error fetching trainer ratings:', error);
+      // Set default empty data on error
+      setRatingData({
+        averageRating: 0,
+        totalRatings: 0,
+        recentRatings: [],
+        ratingBreakdown: {
+          5: 0, 4: 0, 3: 0, 2: 0, 1: 0
+        }
+      });
     } finally {
       setRatingLoading(false);
     }

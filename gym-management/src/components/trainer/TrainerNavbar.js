@@ -123,25 +123,34 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
     refreshTrainerData
   }));
 
-  // Add a function to fetch trainer ratings for the navbar
+  // Update function to fetch trainer ratings for the navbar
   const fetchTrainerRatings = async () => {
     try {
       const trainerId = 3; // This should be retrieved from authentication context
-      // In a real application, you would call your API endpoint
-      // For now, we'll simulate a response with mock data
+      const response = await axios.get(`http://localhost:8080/api/trainer/ratings/${trainerId}`);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Mock data for demonstration
-      const mockRatingData = {
-        averageRating: 4.7,
-        totalRatings: 58
-      };
-      
-      setTrainerRating(mockRatingData);
+      if (response.status === 200) {
+        const ratingsData = response.data;
+        
+        // Extract the data we need for the navbar
+        setTrainerRating({
+          averageRating: ratingsData.averageRating || 0,
+          totalRatings: ratingsData.totalReviews || 0
+        });
+      } else {
+        // Default values if API call fails
+        setTrainerRating({
+          averageRating: 0,
+          totalRatings: 0
+        });
+      }
     } catch (error) {
       console.error('Error fetching trainer ratings for navbar:', error);
+      // Default values on error
+      setTrainerRating({
+        averageRating: 0,
+        totalRatings: 0
+      });
     }
   };
 
