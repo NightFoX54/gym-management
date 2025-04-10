@@ -442,21 +442,28 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
+  
+  // Get the day of week (0-6) where 0 is Sunday
+  const startDay = monthStart.getDay();
+  
+  // Calculate the first day to display (may be from the previous month)
+  const firstDisplayedDay = new Date(monthStart);
+  firstDisplayedDay.setDate(firstDisplayedDay.getDate() - startDay);
+  
+  // Create an array of all days to display in the calendar
+  const calendarDays = [];
+  let day = new Date(firstDisplayedDay);
+  
+  // Generate 42 days (6 weeks) to ensure we show the full calendar grid
+  for (let i = 0; i < 42; i++) {
+    calendarDays.push(new Date(day));
+    day.setDate(day.getDate() + 1);
+  }
+  
+  // Create weeks array from the calendarDays
   const weeks = [];
-  let week = [];
-  
-  monthDays.forEach(day => {
-    if (week.length === 7) {
-      weeks.push(week);
-      week = [];
-    }
-    week.push(day);
-  });
-  
-  if (week.length > 0) {
-    weeks.push(week);
+  for (let i = 0; i < 6; i++) {
+    weeks.push(calendarDays.slice(i * 7, (i + 1) * 7));
   }
 
   const dayVariants = {
@@ -488,6 +495,7 @@ const SchedulePage = ({ isDarkMode }) => {
         cursor: dayAppointments.length > 0 ? 'pointer' : 'default',
         position: 'relative',
         overflow: 'hidden',
+        opacity: isSameMonth(day, currentDate) ? 1 : 0.4, // Fade out days not in current month
         bgcolor: isSameDay(day, selectedDate) ? 'rgba(255,71,87,0.1)' : 'transparent',
         border: isSameDay(day, selectedDate) ? '2px solid #ff4757' : '1px solid rgba(255,71,87,0.1)',
         borderRadius: '12px',
@@ -559,13 +567,24 @@ const SchedulePage = ({ isDarkMode }) => {
     </Paper>
   );
 
+  // Function to restore scroll position and handle dialog with proper overlay display
   const handleDayClick = (day, appointments) => {
     if (appointments.length > 0) {
+      // Store day and appointments data only
       setSelectedDayDetails({
         date: day,
         appointments
       });
+      
+      // No need to modify scroll position
+      document.body.style.overflow = 'auto'; // Ensure body remains scrollable
     }
+  };
+
+  // Function to close dialog properly
+  const handleCloseDialog = () => {
+    setSelectedDayDetails(null);
+    document.body.style.overflow = 'auto'; // Restore scrolling
   };
 
   const renderSessionDialog = () => (
@@ -908,7 +927,7 @@ const SchedulePage = ({ isDarkMode }) => {
   const renderDayDetailsDialog = () => (
     <Dialog
       open={Boolean(selectedDayDetails)}
-      onClose={() => setSelectedDayDetails(null)}
+      onClose={handleCloseDialog}
       maxWidth="sm"
       fullWidth
       TransitionComponent={motion.div}
@@ -918,9 +937,25 @@ const SchedulePage = ({ isDarkMode }) => {
           bgcolor: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
           backgroundImage: 'none',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }
       }}
+      // Fix dialog positioning and scroll issues
+      sx={{
+        '& .MuiDialog-container': {
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        '& .MuiDialog-paper': {
+          m: 2, // Margin all around for better mobile display
+          maxHeight: 'calc(100% - 64px)', // Ensure it fits within viewport with margins
+        }
+      }}
+      // These two props are key to fix scrolling issues
+      disableScrollLock={true}
+      hideBackdrop={false} // Keep backdrop for visual separation
+      keepMounted={false} // Don't keep component mounted when closed
+      disablePortal={false} // Use portal to avoid context issues
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -1049,7 +1084,7 @@ const SchedulePage = ({ isDarkMode }) => {
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button
-            onClick={() => setSelectedDayDetails(null)}
+            onClick={handleCloseDialog}
             sx={{ color: '#666' }}
           >
             Close
