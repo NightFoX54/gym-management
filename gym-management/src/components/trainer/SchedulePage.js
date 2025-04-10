@@ -1047,52 +1047,13 @@ const SchedulePage = ({ isDarkMode }) => {
               ))}
           </AnimatePresence>
         </DialogContent>
-        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+        <DialogActions sx={{ p: 2 }}>
           <Button
             onClick={() => setSelectedDayDetails(null)}
             sx={{ color: '#666' }}
           >
             Close
           </Button>
-          <Box>
-            <Button
-              onClick={() => {
-                setOpenGroupSessionDialog(true);
-                setNewGroupSession(prev => ({
-                  ...prev,
-                  date: format(selectedDayDetails.date, 'yyyy-MM-dd')
-                }));
-                setSelectedDayDetails(null);
-              }}
-              variant="contained"
-              startIcon={<Group />}
-              sx={{
-                bgcolor: '#ff4757',
-                '&:hover': { bgcolor: '#ff3747' },
-                mr: 1
-              }}
-            >
-              Add Group Session
-            </Button>
-            <Button
-              onClick={() => {
-                setOpenDialog(true);
-                setNewSession(prev => ({
-                  ...prev,
-                  date: format(selectedDayDetails.date, 'yyyy-MM-dd')
-                }));
-                setSelectedDayDetails(null);
-              }}
-              variant="contained"
-              startIcon={<Person />}
-              sx={{
-                bgcolor: '#ff4757',
-                '&:hover': { bgcolor: '#ff3747' }
-              }}
-            >
-              Add Personal Session
-            </Button>
-          </Box>
         </DialogActions>
       </motion.div>
     </Dialog>
@@ -1127,7 +1088,7 @@ const SchedulePage = ({ isDarkMode }) => {
               <ChevronRight />
             </IconButton>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <FormControlLabel
               control={
                 <Switch
@@ -1146,29 +1107,6 @@ const SchedulePage = ({ isDarkMode }) => {
               }
               label="Show Group Sessions"
             />
-            <Button
-              variant="contained"
-              startIcon={<Group />}
-              onClick={() => setOpenGroupSessionDialog(true)}
-              sx={{
-                bgcolor: '#ff4757',
-                '&:hover': { bgcolor: '#ff3747' },
-                mr: 1
-              }}
-            >
-              New Group Session
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<Person />}
-              onClick={() => setOpenDialog(true)}
-              sx={{
-                bgcolor: '#ff4757',
-                '&:hover': { bgcolor: '#ff3747' }
-              }}
-            >
-              New Personal Session
-            </Button>
           </Box>
         </Box>
 

@@ -78,6 +78,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import RequestCard from './RequestCard';
 
 const ClientsPage = ({ isDarkMode }) => {
   const [clients, setClients] = useState([]);
@@ -1509,906 +1510,166 @@ const ClientsPage = ({ isDarkMode }) => {
             <Grid container spacing={3}>
             {clientRequests.map((request, index) => (
               <Grid item xs={12} md={6} lg={4} key={request.id}>
+                <RequestCard 
+                  request={request}
+                  type="registration"
+                  index={index}
+                  isDarkMode={isDarkMode}
+                  handleAccept={handleAcceptRegistration}
+                  handleDecline={handleDeclineRegistration}
+                  actionLoading={actionLoading}
+                />
+              </Grid>
+            ))}
+            </Grid>
+          </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Box sx={{ 
+                textAlign: 'center', 
+                py: 8,
+                bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(0,0,0,0.01)',
+                borderRadius: '12px',
+                border: '1px dashed',
+                borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)'
+              }}>
+                <PersonAdd sx={{ 
+                  fontSize: '4rem', 
+                  color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)',
+                  mb: 2
+                }} />
+                <Typography 
+                  color={isDarkMode ? 'rgba(255,255,255,0.8)' : 'text.secondary'}
+                  variant="h6"
+                >
+                  No pending registration requests
+                </Typography>
+              </Box>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        </Box>
+      )}
+
+      {/* Session Requests */}
+      {requestTabValue === 1 && (
+        <Box sx={{ minHeight: '300px' }}>
+          <AnimatePresence>
+            {sessionRequests.length > 0 ? (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                duration: 0.3,
-                delay: index * 0.05
-                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
-                <Card
-                sx={{
-                  height: '100%',
-                  borderRadius: '16px',
-                  background: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(66, 153, 225, 0.3)',
-                  borderLeft: '4px solid #2196f3',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  boxShadow: isDarkMode 
-                  ? '0 4px 20px rgba(0, 0, 0, 0.4)' 
-                  : '0 4px 20px rgba(0, 0, 0, 0.1)',
-                  '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: isDarkMode 
-                    ? '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(33, 150, 243, 0.4)'
-                    : '0 15px 35px rgba(0, 0, 0, 0.1), 0 0 15px rgba(33, 150, 243, 0.2)',
-                  }
-                }}
-                >
+                <Grid container spacing={3}>
+                  {sessionRequests.map((request, index) => (
+                    <Grid item xs={12} md={6} lg={4} key={request.id}>
+                      <RequestCard 
+                        request={request}
+                        type="session"
+                        index={index}
+                        isDarkMode={isDarkMode}
+                        handleAccept={handleAcceptSession}
+                        handleDecline={handleDeclineSession}
+                        actionLoading={actionLoading}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
                 <Box sx={{ 
-                  position: 'absolute', 
-                  top: 0, 
-                  right: 0, 
-                  bgcolor: '#2196f3',
-                  color: 'white',
-                  px: 2,
-                  py: 0.5,
-                  borderBottomLeftRadius: '10px',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  zIndex: 1,
-                  boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)'
+                  textAlign: 'center', 
+                  py: 8,
+                  bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(0,0,0,0.01)',
+                  borderRadius: '12px',
+                  border: '1px dashed',
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)'
                 }}>
-                  REGISTRATION
-                </Box>
-                
-                <Box
-                  sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  width: '100%',
-                  p: 3,
-                  }}
-                >
-                  <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    mb: 2,
-                  }}
+                  <AccessTimeFilled sx={{ 
+                    fontSize: '4rem', 
+                    color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)',
+                    mb: 2
+                  }} />
+                  <Typography 
+                    color={isDarkMode ? 'rgba(255,255,255,0.8)' : 'text.secondary'}
+                    variant="h6"
                   >
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 'bold',
-                    color: isDarkMode ? '#ffffff' : '#333',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}>
-                    <PersonAdd sx={{ color: isDarkMode ? '#ffffff' : '#000000', fontSize: '1.1rem' }} /> {request.name}
+                    No pending session requests
                   </Typography>
-                  </Box>
-                  
-                  <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                  <Chip
-                    size="small"
-                    label={request.program || "Personal Training"}
-                    sx={{
-                    bgcolor: 'rgba(33, 150, 243, 0.1)',
-                    color: isDarkMode ? '#90caf9' : '#1976d2',
-                    fontWeight: 500
-                    }}
-                  />
-                  <Chip
-                    size="small"
-                    icon={<CalendarToday sx={{ fontSize: '0.9rem !important', color: isDarkMode ? '#ffffff' : '#000000' }} />}
-                    label={formatDate(request.requestDate)}
-                    sx={{
-                    bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.05)',
-                    color: isDarkMode ? '#000000' : '#ffffff',
-                    }}
-                  />
-                  {request.preferredTime && (
-                    <Chip
-                    size="small"
-                    icon={<AccessTime sx={{ fontSize: '0.9rem !important', color: isDarkMode ? '#ffffff' : '#000000' }} />}
-                                    label={request.preferredTime}
-                                    sx={{
-                                      bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0, 0, 0, 0.05)',
-                                      color: isDarkMode ? '#000000' : '#ffffff',
-                                    }}
-                                  />
-                                )}
-                              </Box>
-                              
-                              <Grid container spacing={2} sx={{ mb: 2 }}>
-                                <Grid item xs={6}>
-                                  <Box sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center',
-                                    bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0,0,0,0.03)',
-                                    p: 1.5,
-                                    borderRadius: '12px',
-                                  }}>
-                                    <Email fontSize="small" sx={{ 
-                                      mr: 1, 
-                                      color: isDarkMode ? '#000000' : '#ffffff' 
-                                    }} />
-                                    <Typography variant="body2" sx={{ 
-                                      color: isDarkMode ? '#ffffff' : '#000000',
-                                      fontWeight: 500,
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      flex: 1
-                                    }}>
-                                      {request.email}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                                <Grid item xs={6}>
-                                  {request.phone && (
-                                    <Box sx={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center',
-                                      bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0,0,0,0.03)',
-                                      p: 1.5,
-                                      borderRadius: '12px',
-                                      height: '100%'
-                                    }}>
-                                      <Phone fontSize="small" sx={{ 
-                                        mr: 1, 
-                                        color: isDarkMode ? '#000000' : '#ffffff'
-                                      }} />
-                                      <Typography variant="body2" sx={{ 
-                                        color: isDarkMode ? '#ffffff' : '#000000',
-                                        fontWeight: 500,
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                        flex: 1
-                                      }}>
-                                        {request.phone}
-                                      </Typography>
-                                    </Box>
-                                  )}
-                                </Grid>
-                              </Grid>
-                              
-                              {request.message && (
-                                <Box sx={{ 
-                                  mb: 2,
-                                  p: 1.5, 
-                                  borderRadius: '12px',
-                                  bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.5)' : 'rgba(0,0,0,0.02)',
-                                  borderLeft: '2px solid',
-                                  borderColor: isDarkMode ? 'rgba(144, 202, 249, 0.5)' : 'rgba(33, 150, 243, 0.5)',
-                                }}>
-                                  <Typography variant="caption" sx={{ 
-                                    color: isDarkMode ? '#90CAF9' : '#1976d2',
-                                    fontWeight: 500,
-                                    display: 'block',
-                                    mb: 0.5
-                                  }}>
-                                    Message:
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ 
-                                    color: isDarkMode ? 'rgba(255,255,255,0.9)' : '#000000',
-                                    fontStyle: 'italic',
-                                    fontSize: '0.875rem',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 3,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}>
-                                    "{request.message}"
-                                  </Typography>
-                                </Box>
-                              )}
-                              
-                              <Box sx={{ mt: 'auto', display: 'flex', gap: 1 }}>
-                                <LoadingButton
-                                  fullWidth
-                                  size="large"
-                                  variant="contained"
-                                  startIcon={<Check sx={{ color: isDarkMode ? '#000000' : '#ffffff' }} />}
-                                  onClick={() => handleAcceptRegistration(request.id)}
-                                  loading={actionLoading}
-                                  sx={{
-                                    bgcolor: '#2196f3',
-                                    color: isDarkMode ? '#000000' : '#ffffff',
-                                    '&:hover': { bgcolor: '#1976d2' },
-                                    fontWeight: 600,
-                                    borderRadius: '10px',
-                                    boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)',
-                                    textTransform: 'none'
-                                  }}
-                                >
-                                  Accept
-                                </LoadingButton>
-                                <Button 
-                                  fullWidth
-                                  size="large"
-                                  variant="outlined"
-                                  startIcon={<Close sx={{ color: isDarkMode ? '#000000' : '#ffffff' }} />}
-                                  onClick={() => handleDeclineRegistration(request.id)}
-                                  disabled={actionLoading}
-                                  sx={{
-                                    borderRadius: '10px',
-                                    borderColor: isDarkMode ? 'rgba(244, 67, 54, 0.5)' : 'rgba(244, 67, 54, 0.5)',
-                                    color: isDarkMode ? '#000000' : '#ffffff',
-                                    fontWeight: 600,
-                                    textTransform: 'none',
-                                    '&:hover': {
-                                      borderColor: '#d32f2f',
-                                      bgcolor: 'rgba(244, 67, 54, 0.04)'
-                                    }
-                                  }}
-                                >
-                                  Decline
-                                </Button>
-                              </Box>
-                            </Box>
-                          </Card>
-                        </motion.div>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                    py: 8,
-                    bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(0,0,0,0.01)',
-                    borderRadius: '12px',
-                    border: '1px dashed',
-                    borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)'
-                  }}>
-                    <PersonAdd sx={{ 
-                      fontSize: '4rem', 
-                      color: isDarkMode ? '#000000' : '#ffffff',
-                      mb: 2
-                    }} />
-                    <Typography 
-                      color={isDarkMode ? '#000000' : '#ffffff'}
-                      variant="h6"
-                    >
-                      No pending registration requests
-                    </Typography>
-                  </Box>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Box>
-        )}
+                </Box>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Box>
+      )}
 
-        {/* Session Requests */}
-        {requestTabValue === 1 && (
-          <Box sx={{ minHeight: '300px' }}>
-            <AnimatePresence>
-              {sessionRequests.length > 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <Grid container spacing={3}>
-                    {sessionRequests.map((request, index) => (
-                      <Grid item xs={12} md={6} lg={4} key={request.id}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ 
-                            duration: 0.3,
-                            delay: index * 0.05
-                          }}
-                        >
-                          <Card
-                            sx={{
-                              height: '100%',
-                              borderRadius: '16px',
-                              background: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-                              backdropFilter: 'blur(10px)',
-                              border: '1px solid rgba(76, 175, 80, 0.3)',
-                              borderLeft: '4px solid #4caf50',
-                              overflow: 'hidden',
-                              transition: 'all 0.3s ease',
-                              position: 'relative',
-                              boxShadow: isDarkMode 
-                                ? '0 4px 20px rgba(0, 0, 0, 0.4)' 
-                                : '0 4px 20px rgba(0, 0, 0, 0.1)',
-                              '&:hover': {
-                                transform: 'translateY(-5px)',
-                                boxShadow: isDarkMode 
-                                  ? '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(76, 175, 80, 0.4)'
-                                  : '0 15px 35px rgba(0, 0, 0, 0.1), 0 0 15px rgba(76, 175, 80, 0.2)',
-                              }
-                            }}
-                          >
-                            <Box sx={{ 
-                              position: 'absolute', 
-                              top: 0, 
-                              right: 0, 
-                              bgcolor: request.isFreeSession ? '#ff9800' : '#4caf50',
-                              color: 'white',
-                              px: 2,
-                              py: 0.5,
-                              borderBottomLeftRadius: '10px',
-                              fontSize: '0.8rem',
-                              fontWeight: 600,
-                              zIndex: 1,
-                              boxShadow: request.isFreeSession 
-                                ? '0 2px 8px rgba(255, 152, 0, 0.3)'
-                                : '0 2px 8px rgba(76, 175, 80, 0.3)'
-                            }}>
-                              {request.isFreeSession ? 'FREE SESSION' : 'SESSION'}
-                            </Box>
-                            
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                width: '100%',
-                                p: 3,
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'flex-start',
-                                  mb: 2,
-                                }}
-                              >
-                                <Typography variant="h6" sx={{ 
-                                  fontWeight: 'bold',
-                                  color: isDarkMode ? '#ffffff' : '#333',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1
-                                }}>
-                                  <AccessTimeFilled sx={{ color: '#4caf50', fontSize: '1.1rem' }} /> {request.name}
-                                </Typography>
-                              </Box>
-                              
-                              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                                <Chip
-                                  size="small"
-                                  icon={<CalendarToday sx={{ fontSize: '0.9rem !important' }} />}
-                                  label={formatDate(request.date)}
-                                  sx={{
-                                    bgcolor: 'rgba(76, 175, 80, 0.1)',
-                                    color: isDarkMode ? '#a5d6a7' : '#2e7d32',
-                                    fontWeight: 500
-                                  }}
-                                />
-                                <Chip
-                                  size="small"
-                                  icon={<AccessTime sx={{ fontSize: '0.9rem !important' }} />}
-                                  label={request.time || 'Not specified'}
-                                  sx={{
-                                    bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0, 0, 0, 0.05)',
-                                    color: isDarkMode ? '#ffffff' : 'text.primary',
-                                  }}
-                                />
-                              </Box>
-                              
-                              <Grid container spacing={2} sx={{ mb: 2 }}>
-                                <Grid item xs={6}>
-                                  <Box sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center',
-                                    bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0,0,0,0.03)',
-                                    p: 1.5,
-                                    borderRadius: '12px',
-                                  }}>
-                                    <Email fontSize="small" sx={{ 
-                                      mr: 1, 
-                                      color: isDarkMode ? '#a5d6a7' : '#4caf50' 
-                                    }} />
-                                    <Typography variant="body2" sx={{ 
-                                      color: isDarkMode ? '#ffffff' : 'text.primary',
-                                      fontWeight: 500,
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      flex: 1
-                                    }}>
-                                      {request.email}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                                <Grid item xs={6}>
-                                  {request.phone && (
-                                    <Box sx={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center',
-                                      bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0,0,0,0.03)',
-                                      p: 1.5,
-                                      borderRadius: '12px',
-                                      height: '100%'
-                                    }}>
-                                      <Phone fontSize="small" sx={{ 
-                                        mr: 1, 
-                                        color: isDarkMode ? '#a5d6a7' : '#4caf50'
-                                      }} />
-                                      <Typography variant="body2" sx={{ 
-                                        color: isDarkMode ? '#ffffff' : 'text.primary',
-                                        fontWeight: 500,
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                        flex: 1
-                                      }}>
-                                        {request.phone}
-                                      </Typography>
-                                    </Box>
-                                  )}
-                                </Grid>
-                              </Grid>
-                              
-                              {request.message && (
-                                <Box sx={{ 
-                                  mb: 2,
-                                  p: 1.5, 
-                                  borderRadius: '12px',
-                                  bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.5)' : 'rgba(0,0,0,0.02)',
-                                  borderLeft: '2px solid',
-                                  borderColor: isDarkMode ? 'rgba(76, 175, 80, 0.5)' : 'rgba(76, 175, 80, 0.5)',
-                                }}>
-                                  <Typography variant="caption" sx={{ 
-                                    color: isDarkMode ? '#a5d6a7' : '#2e7d32',
-                                    fontWeight: 500,
-                                    display: 'block',
-                                    mb: 0.5
-                                  }}>
-                                    Message:
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ 
-                                    color: isDarkMode ? 'rgba(255,255,255,0.9)' : 'text.primary',
-                                    fontStyle: 'italic',
-                                    fontSize: '0.875rem',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 3,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}>
-                                    "{request.message}"
-                                  </Typography>
-                                </Box>
-                              )}
-                              
-                              <Box sx={{ mt: 'auto', display: 'flex', gap: 1 }}>
-                                <LoadingButton
-                                  fullWidth
-                                  size="large"
-                                  variant="contained"
-                                  color="success"
-                                  startIcon={<Check />}
-                                  onClick={() => handleAcceptSession(request.id)}
-                                  loading={actionLoading}
-                                  sx={{
-                                    color: '#ffffff',
-                                    fontWeight: 600,
-                                    borderRadius: '10px',
-                                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-                                    textTransform: 'none'
-                                  }}
-                                >
-                                  Accept
-                                </LoadingButton>
-                                <Button 
-                                  fullWidth
-                                  size="large"
-                                  variant="outlined"
-                                  color="error"
-                                  startIcon={<Close />}
-                                  onClick={() => handleDeclineSession(request.id)}
-                                  disabled={actionLoading}
-                                  sx={{
-                                    borderRadius: '10px',
-                                    borderColor: isDarkMode ? 'rgba(244, 67, 54, 0.5)' : 'rgba(244, 67, 54, 0.5)',
-                                    color: isDarkMode ? '#f44336' : '#f44336',
-                                    fontWeight: 600,
-                                    textTransform: 'none',
-                                    '&:hover': {
-                                      borderColor: '#d32f2f',
-                                      bgcolor: 'rgba(244, 67, 54, 0.04)'
-                                    }
-                                  }}
-                                >
-                                  Decline
-                                </Button>
-                              </Box>
-                            </Box>
-                          </Card>
-                        </motion.div>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                    py: 8,
-                    bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(0,0,0,0.01)',
-                    borderRadius: '12px',
-                    border: '1px dashed',
-                    borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)'
-                  }}>
-                    <AccessTimeFilled sx={{ 
-                      fontSize: '4rem', 
-                      color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)',
-                      mb: 2
-                    }} />
-                    <Typography 
-                      color={isDarkMode ? 'rgba(255,255,255,0.8)' : 'text.secondary'}
-                      variant="h6"
-                    >
-                      No pending session requests
-                    </Typography>
-                  </Box>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Box>
-        )}
-
-        {/* Reschedule Requests */}
-        {requestTabValue === 2 && (
-          <Box sx={{ minHeight: '300px' }}>
-            <AnimatePresence>
-              {rescheduleRequests.length > 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <Grid container spacing={3}>
-                    {rescheduleRequests.map((request, index) => (
-                      <Grid item xs={12} md={6} lg={4} key={request.id}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ 
-                            duration: 0.3,
-                            delay: index * 0.05
-                          }}
-                        >
-                          <Card
-                            sx={{
-                              height: '100%',
-                              borderRadius: '16px',
-                              background: isDarkMode ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
-                              backdropFilter: 'blur(10px)',
-                              border: '1px solid rgba(156, 39, 176, 0.3)',
-                              borderLeft: '4px solid #9c27b0',
-                              overflow: 'hidden',
-                              transition: 'all 0.3s ease',
-                              position: 'relative',
-                              boxShadow: isDarkMode 
-                                ? '0 4px 20px rgba(0, 0, 0, 0.4)' 
-                                : '0 4px 20px rgba(0, 0, 0, 0.1)',
-                              '&:hover': {
-                                transform: 'translateY(-5px)',
-                                boxShadow: isDarkMode 
-                                  ? '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(156, 39, 176, 0.4)'
-                                  : '0 15px 35px rgba(0, 0, 0, 0.1), 0 0 15px rgba(156, 39, 176, 0.2)',
-                              }
-                            }}
-                          >
-                            <Box sx={{ 
-                              position: 'absolute', 
-                              top: 0, 
-                              right: 0, 
-                              bgcolor: '#9c27b0',
-                              color: 'white',
-                              px: 2,
-                              py: 0.5,
-                              borderBottomLeftRadius: '10px',
-                              fontSize: '0.8rem',
-                              fontWeight: 600,
-                              zIndex: 1,
-                              boxShadow: '0 2px 8px rgba(156, 39, 176, 0.3)'
-                            }}>
-                              RESCHEDULE
-                            </Box>
-                            
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                width: '100%',
-                                p: 3,
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'flex-start',
-                                  mb: 2,
-                                }}
-                              >
-                                <Typography variant="h6" sx={{ 
-                                  fontWeight: 'bold',
-                                  color: isDarkMode ? '#ffffff' : '#333',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1
-                                }}>
-                                  <CalendarToday sx={{ color: '#9c27b0', fontSize: '1.1rem' }} /> {request.name}
-                                </Typography>
-                              </Box>
-                              
-                              <Grid container spacing={2} sx={{ mb: 3 }}>
-                                <Grid item xs={6}>
-                                  <Box sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center',
-                                    bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0,0,0,0.03)',
-                                    p: 1.5,
-                                    borderRadius: '12px',
-                                  }}>
-                                    <Email fontSize="small" sx={{ 
-                                      mr: 1, 
-                                      color: isDarkMode ? '#ce93d8' : '#9c27b0' 
-                                    }} />
-                                    <Typography variant="body2" sx={{ 
-                                      color: isDarkMode ? '#ffffff' : 'text.primary',
-                                      fontWeight: 500,
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      flex: 1
-                                    }}>
-                                      {request.email}
-                                    </Typography>
-                                  </Box>
-                                </Grid>
-                                <Grid item xs={6}>
-                                  {request.phone && (
-                                    <Box sx={{ 
-                                      display: 'flex', 
-                                      alignItems: 'center',
-                                      bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.7)' : 'rgba(0,0,0,0.03)',
-                                      p: 1.5,
-                                      borderRadius: '12px',
-                                      height: '100%'
-                                    }}>
-                                      <Phone fontSize="small" sx={{ 
-                                        mr: 1, 
-                                        color: isDarkMode ? '#ce93d8' : '#9c27b0'
-                                      }} />
-                                      <Typography variant="body2" sx={{ 
-                                        color: isDarkMode ? '#ffffff' : 'text.primary',
-                                        fontWeight: 500,
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                        flex: 1
-                                      }}>
-                                        {request.phone}
-                                      </Typography>
-                                    </Box>
-                                  )}
-                                </Grid>
-                              </Grid>
-                              
-                              <Box sx={{ 
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                position: 'relative',
-                                mb: 2,
-                              }}>
-                                <Box sx={{ 
-                                  width: '45%',
-                                  p: 1.5,
-                                  borderRadius: '10px',
-                                  bgcolor: isDarkMode ? 'rgba(156, 39, 176, 0.1)' : 'rgba(156, 39, 176, 0.05)',
-                                  border: isDarkMode ? '1px solid rgba(156, 39, 176, 0.2)' : 'none',
-                                  textAlign: 'center'
-                                }}>
-                                  <Typography variant="caption" sx={{ 
-                                    color: isDarkMode ? '#ce93d8' : '#7b1fa2',
-                                    display: 'block',
-                                    fontWeight: 500,
-                                    mb: 0.5
-                                  }}>
-                                    Current
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ 
-                                    color: isDarkMode ? '#e1bee7' : '#4a148c',
-                                    fontWeight: 600
-                                  }}>
-                                    {formatDate(request.currentDate)}
-                                  </Typography>
-                                  <Typography variant="caption" sx={{ 
-                                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                                    fontWeight: 500 
-                                  }}>
-                                    {request.currentTime}
-                                  </Typography>
-                                </Box>
-                                
-                                <Box sx={{
-                                  width: 28,
-                                  height: 28,
-                                  bgcolor: isDarkMode ? 'rgba(156, 39, 176, 0.2)' : 'rgba(156, 39, 176, 0.1)',
-                                  borderRadius: '50%',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  zIndex: 2,
-                                  border: isDarkMode ? '1px solid rgba(156, 39, 176, 0.4)' : 'none',
-                                  position: 'relative',
-                                  '&::before, &::after': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    width: '12px',
-                                    height: '2px',
-                                    bgcolor: isDarkMode ? '#e1bee7' : '#7b1fa2',
-                                  },
-                                  '&::before': {
-                                    transform: 'rotate(-45deg)'
-                                  },
-                                  '&::after': {
-                                    transform: 'rotate(45deg)'
-                                  }
-                                }}/>
-                                
-                                <Box sx={{ 
-                                  width: '45%',
-                                  p: 1.5,
-                                  borderRadius: '10px',
-                                  bgcolor: isDarkMode ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 152, 0, 0.05)',
-                                  border: isDarkMode ? '1px solid rgba(255, 152, 0, 0.2)' : 'none',
-                                  textAlign: 'center'
-                                }}>
-                                  <Typography variant="caption" sx={{ 
-                                    color: isDarkMode ? '#ffb74d' : '#e65100',
-                                    display: 'block',
-                                    fontWeight: 500,
-                                    mb: 0.5
-                                  }}>
-                                    Requested
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ 
-                                    color: isDarkMode ? '#ffe0b2' : '#ff6f00',
-                                    fontWeight: 600
-                                  }}>
-                                    {formatDate(request.newDate)}
-                                  </Typography>
-                                  <Typography variant="caption" sx={{ 
-                                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                                    fontWeight: 500
-                                  }}>
-                                    {request.newTime}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                              
-                              {request.reason && (
-                                <Box sx={{ 
-                                  mb: 2,
-                                  p: 1.5, 
-                                  borderRadius: '12px',
-                                  bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.5)' : 'rgba(0,0,0,0.02)',
-                                  borderLeft: '2px solid',
-                                  borderColor: isDarkMode ? 'rgba(156, 39, 176, 0.5)' : 'rgba(156, 39, 176, 0.5)',
-                                }}>
-                                  <Typography variant="caption" sx={{ 
-                                    color: isDarkMode ? '#ce93d8' : '#7b1fa2',
-                                    fontWeight: 500,
-                                    display: 'block',
-                                    mb: 0.5
-                                  }}>
-                                    Reason:
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ 
-                                    color: isDarkMode ? 'rgba(255,255,255,0.9)' : 'text.primary',
-                                    fontStyle: 'italic',
-                                    fontSize: '0.875rem',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 3,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}>
-                                    "{request.reason}"
-                                  </Typography>
-                                </Box>
-                              )}
-                              
-                              <Box sx={{ mt: 'auto', display: 'flex', gap: 1 }}>
-                                <LoadingButton
-                                  fullWidth
-                                  size="large"
-                                  variant="contained"
-                                  color="secondary"
-                                  startIcon={<Check />}
-                                  onClick={() => handleAcceptReschedule(request.id, request.sessionId)}
-                                  loading={actionLoading}
-                                  sx={{
-                                    bgcolor: '#9c27b0',
-                                    color: '#ffffff',
-                                    '&:hover': { bgcolor: '#7b1fa2' },
-                                    fontWeight: 600,
-                                    borderRadius: '10px',
-                                    boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
-                                    textTransform: 'none'
-                                  }}
-                                >
-                                  Accept
-                                </LoadingButton>
-                                <Button 
-                                  fullWidth
-                                  size="large"
-                                  variant="outlined"
-                                  color="error"
-                                  startIcon={<Close />}
-                                  onClick={() => handleDeclineReschedule(request.id)}
-                                  disabled={actionLoading}
-                                  sx={{
-                                    borderRadius: '10px',
-                                    borderColor: isDarkMode ? 'rgba(244, 67, 54, 0.5)' : 'rgba(244, 67, 54, 0.5)',
-                                    color: isDarkMode ? '#f44336' : '#f44336',
-                                    fontWeight: 600,
-                                    textTransform: 'none',
-                                    '&:hover': {
-                                      borderColor: '#d32f2f',
-                                      bgcolor: 'rgba(244, 67, 54, 0.04)'
-                                    }
-                                  }}
-                                >
-                                  Decline
-                                </Button>
-                              </Box>
-                            </Box>
-                          </Card>
-                        </motion.div>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                    py: 8,
-                    bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(0,0,0,0.01)',
-                    borderRadius: '12px',
-                    border: '1px dashed',
-                    borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)'
-                  }}>
-                    <CalendarToday sx={{ 
-                      fontSize: '4rem', 
-                      color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)',
-                      mb: 2
-                    }} />
-                    <Typography 
-                      color={isDarkMode ? 'rgba(255,255,255,0.8)' : 'text.secondary'}
-                      variant="h6"
-                    >
-                      No pending reschedule requests
-                    </Typography>
-                  </Box>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Box>
-        )}
+      {/* Reschedule Requests */}
+      {requestTabValue === 2 && (
+        <Box sx={{ minHeight: '300px' }}>
+          <AnimatePresence>
+            {rescheduleRequests.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Grid container spacing={3}>
+                  {rescheduleRequests.map((request, index) => (
+                    <Grid item xs={12} md={6} lg={4} key={request.id}>
+                      <RequestCard 
+                        request={request}
+                        type="reschedule"
+                        index={index}
+                        isDarkMode={isDarkMode}
+                        handleAccept={handleAcceptReschedule}
+                        handleDecline={handleDeclineReschedule}
+                        actionLoading={actionLoading}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  py: 8,
+                  bgcolor: isDarkMode ? 'rgba(30, 41, 59, 0.4)' : 'rgba(0,0,0,0.01)',
+                  borderRadius: '12px',
+                  border: '1px dashed',
+                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)'
+                }}>
+                  <CalendarToday sx={{ 
+                    fontSize: '4rem', 
+                    color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)',
+                    mb: 2
+                  }} />
+                  <Typography 
+                    color={isDarkMode ? 'rgba(255,255,255,0.8)' : 'text.secondary'}
+                    variant="h6"
+                  >
+                    No pending reschedule requests
+                  </Typography>
+                </Box>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Box>
+      )}
       </Box>
     );
   };
