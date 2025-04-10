@@ -533,3 +533,16 @@
 .theme-icon {
   animation: rotateIcon 0.5s ease;
 }
+
+/* Remove or replace the add-session-button styles with these */
+.add-session-button {
+  position: absolute !important;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  transition: all 0.3s ease !important;
+}
+
+.add-session-button:hover {
+  transform: scale(1.1);
+}

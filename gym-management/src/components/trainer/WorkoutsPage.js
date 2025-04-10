@@ -50,6 +50,9 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoadingButton } from '@mui/lab';
 import axios from 'axios';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { format } from 'date-fns';
 
 const WorkoutsPage = ({ isDarkMode }) => {
   const [workouts, setWorkouts] = useState([]);
@@ -99,6 +102,16 @@ const WorkoutsPage = ({ isDarkMode }) => {
   };
   const [error, setError] = useState(null);
   const [groupWorkoutCategories, setGroupWorkoutCategories] = useState([]);
+  const [sessionModalOpen, setSessionModalOpen] = useState(false);
+  const [currentWorkout, setCurrentWorkout] = useState(null);
+  const [sessionDate, setSessionDate] = useState(new Date());
+  const [sessionTime, setSessionTime] = useState(new Date());
+  const [sessionNotes, setSessionNotes] = useState('');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   useEffect(() => {
     fetchWorkouts();
@@ -1602,12 +1615,42 @@ const WorkoutsPage = ({ isDarkMode }) => {
                     transition: 'all 0.3s ease',
                     borderRadius: '16px',
                     overflow: 'hidden',
+                    position: 'relative', // Add this to position the button properly
                     '&:hover': {
                       transform: 'translateY(-5px)',
                       boxShadow: '0 8px 32px rgba(255,71,87,0.1)',
                     },
                   }}
                 >
+                  {/* Add Session Button - Repositioned */}
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      bottom: '10px',  // Changed from top to bottom
+                      right: '10px',
+                      backgroundColor: isDarkMode ? 'rgba(44, 44, 44, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                      color: isDarkMode ? 'rgba(255, 71, 87, 0.8)' : 'rgba(255, 71, 87, 0.9)',
+                      width: '36px',
+                      height: '36px',
+                      zIndex: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: isDarkMode ? 'rgba(255, 71, 87, 0.2)' : 'rgba(255, 71, 87, 0.1)',
+                        transform: 'scale(1.1)',
+                      },
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                    }}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenSessionModal(workout);
+                    }}
+                    aria-label="Add Session"
+                    title="Add New Session"
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                  
                   {workout.image && (
                     <Box
                       sx={{
@@ -1721,6 +1764,68 @@ const WorkoutsPage = ({ isDarkMode }) => {
         })}
       </Grid>
     );
+  };
+
+  const handleOpenSessionModal = (workout) => {
+    setCurrentWorkout(workout);
+    setSessionModalOpen(true);
+  };
+
+  const handleCloseSessionModal = () => {
+    setSessionModalOpen(false);
+    setSessionDate(new Date());
+    setSessionTime(new Date());
+    setSessionNotes('');
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const showNotification = (message, severity = 'success') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const handleCreateSession = async () => {
+    try {
+      // Format date and time for backend
+      const formattedDate = format(sessionDate, 'yyyy-MM-dd');
+      const formattedTime = format(sessionTime, 'HH:mm:ss');
+      
+      const response = await fetch(`http://localhost:8080/api/group-workout-sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          groupWorkoutId: currentWorkout.id,
+          date: formattedDate,
+          time: formattedTime,
+          notes: sessionNotes
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create session');
+      }
+
+      const data = await response.json();
+      // Show success message using our Snackbar
+      showNotification('Workout session created successfully!');
+      
+      // Close modal and reset form
+      handleCloseSessionModal();
+      
+      // Refresh data if needed
+      fetchWorkouts(); // Assuming this function exists to refresh workout data
+    } catch (error) {
+      console.error('Error creating session:', error);
+      showNotification('Failed to create session', 'error');
+    }
   };
 
   return (
@@ -2087,6 +2192,63 @@ const WorkoutsPage = ({ isDarkMode }) => {
         >
           <Alert onClose={() => setAlert({ ...alert, open: false })} severity={alert.severity} sx={{ width: '100%' }}>
             {alert.message}
+          </Alert>
+        </Snackbar>
+        {/* Session Modal */}
+        <Dialog open={sessionModalOpen} onClose={handleCloseSessionModal} maxWidth="sm" fullWidth>
+          <DialogTitle>Add New Session for {currentWorkout?.title}</DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Session Date"
+                  value={sessionDate}
+                  onChange={(newValue) => setSessionDate(newValue)}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+                <TimePicker
+                  label="Session Time"
+                  value={sessionTime}
+                  onChange={(newValue) => setSessionTime(newValue)}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              </LocalizationProvider>
+              <TextField
+                label="Notes"
+                multiline
+                rows={4}
+                value={sessionNotes}
+                onChange={(e) => setSessionNotes(e.target.value)}
+                fullWidth
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseSessionModal}>Cancel</Button>
+            <Button 
+              onClick={handleCreateSession} 
+              variant="contained" 
+              color="primary"
+              disabled={!sessionDate || !sessionTime}
+            >
+              Create Session
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Notification Snackbar */}
+        <Snackbar 
+          open={snackbar.open} 
+          autoHideDuration={6000} 
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={handleSnackbarClose} 
+            severity={snackbar.severity} 
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
           </Alert>
         </Snackbar>
       </motion.div>
