@@ -51,6 +51,78 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
     }
   }, [setIsDarkMode]);
 
+  // Add this function to generate the benefits based on plan data
+  const generateBenefits = (planData) => {
+    if (!planData) return [];
+    
+    const features = [
+      'Access to gym equipment',
+      'Locker room access',
+      'Basic fitness assessment'
+    ];
+    
+    // Determine plan details based on plan name if specific values aren't provided
+    let guestPasses = planData.guestPassCount;
+    let ptSessions = planData.monthlyPtSessions;
+    let groupClasses = planData.groupClassCount;
+    let marketDiscount = planData.marketDiscount;
+    
+    // If these values aren't provided, set default values based on plan type
+    if (planData.planName && (!guestPasses || !ptSessions || !groupClasses || !marketDiscount)) {
+      if (planData.planName.includes('Elite')) {
+        guestPasses = guestPasses || -1; // Unlimited
+        ptSessions = ptSessions || 2;
+        groupClasses = groupClasses || -1; // Unlimited
+        marketDiscount = marketDiscount || 10;
+      } else if (planData.planName.includes('Premium')) {
+        guestPasses = guestPasses || 4;
+        ptSessions = ptSessions || 1;
+        groupClasses = groupClasses || -1; // Unlimited
+        marketDiscount = marketDiscount || 5;
+      } else { // Basic plan
+        guestPasses = guestPasses || 2;
+        ptSessions = ptSessions || 0;
+        groupClasses = groupClasses || 0;
+        marketDiscount = marketDiscount || 0;
+      }
+    }
+    
+    // Add guest passes feature
+    if (guestPasses === -1) {
+      features.push('Unlimited guest passes');
+    } else if (guestPasses > 0) {
+      features.push(`${guestPasses} Guest passes per month`);
+    }
+    
+    // Add personal training sessions if available
+    if (ptSessions > 0) {
+      features.push(`${ptSessions} Personal training sessions/month`);
+    }
+    
+    // Add group classes if available
+    if (groupClasses === -1) {
+      features.push('Unlimited group classes');
+    } else if (groupClasses > 0) {
+      features.push(`${groupClasses} Group classes per month`);
+    }
+    
+    // Add market discount if available
+    if (marketDiscount > 0) {
+      features.push(`${marketDiscount}% Discount on market products`);
+    }
+    
+    // Add premium features based on plan type
+    if (planData.planType === 'ELITE' || planData.planName?.includes('Elite')) {
+      features.push('Priority class booking');
+      features.push('Access to spa facilities');
+      features.push('Nutrition guidance');
+    } else if (planData.planType === 'PREMIUM' || planData.planName?.includes('Premium')) {
+      features.push('Nutrition guidance');
+    }
+    
+    return features;
+  };
+
   // Fetch membership data
   useEffect(() => {
     const fetchMembershipData = async () => {
@@ -61,35 +133,66 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8080/api/members/${userId}/membership`);
+        // First fetch the user's membership
+        const membershipResponse = await fetch(`http://localhost:8080/api/members/${userId}/membership`);
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch membership: ${response.status}`);
+        if (!membershipResponse.ok) {
+          throw new Error(`Failed to fetch membership: ${membershipResponse.status}`);
         }
 
-        const data = await response.json();
-        console.log("Membership data:", data);
+        const membershipData = await membershipResponse.json();
+        console.log("Membership data:", membershipData);
 
-        // Update membership state with real data
+        // Now fetch all membership plans to get the full details
+        const plansResponse = await fetch('http://localhost:8080/api/membership-management/plans');
+        
+        if (!plansResponse.ok) {
+          throw new Error(`Failed to fetch membership plans: ${plansResponse.status}`);
+        }
+        
+        const plansData = await plansResponse.json();
+        console.log("All membership plans:", plansData);
+        
+        // Find the matching plan for this user
+        const userPlan = plansData.find(plan => 
+          plan.planName === membershipData.planName ||
+          plan.id === membershipData.planId
+        );
+        
+        console.log("User's full plan details:", userPlan);
+
+        // If we found the plan, use its data to generate benefits
+        const planData = userPlan || {
+          planName: membershipData.planName,
+          planType: membershipData.planType,
+          guestPassCount: membershipData.guestPassCount,
+          monthlyPtSessions: membershipData.monthlyPtSessions,
+          groupClassCount: membershipData.groupClassCount,
+          marketDiscount: membershipData.marketDiscount
+        };
+        
+        // Generate benefits based on the plan data
+        const generatedBenefits = generateBenefits(planData);
+        console.log("Generated benefits:", generatedBenefits);
+
+        // Update membership state with real data and generated benefits
+        // Check if data.benefits exists AND has length before using it
+        const benefitsToUse = (membershipData.benefits && membershipData.benefits.length > 0) ? 
+                              membershipData.benefits : generatedBenefits;
+        
         setMembership({
-          status: data.isFrozen ? 'frozen' : (new Date(data.endDate) > new Date() ? 'active' : 'expired'),
-          type: data.planName,
-          startDate: data.startDate,
-          endDate: data.endDate,
-          paymentStatus: data.paymentStatus || 'paid',
-          nextPayment: data.nextPaymentDate || data.endDate,
-          price: data.price.toString(),
-          benefits: data.benefits || [
-            'Unlimited Gym Access',
-            'Personal Trainer Sessions',
-            'Group Classes',
-            'Locker Access',
-            'Spa Access'
-          ]
+          status: membershipData.isFrozen ? 'frozen' : (new Date(membershipData.endDate) > new Date() ? 'active' : 'expired'),
+          type: membershipData.planName,
+          startDate: membershipData.startDate,
+          endDate: membershipData.endDate,
+          paymentStatus: membershipData.paymentStatus || 'paid',
+          nextPayment: membershipData.nextPaymentDate || membershipData.endDate,
+          price: membershipData.price.toString(),
+          benefits: benefitsToUse
         });
 
         // Calculate renewal plan prices based on current membership price
-        const basePrice = parseFloat(data.price);
+        const basePrice = parseFloat(membershipData.price);
         if (!isNaN(basePrice)) {
           setRenewalPlans([
             {
@@ -473,12 +576,18 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
               <div className="benefits-section-membershipstatus card-animate stagger-2">
                 <h3>Membership Benefits</h3>
                 <div className="benefits-grid-membershipstatus">
-                  {membership.benefits.map((benefit, index) => (
-                    <div key={index} className="benefit-item-membershipstatus">
-                      <FaCheckCircle className="benefit-icon-membershipstatus" />
-                      <span>{benefit}</span>
+                  {Array.isArray(membership.benefits) && membership.benefits.length > 0 ? (
+                    membership.benefits.map((benefit, index) => (
+                      <div key={index} className="benefit-item-membershipstatus">
+                        <FaCheckCircle className="benefit-icon-membershipstatus" />
+                        <span>{benefit}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="no-benefits-message">
+                      <p>No specific benefits found for your plan.</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
