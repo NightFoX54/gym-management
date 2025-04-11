@@ -118,6 +118,19 @@ const EmployeesPanel = () => {
     fetchEmployeeData();
   }, []);
 
+  // Name validation function
+  const validateNameInput = (newValue, previousValue) => {
+    // Allow only letters, spaces and Turkish characters
+    const regex = /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]*$/;
+    return regex.test(newValue) ? newValue : previousValue;
+  };
+
+  // Email validation function
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   // Phone number validation function
   const validatePhoneInput = (value, previousValue) => {
     // If empty, return empty
@@ -131,6 +144,14 @@ const EmployeesPanel = () => {
     }
     
     return value;
+  };
+
+  // Function to capitalize first letter of each word
+  const capitalizeWords = (text) => {
+    if (!text) return '';
+    return text.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   };
 
   const handleAddEmployee = async (e) => {
@@ -198,13 +219,26 @@ const EmployeesPanel = () => {
   };
 
   const handleSaveEdit = async () => {
+    // Capitalize names before saving
+    const formattedEmployee = {
+      ...editingEmployee,
+      name: capitalizeWords(editingEmployee.name),
+      surname: capitalizeWords(editingEmployee.surname)
+    };
+
+    // Email validation
+    if (!validateEmail(formattedEmployee.email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
     try {
-      const response = await fetch(`http://localhost:8080/api/employees/trainers/${editingEmployee.id}`, {
+      const response = await fetch(`http://localhost:8080/api/employees/trainers/${formattedEmployee.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editingEmployee),
+        body: JSON.stringify(formattedEmployee),
       });
       
       const data = await response.json();
@@ -266,7 +300,7 @@ const EmployeesPanel = () => {
   return (
     <div className="panel-container">
       <div className="panel-header">
-        <h2>Employees</h2>
+        <h2>Trainers</h2>
         <div className="search-and-actions">
           <div className="search-bar">
             <input
@@ -296,7 +330,7 @@ const EmployeesPanel = () => {
               onClick={() => setShowAddForm(true)}
               className="ant-btn-primary"
             >
-              Add Employee
+              Add Trainer
             </Button>
           </div>
           <div className="salary-actions">
@@ -370,7 +404,7 @@ const EmployeesPanel = () => {
                         value={editingEmployee.name}
                         onChange={(e) => setEditingEmployee({
                           ...editingEmployee,
-                          name: e.target.value
+                          name: validateNameInput(e.target.value, editingEmployee.name)
                         })}
                       />
                     </td>
@@ -380,7 +414,7 @@ const EmployeesPanel = () => {
                         value={editingEmployee.surname}
                         onChange={(e) => setEditingEmployee({
                           ...editingEmployee,
-                          surname: e.target.value
+                          surname: validateNameInput(e.target.value, editingEmployee.surname)
                         })}
                       />
                     </td>
@@ -392,6 +426,7 @@ const EmployeesPanel = () => {
                           ...editingEmployee,
                           email: e.target.value
                         })}
+                        className={editingEmployee.email && !validateEmail(editingEmployee.email) ? 'invalid-input' : ''}
                       />
                     </td>
                     <td>
@@ -417,10 +452,18 @@ const EmployeesPanel = () => {
                     <td>
                       <input
                         type="number"
+                        step="1"
+                        min="0"
+                        onKeyDown={(e) => {
+                          // Prevent the decimal point
+                          if (e.key === '.') {
+                            e.preventDefault();
+                          }
+                        }}
                         value={editingEmployee.hoursPerWeek}
                         onChange={(e) => setEditingEmployee({
                           ...editingEmployee,
-                          hoursPerWeek: Number(e.target.value)
+                          hoursPerWeek: parseInt(e.target.value) || 0
                         })}
                       />
                     </td>
@@ -428,6 +471,7 @@ const EmployeesPanel = () => {
                     <td>{employee.groupClasses || 0}</td>
                     <td>
                       <div className="edit-actions">
+                        {/* Commenting out the shift schedule 
                         <input
                           type="text"
                           placeholder="Shift Schedule URL"
@@ -437,6 +481,7 @@ const EmployeesPanel = () => {
                             shiftSchedule: e.target.value
                           })}
                         />
+                        */}
                         <div className="action-buttons">
                           <button 
                             onClick={(e) => {
@@ -471,12 +516,14 @@ const EmployeesPanel = () => {
                     <td>{employee.personalTrainings || 0}</td>
                     <td>{employee.groupClasses || 0}</td>
                     <td>
+                      {/* Commenting out the View Shift button as requested
                       <button 
                         onClick={(e) => handleShiftButtonClick(e, employee.shiftSchedule)}
                         className="shift-button"
                       >
                         View Shift
                       </button>
+                      */}
                     </td>
                   </>
                 )}

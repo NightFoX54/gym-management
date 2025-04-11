@@ -99,7 +99,26 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
   const fetchTrainerData = async () => {
     setNavLoading(true);
     try {
-      const trainerId = 3; // This should be retrieved from authentication context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+        // Also set the name directly from localStorage if available
+        if (user.name) {
+          setTrainerData(prev => ({
+            ...prev,
+            fullName: user.name,
+            firstName: user.name.split(' ')[0] || 'Trainer'
+          }));
+        }
+      }
+      if (!trainerId) {
+        console.error('User ID not found. Please log in again.');
+        return;
+      }
+      
       const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/profile`);
       
       if (response.status === 200) {
@@ -126,7 +145,17 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
   // Update function to fetch trainer ratings for the navbar
   const fetchTrainerRatings = async () => {
     try {
-      const trainerId = 3; // This should be retrieved from authentication context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        console.error('User ID not found. Please log in again.');
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/trainer/ratings/${trainerId}`);
       
       if (response.status === 200) {

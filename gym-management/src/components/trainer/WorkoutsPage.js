@@ -171,8 +171,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
     try {
       console.log('Fetching workouts...');
       await initializeWorkoutData();
-      // Get current logged in trainer ID from localStorage or context
-      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setLoading(false);
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/workouts?userId=${trainerId}&isTrainer=true`, {
         validateStatus: function (status) {
           return status >= 200 && status < 500;
@@ -196,9 +206,17 @@ const WorkoutsPage = ({ isDarkMode }) => {
   const fetchGroupWorkouts = async () => {
     console.log("Fetching group workouts...");
     try {
-      // Get the user ID from localStorage, same as in fetchWorkouts
-      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
-      
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        return;
+      }
       // Update the URL to use the absolute backend URL instead of a relative path
       const response = await axios.get(`http://localhost:8080/api/group-workouts/trainer/${trainerId}`);
       setGroupWorkouts(response.data || []);
@@ -337,8 +355,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
     try {
       console.log("Starting group workout submission process...");
       
-      // Get current logged in trainer ID from localStorage or context
-      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setActionLoading(false);
+        return;
+      }
       
       // Handle image upload if there is a file
       let imagePath = newGroupWorkout.image_path;
@@ -509,7 +537,18 @@ const WorkoutsPage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
-      const trainerId = localStorage.getItem('userId') || 3;
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setActionLoading(false);
+        return;
+      }
       
       // Determine the image path to use:
       let imagePath = "";

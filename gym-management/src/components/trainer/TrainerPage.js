@@ -150,8 +150,18 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const fetchTrainerData = async () => {
     setDataLoading(true);
     try {
-      // Get trainer ID from auth context or hardcode for now
-      const trainerId = 3; // This should be retrieved from authentication context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setDataLoading(false);
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/profile`);
       
       if (response.status === 200) {
@@ -212,7 +222,18 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const fetchTrainerRatings = async () => {
     setRatingLoading(true);
     try {
-      const trainerId = 3; // This should be retrieved from authentication context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setRatingLoading(false);
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/trainer/ratings/${trainerId}`);
       
       if (response.status === 200) {
@@ -260,7 +281,18 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const fetchClients = async () => {
     setClientsLoading(true);
     try {
-      const trainerId = 3; // This should be retrieved from authentication context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setClientsLoading(false);
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/clients`);
       setClients(response.data);
     } catch (error) {
@@ -321,8 +353,18 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
 
     setLoading(true);
     try {
-      // Assuming the user is already logged in and the trainer ID is 3
-      const trainerId = 3; // This should come from your auth context or state
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setLoading(false);
+        return;
+      }
       
       const sessionRequest = {
         clientId: parseInt(dialogSessionFormData.clientId),
@@ -594,7 +636,8 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     { title: 'Active Programs', value: '12', icon: <FitnessIcon />, color: '#ff4757' },
     { title: 'Hours This Week', value: '32', icon: <TimelineIcon />, color: '#ff4757' },
   ];
-
+  
+  /* QUICK ACTIONS - COMMENTED OUT
   const quickActions = [
     { 
       title: 'Add Client', 
@@ -612,6 +655,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
       action: () => navigate('/trainer/reports'),
     },
   ];
+  */
 
   const dialogContent = {
     client: (
@@ -1389,7 +1433,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
         </motion.div>
       </Box>
 
-      {/* Quick Actions - keep existing code */}
+      {/* QUICK ACTIONS - COMMENTED OUT
       <Grid 
         container 
         spacing={3} 
@@ -1493,6 +1537,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
           </Grid>
         ))}
       </Grid>
+      */}
 
       {/* Schedule and Progress Section */}
       <Grid container spacing={3}>

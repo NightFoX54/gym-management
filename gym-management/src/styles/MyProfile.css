@@ -1044,8 +1044,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
+  z-index: 9999;
 }
 
 .password-modal {
@@ -1054,6 +1053,9 @@
   padding: 25px;
   width: 90%;
   max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
   animation: slideUp 0.3s ease;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
@@ -1061,7 +1063,50 @@
 .dark-mode .password-modal {
   background-color: #2d2d2d;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Password input container for eye icon */
+.password-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding: 12px;
+  padding-right: 40px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.dark-mode .password-field input {
+  background-color: #2d2d2d;
+  border-color: #404040;
   color: #ffffff;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark-mode .password-toggle-icon {
+  color: #aaa;
+}
+
+/* Ensure the body doesn't scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
 }
 
 .password-modal h3 {
@@ -1089,22 +1134,6 @@
 
 .dark-mode .password-field label {
   color: #e2e8f0;
-}
-
-.password-field input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  background-color: white;
-}
-
-.dark-mode .password-field input {
-  background-color: #2d2d2d;
-  border-color: #404040;
-  color: #ffffff;
 }
 
 .password-field input:focus {
@@ -1159,4 +1188,42 @@
   .save-button-myprofile {
     width: 100%;
   }
+}
+
+/* Add these styles if not already present */
+.password-requirements {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 10px;
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 3px solid #2e86de;
+}
+
+.dark-mode .password-requirements {
+  background-color: #333;
+  color: #ddd;
+  border-left: 3px solid #54a0ff;
+}
+
+.password-requirements p {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.password-requirements li {
+  margin-bottom: 3px;
+}
+
+.error-message {
+  color: #d93025;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: block;
 }

@@ -343,6 +343,16 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
     return cleaned.slice(0, 4);
   };
 
+  // Add this formatter function for card holder name
+  const formatCardHolderName = (value) => {
+    // Only allow letters, spaces, hyphens, apostrophes and Turkish characters
+    const nameRegex = /^[A-Za-züöçşğıÜÖÇŞĞİ\s\-']*$/;
+    if (!nameRegex.test(value)) {
+      return cardHolderName; // Return previous valid value if new input is invalid
+    }
+    return value;
+  };
+
   // Add these handlers
   const handleCardNumberChange = (e) => {
     setCardNumber(formatCardNumber(e.target.value));
@@ -356,9 +366,10 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
     setCvc(formatCvc(e.target.value));
   };
 
-  // Add this handler function for card holder name
+  // Update the handler function for card holder name
   const handleCardHolderNameChange = (e) => {
-    setCardHolderName(e.target.value);
+    const formattedName = formatCardHolderName(e.target.value);
+    setCardHolderName(formattedName);
   };
 
   return (

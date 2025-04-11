@@ -815,3 +815,17 @@
   margin-top: 4px;
   display: block;
 }
+
+.password-requirements {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 5px;
+  line-height: 1.2;
+}
+
+.error-message {
+  color: #d93025;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: block;
+}

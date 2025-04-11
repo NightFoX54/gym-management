@@ -33,7 +33,28 @@ const CustomersPanel = () => {
     }
   };
 
-  // Phone number validation function
+  // Validation functions
+  const validateNameInput = (newValue, previousValue) => {
+    // Allow letters and Turkish characters, block numbers and special chars
+    const regex = /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]*$/;
+    return regex.test(newValue) ? newValue : previousValue;
+  };
+
+  // Format name with first letter of each word capitalized
+  const formatName = (name) => {
+    if (!name) return '';
+    return name.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Validate email format
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  // Enhanced phone number validation and formatting
   const validatePhoneInput = (value, previousValue) => {
     // If empty, return empty
     if (!value) return '';
@@ -45,7 +66,29 @@ const CustomersPanel = () => {
       return previousValue;
     }
     
-    return value;
+    // Format: +XX XXX XXX XX XX or 0XXX XXX XX XX
+    let formatted = value.replace(/\s/g, ''); // Remove all spaces
+    
+    if (formatted.startsWith('+')) {
+      // International format
+      if (formatted.length > 13) {
+        formatted = formatted.slice(0, 13);
+      }
+      // Add spaces for international format
+      if (formatted.length > 3) formatted = formatted.slice(0, 3) + ' ' + formatted.slice(3);
+      if (formatted.length > 7) formatted = formatted.slice(0, 7) + ' ' + formatted.slice(7);
+      if (formatted.length > 11) formatted = formatted.slice(0, 11) + ' ' + formatted.slice(11);
+    } else {
+      // Local format
+      if (formatted.length > 11) {
+        formatted = formatted.slice(0, 11);
+      }
+      // Add spaces for local format
+      if (formatted.length > 4) formatted = formatted.slice(0, 4) + ' ' + formatted.slice(4);
+      if (formatted.length > 8) formatted = formatted.slice(0, 8) + ' ' + formatted.slice(8);
+    }
+    
+    return formatted;
   };
 
   // Fetch customers on component mount
@@ -109,18 +152,34 @@ const CustomersPanel = () => {
   };
 
   const handleSaveEdit = async (id, updatedData) => {
+    // Validate all fields before saving
+    if (!validateNameInput(updatedData.name, '') || !validateNameInput(updatedData.surname, '')) {
+      return message.error('Name and surname should contain only letters');
+    }
+    
+    if (!validateEmail(updatedData.email)) {
+      return message.error('Please enter a valid email address');
+    }
+    
     try {
+      // Format name and surname properly before saving
+      const formattedData = {
+        ...updatedData,
+        name: formatName(updatedData.name),
+        surname: formatName(updatedData.surname),
+      };
+
       // Call the API to update customer information
       await axios.put(`http://localhost:8080/api/members/${id}/update`, {
-        firstName: updatedData.name,
-        lastName: updatedData.surname,
-        email: updatedData.email,
-        phoneNumber: updatedData.phone
+        firstName: formattedData.name,
+        lastName: formattedData.surname,
+        email: formattedData.email,
+        phoneNumber: formattedData.phone
       });
 
-      // Update the local state
+      // Update the local state with formatted data
       setCustomers(customers.map(customer => 
-        customer.id === id ? { ...customer, ...updatedData } : customer
+        customer.id === id ? { ...customer, ...formattedData } : customer
       ));
 
       message.success('Customer information updated successfully');
@@ -239,8 +298,9 @@ const CustomersPanel = () => {
                             value={editingCustomer.name}
                             onChange={(e) => setEditingCustomer({
                               ...editingCustomer,
-                              name: e.target.value
+                              name: validateNameInput(e.target.value, editingCustomer.name)
                             })}
+                            placeholder="First name"
                           />
                         </td>
                         <td>
@@ -249,8 +309,9 @@ const CustomersPanel = () => {
                             value={editingCustomer.surname}
                             onChange={(e) => setEditingCustomer({
                               ...editingCustomer,
-                              surname: e.target.value
+                              surname: validateNameInput(e.target.value, editingCustomer.surname)
                             })}
+                            placeholder="Last name"
                           />
                         </td>
                         <td>
@@ -261,6 +322,8 @@ const CustomersPanel = () => {
                               ...editingCustomer,
                               email: e.target.value
                             })}
+                            className={editingCustomer.email && !validateEmail(editingCustomer.email) ? 'invalid-input' : ''}
+                            placeholder="email@example.com"
                           />
                         </td>
                         <td>
@@ -271,6 +334,7 @@ const CustomersPanel = () => {
                               ...editingCustomer,
                               phone: validatePhoneInput(e.target.value, editingCustomer.phone)
                             })}
+                            placeholder="+90 XXX XXX XX XX"
                           />
                         </td>
                         <td>

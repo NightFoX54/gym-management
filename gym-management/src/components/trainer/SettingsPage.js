@@ -84,7 +84,18 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
   const fetchTrainerProfile = async () => {
     setProfileLoading(true);
     try {
-      const trainerId = 3; // This should come from your auth context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setProfileLoading(false);
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/profile`);
       
       if (response.status === 200) {
@@ -116,11 +127,18 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
 
   const handleChange = (field) => (event) => {
     const { value } = event.target;
+    let updatedValue = value;
 
-    // For name field, prevent typing numbers
+    // For name field, prevent typing numbers and special characters
     if (field === 'fullName') {
-      const lastChar = value.slice(-1);
-      if (/[0-9]/.test(lastChar)) return;
+      // Better regex to allow only letters (including Turkish characters) and spaces
+      const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s]*$/;
+      
+      if (!nameRegex.test(value)) {
+        // Only keep the valid characters
+        updatedValue = formData.fullName;
+        return;
+      }
     }
 
     // For phone field, only allow numbers and basic phone characters
@@ -130,18 +148,19 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
     }
 
     // Validate and set errors immediately
-    const error = validateField(field, value);
+    const error = validateField(field, updatedValue);
     setErrors(prev => ({ ...prev, [field]: error }));
 
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: updatedValue }));
   };
 
   const validateField = (field, value) => {
     switch (field) {
       case 'fullName':
-        const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s-]{2,50}$/;
+        // Updated regex to only allow letters and spaces (including Turkish characters)
+        const nameRegex = /^[a-zA-ZçğıöşüÇĞİÖŞÜ\s]+$/;
         if (!value) return 'Name is required';
-        if (!nameRegex.test(value)) return 'Name should only contain letters';
+        if (!nameRegex.test(value)) return 'Name should only contain letters and spaces';
         if (value.length < 2) return 'Name must be at least 2 characters';
         if (value.length > 50) return 'Name must be less than 50 characters';
         return '';
@@ -196,11 +215,6 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
     return phoneRegex.test(phone.replace(/\s/g, ''));
   };
 
-  const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return passwordRegex.test(password);
-  };
-
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -238,39 +252,128 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    if (password.length < minLength) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!hasUpperCase) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!hasNumber) {
+      return "Password must contain at least one number";
+    }
+    if (!hasSpecialChar) {
+      return "Password must contain at least one special character";
+    }
+    
+    return ""; // No error
+  };
+
   const handlePasswordChange = async () => {
-    const newErrors = {};
-
+    // Validate all password fields
+    let newErrors = {};
+    
     if (!currentPassword) {
-      newErrors.currentPassword = 'Current password is required';
+      newErrors.currentPassword = "Current password is required";
     }
-
-    if (!newPassword) {
-      newErrors.newPassword = 'New password is required';
-    } else if (!validatePassword(newPassword)) {
-      newErrors.newPassword = 'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character';
+    
+    const newPasswordError = validatePassword(newPassword);
+    if (newPasswordError) {
+      newErrors.newPassword = newPasswordError;
     }
-
+    
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Please confirm your new password";
+    } else if (confirmPassword !== newPassword) {
+      newErrors.confirmPassword = "Passwords don't match";
     }
-
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setAlert({
+        open: true,
+        message: 'Please check your password inputs',
+        severity: 'error'
+      });
+      return;
+    }
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      showAlert('Password updated successfully', 'success');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setErrors({});
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        setAlert({
+          open: true,
+          message: 'User ID not found. Please log in again.',
+          severity: 'error'
+        });
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.put(
+        `http://localhost:8080/api/members/${trainerId}/change-password`,
+        {
+          oldPassword: currentPassword,
+          newPassword: newPassword
+        }
+      );
+
+      if (response.status === 200) {
+        // Clear password fields
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        
+        // Reset errors
+        setErrors({});
+        
+        // Show success message
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+        
+        setAlert({
+          open: true,
+          message: 'Password updated successfully',
+          severity: 'success'
+        });
+      }
     } catch (error) {
-      showAlert('Failed to update password', 'error');
+      console.error('Error changing password:', error);
+      
+      if (error.response) {
+        if (error.response.status === 401) {
+          setErrors(prev => ({ ...prev, currentPassword: 'Current password is incorrect' }));
+          setAlert({
+            open: true,
+            message: 'Current password is incorrect',
+            severity: 'error'
+          });
+        } else {
+          setAlert({
+            open: true,
+            message: error.response.data?.message || 'Failed to change password',
+            severity: 'error'
+          });
+        }
+      } else {
+        setAlert({
+          open: true,
+          message: 'Network error. Please try again later.',
+          severity: 'error'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -284,17 +387,36 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
 
     setLoading(true);
     try {
-      const trainerId = 3; // This should come from your auth context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setLoading(false);
+        return;
+      }
       
       // Parse the full name into first and last name
       const nameParts = formData.fullName.trim().split(' ');
-      const firstName = nameParts[0];
-      const lastName = nameParts.slice(1).join(' ');
+      let lastName = nameParts.length > 1 ? nameParts.pop() : ''; // Last word is the last name
+      let firstName = nameParts.join(' '); // Everything else is the first name
+      
+      // Capitalize the first letter of each word in the first name
+      firstName = firstName.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+      
+      // Capitalize the first letter of the last name
+      lastName = lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
       
       // Prepare data to send to backend
       const profileData = {
         firstName: firstName.substring(0, 255), // Ensure max length
-        lastName: lastName ? lastName.substring(0, 255) : '',
+        lastName: lastName.substring(0, 255),
         email: formData.email.substring(0, 255),
         phoneNumber: formData.phone.substring(0, 255),
         bio: formData.bio.substring(0, 2000),
@@ -326,7 +448,18 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
   const handleNotificationUpdate = async () => {
     setLoading(true);
     try {
-      const trainerId = 3; // This should come from your auth context
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setLoading(false);
+        return;
+      }
       
       const notificationSettings = {
         newClientNotifications: formData.notifyEmails,
@@ -507,7 +640,9 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
   const tabPanels = [
     { icon: <EditIcon />, label: 'Profile' },
     { icon: <Notifications />, label: 'Notifications' },
+    /* SCHEDULE TAB - COMMENTED OUT
     { icon: <Schedule />, label: 'Schedule' },
+    */
     { icon: <Security />, label: 'Security' },
   ];
 
@@ -706,6 +841,7 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
           </motion.div>
         );
 
+      /* SCHEDULE TAB - COMMENTED OUT
       case 2:
         return (
           <motion.div
@@ -921,7 +1057,9 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
             </Box>
           </motion.div>
         );
-      case 3:
+      */
+      
+      case 2: // Note: This was case 3 before, now it's case 2 since we commented out case 2
         return (
           <Card sx={{ p: 3 }}>
             <Grid container spacing={2}>
@@ -1134,7 +1272,7 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
                   case 1:
                     handleNotificationUpdate();
                     break;
-                  case 3:
+                  case 2:
                     handlePasswordChange();
                     break;
                   default:

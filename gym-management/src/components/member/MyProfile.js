@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner, FaKey } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner, FaKey, FaEye, FaEyeSlash } from 'react-icons/fa';
 import '../../styles/MyProfile.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +35,11 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   });
   const [passwordErrors, setPasswordErrors] = useState({});
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Add state for password visibility
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Get user info from localStorage
   const userInfoString = localStorage.getItem('user');
@@ -107,15 +112,41 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
       setSuccessMessage('');
       setErrorMessage('');
       
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(profile.email)) {
+        setErrorMessage('Please enter a valid email address');
+        setIsLoading(false);
+        return;
+      }
+      
       // Extract first and last name from fullName
-      const nameParts = profile.fullName.split(' ');
-      const firstName = nameParts[0];
-      const lastName = nameParts.slice(1).join(' ');
+      // Get the last word as lastName, and all other words as firstName
+      const nameParts = profile.fullName.trim().split(/\s+/);
+      
+      // Capitalize first letter of each word
+      const capitalizeWords = (string) => {
+        return string.split(/\s+/).map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ');
+      };
+      
+      let firstName, lastName;
+      
+      if (nameParts.length === 1) {
+        // Only one name provided
+        firstName = capitalizeWords(nameParts[0]);
+        lastName = ""; // Empty last name
+      } else {
+        // Multiple names - last word is lastname, rest is firstname
+        lastName = capitalizeWords(nameParts.pop()); // Get and remove last element
+        firstName = capitalizeWords(nameParts.join(' ')); // Join the rest with spaces
+      }
       
       const updateData = {
         firstName: firstName,
         lastName: lastName,
-        email: profile.email,
+        email: profile.email.trim(),
         phoneNumber: profile.phone
       };
       
@@ -196,6 +227,30 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
 
   const handleChangeMember = (e) => {
     const { name, value } = e.target;
+    
+    if (name === 'fullName') {
+      // Only allow letters, spaces, hyphens, apostrophes and Turkish characters for names
+      const nameRegex = /^[A-Za-züöçşğıÜÖÇŞĞİ\s\-']*$/;
+      if (!nameRegex.test(value)) {
+        return;
+      }
+    } else if (name === 'email') {
+      // Reset any previous error
+      setErrorMessage('');
+      
+      // Simple email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (value && !emailRegex.test(value)) {
+        setErrorMessage('Please enter a valid email address');
+      }
+    } else if (name === 'phone') {
+      // Allow only numbers, +, spaces and parentheses for phone numbers
+      const phoneRegex = /^[0-9+\s()]*$/;
+      if (!phoneRegex.test(value)) {
+        return;
+      }
+    }
+    
     setProfile(prev => ({
       ...prev,
       [name]: value
@@ -344,6 +399,30 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
       ...prev,
       [name]: value
     }));
+    
+    // Validate password strength for new password
+    if (name === 'newPassword') {
+      const error = validatePassword(value);
+      setPasswordErrors(prev => ({
+        ...prev,
+        newPassword: error
+      }));
+    }
+    
+    // Check if passwords match for confirm password
+    if (name === 'confirmPassword') {
+      if (value !== passwordData.newPassword) {
+        setPasswordErrors(prev => ({
+          ...prev,
+          confirmPassword: "Passwords don't match"
+        }));
+      } else {
+        setPasswordErrors(prev => ({
+          ...prev,
+          confirmPassword: ""
+        }));
+      }
+    }
   };
 
   // Reset password form and errors
@@ -376,10 +455,9 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
       errors.oldPassword = "Current password is required";
     }
     
-    if (!passwordData.newPassword) {
-      errors.newPassword = "New password is required";
-    } else if (passwordData.newPassword.length < 6) {
-      errors.newPassword = "Password must be at least 6 characters";
+    const newPasswordError = validatePassword(passwordData.newPassword);
+    if (newPasswordError) {
+      errors.newPassword = newPasswordError;
     }
     
     if (!passwordData.confirmPassword) {
@@ -438,6 +516,34 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
       setIsChangingPassword(false);
     }
   };
+
+  // Password validation function (similar to Signup.js)
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    if (password.length < minLength) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!hasUpperCase) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!hasNumber) {
+      return "Password must contain at least one number";
+    }
+    if (!hasSpecialChar) {
+      return "Password must contain at least one special character";
+    }
+    
+    return ""; // No error
+  };
+
+  // Toggle password visibility functions
+  const toggleOldPasswordVisibility = () => setShowOldPassword(!showOldPassword);
+  const toggleNewPasswordVisibility = () => setShowNewPassword(!showNewPassword);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   if (isLoading) {
     return (
@@ -605,83 +711,97 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
 
       {/* Password Change Modal */}
       {showPasswordModal && (
-        <div className="password-modal-overlay">
-          <div className="password-modal">
+        <div className="password-modal-overlay" onClick={closePasswordModal}>
+          <div className="password-modal" onClick={e => e.stopPropagation()}>
             <h3>Change Password</h3>
-            <form onSubmit={handlePasswordSubmit}>
-              {passwordErrors.general && (
-                <div className="password-error-message">
-                  {passwordErrors.general}
-                </div>
-              )}
-              
-              <div className="password-field">
-                <label>Current Password</label>
+            
+            {passwordErrors.general && (
+              <div className="password-error-message">{passwordErrors.general}</div>
+            )}
+            
+            <div className="password-field">
+              <label htmlFor="oldPassword">Current Password</label>
+              <div className="password-input-container">
                 <input
-                  type="password"
+                  type={showOldPassword ? "text" : "password"}
+                  id="oldPassword"
                   name="oldPassword"
                   value={passwordData.oldPassword}
                   onChange={handlePasswordChange}
                   className={passwordErrors.oldPassword ? 'error' : ''}
                 />
-                {passwordErrors.oldPassword && (
-                  <span className="field-error">{passwordErrors.oldPassword}</span>
-                )}
+                <div className="password-toggle-icon" onClick={toggleOldPasswordVisibility}>
+                  {showOldPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
               </div>
-              
-              <div className="password-field">
-                <label>New Password</label>
+              {passwordErrors.oldPassword && <span className="field-error">{passwordErrors.oldPassword}</span>}
+            </div>
+            
+            <div className="password-field">
+              <label htmlFor="newPassword">New Password</label>
+              <div className="password-input-container">
                 <input
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
+                  id="newPassword"
                   name="newPassword"
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange}
                   className={passwordErrors.newPassword ? 'error' : ''}
                 />
-                {passwordErrors.newPassword && (
-                  <span className="field-error">{passwordErrors.newPassword}</span>
-                )}
+                <div className="password-toggle-icon" onClick={toggleNewPasswordVisibility}>
+                  {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
               </div>
-              
-              <div className="password-field">
-                <label>Confirm New Password</label>
+              {passwordErrors.newPassword && <span className="field-error">{passwordErrors.newPassword}</span>}
+              <div className="password-requirements">
+                <p><strong>Password must include:</strong></p>
+                <ul>
+                  <li>At least 8 characters</li>
+                  <li>At least one uppercase letter (A-Z)</li>
+                  <li>At least one number (0-9)</li>
+                  <li>At least one special character (!@#$%^&*)</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="password-field">
+              <label htmlFor="confirmPassword">Confirm New Password</label>
+              <div className="password-input-container">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
                   name="confirmPassword"
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordChange}
                   className={passwordErrors.confirmPassword ? 'error' : ''}
                 />
-                {passwordErrors.confirmPassword && (
-                  <span className="field-error">{passwordErrors.confirmPassword}</span>
-                )}
+                <div className="password-toggle-icon" onClick={toggleConfirmPasswordVisibility}>
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
               </div>
-              
-              <div className="password-modal-buttons">
-                <button
-                  type="button"
-                  className="cancel-button-myprofile"
-                  onClick={closePasswordModal}
-                  disabled={isChangingPassword}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="save-button-myprofile"
-                  disabled={isChangingPassword}
-                >
-                  {isChangingPassword ? (
-                    <>
-                      <FaSpinner className="spinner" />
-                      Updating...
-                    </>
-                  ) : (
-                    'Update Password'
-                  )}
-                </button>
-              </div>
-            </form>
+              {passwordErrors.confirmPassword && <span className="field-error">{passwordErrors.confirmPassword}</span>}
+            </div>
+            
+            <div className="password-modal-buttons">
+              <button 
+                className="cancel-button" 
+                onClick={closePasswordModal}
+                disabled={isChangingPassword}
+              >
+                Cancel
+              </button>
+              <button 
+                className="save-button" 
+                onClick={handlePasswordSubmit}
+                disabled={isChangingPassword || 
+                  !passwordData.oldPassword || 
+                  !passwordData.newPassword || 
+                  !passwordData.confirmPassword ||
+                  Object.values(passwordErrors).some(error => error !== '')}
+              >
+                {isChangingPassword ? 'Changing...' : 'Change Password'}
+              </button>
+            </div>
           </div>
         </div>
       )}

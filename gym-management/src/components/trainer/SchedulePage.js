@@ -92,8 +92,17 @@ const SchedulePage = ({ isDarkMode }) => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      // Get current logged in trainer ID from localStorage or context
-      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      // Get current logged in trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/sessions`);
       const formattedSessions = response.data.map(session => ({
         id: session.id,
@@ -129,8 +138,17 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const fetchGroupWorkouts = async () => {
     try {
-      // Get current logged in trainer ID from localStorage or context
-      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      // Get current logged in trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/group-workouts?trainerId=${trainerId}`);
       setGroupWorkouts(response.data);
     } catch (error) {
@@ -141,8 +159,17 @@ const SchedulePage = ({ isDarkMode }) => {
 
   const fetchGroupWorkoutSessions = async () => {
     try {
-      // Get current logged in trainer ID from localStorage or context
-      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      // Get current logged in trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        return;
+      }
       const response = await axios.get(`http://localhost:8080/api/group-workout-sessions?trainerId=${trainerId}`);
       
       if (response.status === 200 && response.data) {
@@ -186,8 +213,18 @@ const SchedulePage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
-      // Get current logged in trainer ID from localStorage or context
-      const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      // Get current logged in trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setActionLoading(false);
+        return;
+      }
       const sessionRequest = {
         clientId: parseInt(newSession.clientId),
         sessionDate: newSession.date,
@@ -229,6 +266,18 @@ const SchedulePage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
+      // Get current logged in trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setActionLoading(false);
+        return;
+      }
       const sessionRequest = {
         groupWorkoutId: parseInt(newGroupSession.groupWorkoutId),
         date: newGroupSession.date,
@@ -281,9 +330,22 @@ const SchedulePage = ({ isDarkMode }) => {
   };
 
   const confirmDelete = async () => {
-    const appointmentId = deleteConfirm.appointmentId;
     setActionLoading(true);
     try {
+      // Get current logged in trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setActionLoading(false);
+        return;
+      }
+      
+      const appointmentId = deleteConfirm.appointmentId;
       await axios.delete(`http://localhost:8080/api/trainer/sessions/${appointmentId}`);
       setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
       showAlert('Session deleted successfully!', 'success');

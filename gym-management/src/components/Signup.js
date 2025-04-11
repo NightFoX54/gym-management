@@ -27,7 +27,9 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({
+    email: '',
     phone: '',
+    password: '',
     confirmPassword: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +43,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
   const [plans, setPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  const [validationInProgress, setValidationInProgress] = useState(false);
 
   // Fetch membership plans from the backend
   useEffect(() => {
@@ -130,8 +133,45 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
     setStep(2);
   };
 
+  // Password validation function
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password);
+    
+    if (password.length < minLength) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!hasUpperCase) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!hasNumber) {
+      return 'Password must contain at least one number';
+    }
+    if (!hasSpecialChar) {
+      return 'Password must contain at least one special character';
+    }
+    
+    return ''; // Password meets all requirements
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Name validation for first and last name
+    if (name === 'firstName' || name === 'lastName') {
+      // Only allow letters, spaces, hyphens, apostrophes, and Turkish characters for names
+      const nameRegex = /^[A-Za-züöçşğıÜÖÇŞĞİ\s\-']*$/;
+      if (!nameRegex.test(value)) {
+        return;
+      }
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+      return;
+    }
     
     if (name === 'phone') {
       // Allow only numbers and + at the beginning
@@ -147,6 +187,26 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
         ...prevState,
         phone: ''
       }));
+    } else if (name === 'password') {
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+      
+      // Validate password complexity
+      const passwordError = validatePassword(value);
+      setErrors(prevState => ({
+        ...prevState,
+        password: passwordError
+      }));
+      
+      // Also check if confirm password matches if it's already entered
+      if (formData.confirmPassword) {
+        setErrors(prevState => ({
+          ...prevState,
+          confirmPassword: value !== formData.confirmPassword ? 'Passwords do not match' : ''
+        }));
+      }
     } else if (name === 'confirmPassword') {
       setFormData(prevState => ({
         ...prevState,
@@ -164,6 +224,15 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
           confirmPassword: ''
         }));
       }
+    } else if (name === 'email') {
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+      setErrors(prevState => ({
+        ...prevState,
+        email: ''
+      }));
     } else {
       setFormData(prevState => ({
         ...prevState,
@@ -177,6 +246,26 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
     
     // Always reset submission error when any field changes
     setSubmissionError(null);
+    
+    // For card holder name, only allow letters, spaces, hyphens, apostrophes, and Turkish characters
+    if (name === 'cardHolder') {
+      const nameRegex = /^[A-Za-züöçşğıÜÖÇŞĞİ\s\-']*$/;
+      if (!nameRegex.test(value)) {
+        return;
+      }
+      
+      setCardDetails(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+      
+      // Validate card holder
+      setCardErrors(prev => ({
+        ...prev,
+        cardHolder: !value.trim() ? 'Cardholder name is required' : ''
+      }));
+      return;
+    }
     
     // Format card number with spaces after every 4 digits
     if (name === 'cardNumber') {
@@ -243,20 +332,6 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
       }));
       return;
     }
-    
-    // For card holder name
-    setCardDetails(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-    
-    // Validate card holder
-    if (name === 'cardHolder') {
-      setCardErrors(prev => ({
-        ...prev,
-        cardHolder: !value.trim() ? 'Cardholder name is required' : ''
-      }));
-    }
   };
 
   const validateCardDetails = () => {
@@ -273,8 +348,47 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
     return !Object.values(errors).some(error => error);
   };
 
-  const handleSubmit = (e) => {
+  // Function to check if email or phone already exists
+  const validateUniqueCredentials = async () => {
+    try {
+      setValidationInProgress(true);
+      const response = await api.post('/auth/validate-credentials', {
+        email: formData.email,
+        phoneNumber: formData.phone
+      });
+      
+      if (response.data.emailExists) {
+        setErrors(prev => ({...prev, email: 'This email is already registered'}));
+        return false;
+      }
+      
+      if (response.data.phoneExists) {
+        setErrors(prev => ({...prev, phone: 'This phone number is already registered'}));
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Validation error:', error);
+      setSubmissionError('Unable to validate credentials. Please try again.');
+      return false;
+    } finally {
+      setValidationInProgress(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check password validation
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setErrors(prevState => ({
+        ...prevState,
+        password: passwordError
+      }));
+      return;
+    }
     
     // Check if passwords match before proceeding
     if (formData.password !== formData.confirmPassword) {
@@ -282,6 +396,12 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
         ...prevState,
         confirmPassword: 'Passwords do not match'
       }));
+      return;
+    }
+    
+    // Validate that email and phone are unique
+    const credentialsAreUnique = await validateUniqueCredentials();
+    if (!credentialsAreUnique) {
       return;
     }
     
@@ -332,11 +452,21 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
         default: durationMonths = 1;
       }
       
+      // Capitalize first letter of each word in first and last name
+      const capitalizeWords = (string) => {
+        return string.trim().split(/\s+/).map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ');
+      };
+      
+      const capitalizedFirstName = capitalizeWords(formData.firstName);
+      const capitalizedLastName = capitalizeWords(formData.lastName);
+      
       // Create request payload
       const signupData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
+        firstName: capitalizedFirstName,
+        lastName: capitalizedLastName,
+        email: formData.email.trim(),
         password: formData.password,
         phoneNumber: formData.phone,
         planId: selectedPlan.id,
@@ -563,6 +693,7 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                   onChange={handleInputChange}
                   required
                 />
+                {errors.email && <span className="error-message">{errors.email}</span>}
               </div>
               <div className="form-group">
                 <label htmlFor="phone">Phone Number</label>
@@ -595,6 +726,11 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
+                {errors.password && <span className="error-message">{errors.password}</span>}
+                <div className="password-requirements">
+                  Password must contain at least 8 characters, including an uppercase letter, 
+                  a number, and a special character (!@#$%^&*).
+                </div>
               </div>
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm Password</label>
@@ -617,7 +753,13 @@ function Signup({ isDarkMode = false, setIsDarkMode = () => {} }) {
                 </div>
                 {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
               </div>
-              <button type="submit" className="next-btn">Proceed to Payment</button>
+              <button 
+                type="submit" 
+                className="next-btn" 
+                disabled={validationInProgress}
+              >
+                {validationInProgress ? 'Validating...' : 'Proceed to Payment'}
+              </button>
             </form>
           </div>
         );

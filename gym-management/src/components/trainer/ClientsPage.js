@@ -89,6 +89,7 @@ const ClientsPage = ({ isDarkMode }) => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'success' });
+  const [error, setError] = useState(''); // Add this line to define the error state
   const [newClient, setNewClient] = useState({
     name: '',
     email: '',
@@ -112,7 +113,7 @@ const ClientsPage = ({ isDarkMode }) => {
   const [requestTabValue, setRequestTabValue] = useState(0);
 
   useEffect(() => {
-    // Get the trainer ID from user in local storage or use a default for testing
+    // Get the trainer ID from user in local storage
     const userStr = localStorage.getItem('user');
     try {
       if (userStr) {
@@ -123,18 +124,17 @@ const ClientsPage = ({ isDarkMode }) => {
           console.log("Setting trainer ID to:", user.id);
           setTrainerId(user.id);
         } else {
-          // For demo purposes
-          console.log("User exists but no ID found, using default trainer ID");
-          setTrainerId(4); // Default ID for trainer in our seed data
+          console.log("User exists but no ID found");
+          setError("User ID not found. Please log in again.");
         }
       } else {
         // No user in localStorage - likely not logged in
-        console.log("No user found in localStorage, using default trainer ID for testing");
-        setTrainerId(4); // Default ID for trainer in our seed data
+        console.log("No user found in localStorage");
+        setError("You are not logged in. Please log in to view clients.");
       }
     } catch (error) {
       console.error("Error parsing user from localStorage:", error);
-      setTrainerId(4); // Default ID for trainer in our seed data
+      setError("Error loading user data. Please log in again.");
     }
   }, []);
 
@@ -2037,10 +2037,21 @@ const ClientsPage = ({ isDarkMode }) => {
   return (
     <Box sx={{ p: 3 }}>
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Display error if present */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 2 }}
+            onClose={() => setError('')}
+          >
+            {error}
+          </Alert>
+        )}
+        
         {/* Render pending requests section */}
         {renderRequestsSection()}
         
@@ -2065,24 +2076,7 @@ const ClientsPage = ({ isDarkMode }) => {
               {clients.length} Total Clients • {clients.filter(c => c.status === 'Active').length} Active
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            sx={{
-              background: 'linear-gradient(45deg, #ff4757, #ff6b81)',
-              boxShadow: '0 4px 15px rgba(255,71,87,0.3)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #ff6b81, #ff4757)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px rgba(255,71,87,0.4)',
-              }
-            }}
-            onClick={() => {
-              showAlert("New clients should be added through registration requests", "info");
-            }}
-          >
-            Add New Client
-          </Button>
+          {/* Add New Client button removed - clients should be added through registration requests */}
         </Box>
 
         <TextField
