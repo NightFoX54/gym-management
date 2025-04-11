@@ -233,6 +233,55 @@ const EmployeesPanel = () => {
     }
 
     try {
+      // Find the original employee data
+      const originalEmployee = employees.find(e => e.id === editingEmployee.id);
+
+      // Remove all spaces from phone numbers before comparison
+      const updatedPhone = formattedEmployee.phone ? formattedEmployee.phone.replace(/\s/g, '') : '';
+      const originalPhone = originalEmployee.phone ? originalEmployee.phone.replace(/\s/g, '') : '';
+
+      // Check if email or phone is already in use by another user
+      // Skip this check if email/phone hasn't changed from the original
+      if (formattedEmployee.email !== originalEmployee.email || updatedPhone !== originalPhone) {
+        const validateResponse = await fetch('http://localhost:8080/api/auth/validate-credentials', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formattedEmployee.email,
+            phoneNumber: formattedEmployee.phone,
+            userId: formattedEmployee.id
+          }),
+        });
+        
+        if (!validateResponse.ok) {
+          throw new Error(`Failed to validate credentials: ${validateResponse.status}`);
+        }
+
+        const validationResult = await validateResponse.json();
+        
+        // If the email exists and belongs to another user
+        if (formattedEmployee.email !== originalEmployee.email) {
+          console.log("Updated email:", formattedEmployee.email);
+          console.log("Original email:", originalEmployee.email);
+          if (validationResult.emailExists) {
+            alert('This email is already in use by another user');
+            return;
+          }
+        }
+        
+        // If the phone number exists and belongs to another user
+        if (updatedPhone !== originalPhone) {
+          console.log("Updated phone (no spaces):", updatedPhone);
+          console.log("Original phone (no spaces):", originalPhone);
+          if (validationResult.phoneExists) {
+            alert('This phone number is already in use by another user');
+            return;
+          }
+        }
+      }
+
       const response = await fetch(`http://localhost:8080/api/employees/trainers/${formattedEmployee.id}`, {
         method: 'PUT',
         headers: {
