@@ -41,10 +41,21 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Add state to store original profile data
+  const [originalProfile, setOriginalProfile] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    membershipStart: '',
+    membershipEnd: '',
+    profileImage: '/uploads/images/default-avatar.jpg'
+  });
+
   // Get user info from localStorage
   const userInfoString = localStorage.getItem('user');
   const userInfo = JSON.parse(userInfoString || '{}');
   const userId = userInfo.id;
+  
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -75,15 +86,18 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
         const data = await response.json();
         console.log("User profile data:", data);
 
-        // Update profile state with real data
-        setProfile({
+        // Update both profile and originalProfile state with real data
+        const profileData = {
           fullName: `${data.firstName} ${data.lastName}`,
           email: data.email,
           phone: data.phoneNumber || "Not provided",
           membershipStart: data.membershipStartDate || "N/A",
           membershipEnd: data.membershipEndDate || "N/A",
           profileImage: data.profilePhotoPath || "/default-avatar.jpg"
-        });
+        };
+        
+        setProfile(profileData);
+        setOriginalProfile(profileData); // Store original data
       } catch (err) {
         console.error("Error fetching user profile:", err);
         setError("Failed to load profile data");
@@ -118,6 +132,50 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
         setErrorMessage('Please enter a valid email address');
         setIsLoading(false);
         return;
+      }
+      
+      // Check if email or phone is already in use by another user
+      // Skip this check if email/phone hasn't changed from the original
+      if (profile.email !== originalProfile.email || profile.phone !== originalProfile.phone) {
+        const validateResponse = await fetch('http://localhost:8080/api/auth/validate-credentials', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: profile.email,
+            phoneNumber: profile.phone,
+            userId: userId
+          })
+        });
+        
+        if (!validateResponse.ok) {
+          throw new Error(`Failed to validate credentials: ${validateResponse.status}`);
+        }
+        
+        const validationResult = await validateResponse.json();
+        
+        // If the email exists and belongs to another user
+        if(profile.email !== originalProfile.email){
+          console.log("Profile email:", profile.email);
+          console.log("Original email:", originalProfile.email);
+          if (validationResult.emailExists) {
+            setErrorMessage('This email is already in use by another user');
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // If the phone number exists and belongs to another user
+        if(profile.phone !== originalProfile.phone){
+          console.log("Profile phone:", profile.phone);
+          console.log("Original phone:", originalProfile.phone);
+          if (validationResult.phoneExists) {
+            setErrorMessage('This phone number is already in use by another user');
+            setIsLoading(false);
+            return;
+          }
+        }
       }
       
       // Extract first and last name from fullName
