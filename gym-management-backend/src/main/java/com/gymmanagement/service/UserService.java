@@ -458,4 +458,12 @@ public class UserService {
         Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByToken(token);
         return tokenOpt.isPresent() && !tokenOpt.get().isExpired();
     }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return userRepository.existsByPhoneNumber(phoneNumber);
+    }
 } 
