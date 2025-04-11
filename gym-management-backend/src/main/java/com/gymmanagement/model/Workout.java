@@ -52,6 +52,9 @@ public class Workout {
     @Column(name = "target_muscles", columnDefinition = "TEXT")
     private String targetMuscles;
     
+    @Column(name = "image_path")
+    private String imagePath;
+    
     // Fix for orphan deletion issue: Change cascade type and implement proper cleanup
     @OneToMany(mappedBy = "workout", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
     private List<WorkoutExercise> exercises = new ArrayList<>();

@@ -90,6 +90,7 @@ public class WorkoutService {
         workout.setCalories(request.getCalories());
         workout.setEquipment(String.join(",", request.getEquipment()));
         workout.setTargetMuscles(String.join(",", request.getTargetMuscles()));
+        workout.setImagePath(request.getImagePath());
         
         Workout savedWorkout = workoutRepository.save(workout);
         
@@ -156,6 +157,7 @@ public class WorkoutService {
             }
             
             existingWorkout.setCalories(request.getCalories());
+            existingWorkout.setImagePath(request.getImagePath());
             
             // Save the updated workout
             Workout updatedWorkout = workoutRepository.save(existingWorkout);
@@ -244,6 +246,7 @@ public class WorkoutService {
                 .exercises(exercises.size())
                 .completion(completion)
                 .exerciseList(exerciseDTOs)
+                .imagePath(workout.getImagePath())
                 .build();
     }
     

@@ -139,23 +139,28 @@ public class GroupWorkoutService {
         GroupWorkout workout = groupWorkoutRepository.findById(workoutId)
                 .orElseThrow(() -> new RuntimeException("Workout not found with id: " + workoutId));
         
-        // Get level
-        GroupWorkoutLevel level = levelRepository.findById(levelId)
+        // Update the fields if they are provided
+        if (name != null) workout.setName(name);
+        if (description != null) workout.setDescription(description);
+        if (capacity != null) workout.setCapacity(capacity);
+        if (duration != null) workout.setDuration(duration);
+        
+        // Update level if provided
+        if (levelId != null) {
+            GroupWorkoutLevel level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new RuntimeException("Workout level not found with id: " + levelId));
+            workout.setLevel(level);
+        }
         
-        // Get category
-        GroupWorkoutCategory category = categoryRepository.findById(categoryId)
+        // Update category if provided
+        if (categoryId != null) {
+            GroupWorkoutCategory category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Workout category not found with id: " + categoryId));
+            workout.setCategory(category);
+        }
         
-        // Update workout
-        workout.setName(name);
-        workout.setDescription(description);
-        workout.setCapacity(capacity);
-        workout.setDuration(duration);
-        workout.setLevel(level);
-        workout.setCategory(category);
-        
-        if (imagePath != null) {
+        // Update image path if provided
+        if (imagePath != null && !imagePath.isEmpty()) {
             workout.setImagePath(imagePath);
         }
         
