@@ -376,31 +376,7 @@ const CustomersPanel = () => {
                           {getPlanIcon(customer.planType)}
                           {customer.planType || 'N/A'}
                         </td>
-                        <td>
-                          <div className="edit-actions">
-                            {customer.membershipExpiry || 'N/A'}
-                            <div className="action-buttons">
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSaveEdit(customer.id, editingCustomer);
-                                }}
-                                className="save-button"
-                              >
-                                Save
-                              </button>
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingCustomer(null);
-                                }}
-                                className="cancel-button"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        </td>
+                        <td>{customer.membershipExpiry || 'N/A'}</td>
                         <td>
                           <Button
                             icon={<LockOutlined />}
@@ -409,6 +385,26 @@ const CustomersPanel = () => {
                           >
                             Reset Password
                           </Button>
+                          <div className="action-buttons">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSaveEdit(customer.id, editingCustomer);
+                              }}
+                              className="save-button"
+                            >
+                              Save
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingCustomer(null);
+                              }}
+                              className="cancel-button"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </td>
                       </>
                     ) : (
