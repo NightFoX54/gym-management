@@ -53,6 +53,10 @@ import axios from 'axios';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker, TimePicker } from '@mui/x-date-pickers';
 import { format } from 'date-fns';
+import { Upload } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { Close } from '@mui/icons-material';
+
 
 const WorkoutsPage = ({ isDarkMode }) => {
   const [workouts, setWorkouts] = useState([]);
@@ -73,7 +77,9 @@ const WorkoutsPage = ({ isDarkMode }) => {
     description: '',
     equipment: [],
     targetMuscles: [],
-    exercises: []
+    exercises: [],
+    imageFile: null,
+    imagePreview: null
   });
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
@@ -326,31 +332,73 @@ const WorkoutsPage = ({ isDarkMode }) => {
       showAlert('Please fill in all required fields correctly', 'error');
       return;
     }
+    
     setActionLoading(true);
     try {
+      console.log("Starting group workout submission process...");
+      
       // Get current logged in trainer ID from localStorage or context
       const trainerId = localStorage.getItem('userId') || 3; // Fallback to 3 for development
+      
+      // Handle image upload if there is a file
+      let imagePath = newGroupWorkout.image_path;
+      if (newGroupWorkout.imageFile) {
+        console.log("Image file present, uploading:", newGroupWorkout.imageFile.name);
+        
+        const uploadedImagePath = await handleImageUpload(newGroupWorkout.imageFile);
+        if (uploadedImagePath) {
+          imagePath = uploadedImagePath;
+          console.log("Image upload successful, new path:", imagePath);
+        } else {
+          console.error("Failed to upload image");
+        }
+      } else {
+        console.log("No image file to upload, using existing path:", imagePath);
+      }
+      
       const groupWorkoutRequest = {
-        ...newGroupWorkout,
-        trainer_id: trainerId,
+        name: newGroupWorkout.name,
+        description: newGroupWorkout.description,
         capacity: parseInt(newGroupWorkout.capacity),
         duration: parseInt(newGroupWorkout.duration),
+        level_id: parseInt(newGroupWorkout.level_id),
+        category_id: parseInt(newGroupWorkout.category_id),
+        trainer_id: trainerId,
+        // Include the image path explicitly with both potential keys to ensure compatibility
+        imagePath: imagePath,
+        image_path: imagePath
       };
+      
+      console.log("Sending request with data:", JSON.stringify(groupWorkoutRequest));
+      
       let response;
       if (selectedGroupWorkout) {
-        response = await axios.put(`http://localhost:8080/api/group-workouts/${selectedGroupWorkout.id}`, groupWorkoutRequest);
+        response = await axios.put(
+          `http://localhost:8080/api/group-workouts/${selectedGroupWorkout.id}`, 
+          groupWorkoutRequest
+        );
+        console.log("Update response:", response.data);
         showAlert('Group workout updated successfully!', 'success');
       } else {
-        response = await axios.post(`http://localhost:8080/api/group-workouts`, groupWorkoutRequest);
+        response = await axios.post(
+          'http://localhost:8080/api/group-workouts', 
+          groupWorkoutRequest
+        );
+        console.log("Create response:", response.data);
         showAlert('Group workout added successfully!', 'success');
       }
+      
       await fetchGroupWorkouts();
       handleCloseGroupDialog();
     } catch (error) {
       console.error('Error saving group workout:', error);
-      showAlert(selectedGroupWorkout ? 
-        'Failed to update group workout: ' + (error.response?.data?.message || error.message || 'Unknown error') : 
-        'Failed to add group workout: ' + (error.response?.data?.message || error.message || 'Unknown error'),
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+      }
+      showAlert(
+        selectedGroupWorkout ? 
+          'Failed to update group workout: ' + (error.response?.data?.error || error.message || 'Unknown error') : 
+          'Failed to add group workout: ' + (error.response?.data?.error || error.message || 'Unknown error'),
         'error'
       );
     } finally {
@@ -461,7 +509,45 @@ const WorkoutsPage = ({ isDarkMode }) => {
 
     setActionLoading(true);
     try {
-      const trainerId = 3;
+      const trainerId = localStorage.getItem('userId') || 3;
+      
+      // Determine the image path to use:
+      let imagePath = "";
+      
+      if (newWorkout.imageFile) {
+        try {
+          // Try to upload the image
+          const uploadedImagePath = await handleImageUpload(newWorkout.imageFile);
+          
+          if (uploadedImagePath) {
+            imagePath = uploadedImagePath;
+            console.log("Successfully uploaded image:", imagePath);
+          } else {
+            // If upload fails, use a default or empty string
+            console.log("Image upload returned null/undefined, using empty string");
+            imagePath = "";
+          }
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+          // Don't throw - continue with empty image path
+          imagePath = "";
+        }
+      } else if (selectedWorkout && selectedWorkout.imagePath) {
+        // Keep existing image path when editing
+        imagePath = selectedWorkout.imagePath;
+        console.log("Using existing image path:", imagePath);
+      } else {
+        // Default empty string for new workout without image
+        imagePath = "";
+      }
+      
+      // IMPORTANT: Ensure image path is never null or undefined
+      if (!imagePath) {
+        imagePath = "";
+      }
+      
+      console.log("Final image path:", imagePath);
+      
       const workoutRequest = {
         name: newWorkout.name,
         type: newWorkout.type,
@@ -475,8 +561,11 @@ const WorkoutsPage = ({ isDarkMode }) => {
           exerciseName: ex.exerciseName,
           sets: parseInt(ex.sets),
           repRange: ex.repRange
-        })) : []
+        })) : [],
+        imagePath: imagePath // This will never be null
       };
+      
+      console.log("Sending workout data:", workoutRequest);
       
       let response;
       
@@ -537,7 +626,9 @@ const WorkoutsPage = ({ isDarkMode }) => {
         description: workoutData.description || '',
         equipment: workoutData.equipment || [],
         targetMuscles: workoutData.targetMuscles || [],
-        exercises: workoutData.exerciseList || []
+        exercises: workoutData.exerciseList || [],
+        imageFile: workoutData.imageFile,
+        imagePreview: workoutData.imagePreview
       });
       setOpenDialog(true);
     } catch (error) {
@@ -558,7 +649,9 @@ const WorkoutsPage = ({ isDarkMode }) => {
       description: '',
       equipment: [],
       targetMuscles: [],
-      exercises: []
+      exercises: [],
+      imageFile: null,
+      imagePreview: null
     });
   };
 
@@ -1118,6 +1211,113 @@ const WorkoutsPage = ({ isDarkMode }) => {
               </Paper>
             )}
           </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" sx={{ mb: 1, color: isDarkMode ? '#fff' : '#333' }}>
+              Workout Image
+            </Typography>
+            <Box display="flex" flexDirection="column" alignItems="center">
+              {/* Hidden file input */}
+              <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="individual-workout-image-upload"
+                type="file"
+                onChange={handleWorkoutFileChange}
+              />
+              
+              {/* Image preview or placeholder */}
+              {(newWorkout.imagePreview || (selectedWorkout && selectedWorkout.imagePath)) ? (
+                <Box position="relative" mb={2} width="100%" maxWidth={300}>
+                  <img 
+                    src={newWorkout.imagePreview || selectedWorkout.imagePath}
+                    alt="Workout preview"
+                    style={{ 
+                      width: '100%', 
+                      borderRadius: '8px',
+                      objectFit: 'cover',
+                      height: '200px'
+                    }}
+                  />
+                  {newWorkout.imagePreview && (
+                    <IconButton 
+                      size="small"
+                      sx={{ 
+                        position: 'absolute', 
+                        top: 8, 
+                        right: 8, 
+                        bgcolor: 'rgba(0,0,0,0.5)',
+                        color: '#fff',
+                        '&:hover': {
+                          bgcolor: 'rgba(0,0,0,0.7)',
+                        }
+                      }}
+                      onClick={() => {
+                        URL.revokeObjectURL(newWorkout.imagePreview);
+                        setNewWorkout({
+                          ...newWorkout,
+                          imageFile: null,
+                          imagePreview: null
+                        });
+                      }}
+                    >
+                      <Close fontSize="small" />
+                    </IconButton>
+                  )}
+                </Box>
+              ) : (
+                <label htmlFor="individual-workout-image-upload">
+                  <Box 
+                    sx={{
+                      width: '100%',
+                      maxWidth: 300,
+                      height: 200,
+                      border: '2px dashed',
+                      borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      mb: 2,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+                      }
+                    }}
+                  >
+                    <Image 
+                      sx={{ 
+                        fontSize: 48, 
+                        color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+                        mb: 1
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ color: isDarkMode ? '#aaa' : '#666' }}>
+                      Click to upload
+                    </Typography>
+                  </Box>
+                </label>
+              )}
+              
+              {/* Upload/Change button */}
+              <label htmlFor="individual-workout-image-upload">
+                <Button
+                  variant="contained"
+                  component="span"
+                  startIcon={<Image />}
+                  sx={{
+                    background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                    color: isDarkMode ? '#fff' : '#333',
+                    '&:hover': {
+                      background: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                    }
+                  }}
+                >
+                  {newWorkout.imageFile ? 'Change Image' : (selectedWorkout?.imagePath ? 'Change Image' : 'Upload Image')}
+                </Button>
+              </label>
+            </Box>
+          </Grid>
         </Grid>
       </DialogContent>
       <DialogActions 
@@ -1364,38 +1564,168 @@ const WorkoutsPage = ({ isDarkMode }) => {
             />
           </Grid>
           <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Image URL"
-              name="image_path"
-              value={newGroupWorkout.image_path}
-              onChange={handleGroupWorkoutInputChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Image sx={{ color: '#ff4757' }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ 
-                '& .MuiOutlinedInput-root': { borderRadius: '12px' },
-                // Fix for dark mode visibility
-                '& .MuiInputLabel-root': {
-                  color: isDarkMode ? 'rgba(255,255,255,0.7)' : undefined,
-                },
-                '& .MuiOutlinedInput-input': {
-                  color: isDarkMode ? '#fff' : undefined,
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : undefined,
-                },
-                '& .MuiInputBase-input::placeholder': {
-                  color: isDarkMode ? 'rgba(255,255,255,0.5)' : undefined,
-                  opacity: 1,
-                },
-              }}
-              placeholder="Enter URL to an image for this group workout"
-            />
+            <Typography variant="subtitle1" sx={{ mb: 1, color: isDarkMode ? '#fff' : '#333' }}>
+              Workout Image
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              alignItems: 'flex-start', 
+              border: isDarkMode ? '1px dashed rgba(255,255,255,0.3)' : '1px dashed rgba(0,0,0,0.2)', 
+              borderRadius: '12px',
+              padding: '16px',
+              background: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)'
+            }}>
+              <input
+                type="file"
+                accept="image/*"
+                id="workout-image-upload"
+                onChange={handleFileInputChange}
+                style={{ display: 'none' }}
+              />
+              
+              {/* Style this section to look similar to Ant Design Upload */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                }}
+              >
+                {/* Preview area - shows new image or current image */}
+                {newGroupWorkout.imagePreview ? (
+                  <Box 
+                    sx={{ 
+                      position: 'relative',
+                      width: '100%',
+                      marginBottom: 2,
+                      textAlign: 'center'
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={newGroupWorkout.imagePreview}
+                      alt="Image preview"
+                      sx={{ 
+                        maxWidth: '100%',
+                        maxHeight: '200px',
+                        borderRadius: '8px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        zIndex: 1,
+                        p: 0.5
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          // Release object URL to avoid memory leaks
+                          if (newGroupWorkout.imagePreview) {
+                            URL.revokeObjectURL(newGroupWorkout.imagePreview);
+                          }
+                          setNewGroupWorkout({
+                            ...newGroupWorkout,
+                            imageFile: null,
+                            imagePreview: null
+                          });
+                        }}
+                        sx={{
+                          bgcolor: 'rgba(0,0,0,0.5)',
+                          color: '#fff',
+                          '&:hover': {
+                            bgcolor: 'rgba(0,0,0,0.7)',
+                          }
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                ) : selectedGroupWorkout?.image ? (
+                  <Box 
+                    sx={{ 
+                      width: '100%',
+                      marginBottom: 2,
+                      textAlign: 'center'
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={selectedGroupWorkout.image}
+                      alt="Current workout image"
+                      sx={{ 
+                        maxWidth: '100%',
+                        maxHeight: '200px',
+                        borderRadius: '8px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <label htmlFor="workout-image-upload">
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: 200,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                        borderRadius: '8px',
+                        mb: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                        }
+                      }}
+                    >
+                      <Image 
+                        sx={{ 
+                          fontSize: 48, 
+                          color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+                          mb: 1
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ color: isDarkMode ? '#aaa' : '#666' }}>
+                        Click to upload
+                      </Typography>
+                    </Box>
+                  </label>
+                )}
+                
+                {/* Upload/Change button */}
+                <label htmlFor="workout-image-upload">
+                  <Button
+                    variant="contained"
+                    component="span"
+                    startIcon={<Image />}
+                    sx={{
+                      background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                      color: isDarkMode ? '#fff' : '#333',
+                      '&:hover': {
+                        background: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                      }
+                    }}
+                  >
+                    {newGroupWorkout.imageFile ? 'Change Image' : (selectedGroupWorkout?.image ? 'Change Image' : 'Upload Image')}
+                  </Button>
+                </label>
+              </Box>
+              
+              <Typography variant="caption" sx={{ mt: 1, color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                Upload an image for your group workout (JPG, PNG, max 2MB)
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -1826,6 +2156,261 @@ const WorkoutsPage = ({ isDarkMode }) => {
       console.error('Error creating session:', error);
       showNotification('Failed to create session', 'error');
     }
+  };
+
+  // First, update the handleFileInputChange function to create a preview URL
+  const handleFileInputChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("File selected via input:", file.name, file.type, file.size);
+      
+      // Create a preview URL for the image
+      const previewUrl = URL.createObjectURL(file);
+      
+      setNewGroupWorkout({
+        ...newGroupWorkout,
+        imageFile: file,
+        imagePreview: previewUrl // Store the preview URL
+      });
+    }
+  };
+
+  // Then update the JSX for the image upload section with a nicer preview
+  <Grid item xs={12}>
+    <Typography variant="subtitle1" sx={{ mb: 1, color: isDarkMode ? '#fff' : '#333' }}>
+      Workout Image
+    </Typography>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'flex-start', 
+      border: isDarkMode ? '1px dashed rgba(255,255,255,0.3)' : '1px dashed rgba(0,0,0,0.2)', 
+      borderRadius: '12px',
+      padding: '16px',
+      background: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)'
+    }}>
+      <input
+        type="file"
+        accept="image/*"
+        id="workout-image-upload"
+        onChange={handleFileInputChange}
+        style={{ display: 'none' }}
+      />
+      
+      {/* Style this section to look similar to Ant Design Upload */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+        }}
+      >
+        {/* Preview area - shows new image or current image */}
+        {newGroupWorkout.imagePreview ? (
+          <Box 
+            sx={{ 
+              position: 'relative',
+              width: '100%',
+              marginBottom: 2,
+              textAlign: 'center'
+            }}
+          >
+            <Box
+              component="img"
+              src={newGroupWorkout.imagePreview}
+              alt="Image preview"
+              sx={{ 
+                maxWidth: '100%',
+                maxHeight: '200px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            />
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                zIndex: 1,
+                p: 0.5
+              }}
+            >
+              <IconButton
+                size="small"
+                onClick={() => {
+                  // Release object URL to avoid memory leaks
+                  if (newGroupWorkout.imagePreview) {
+                    URL.revokeObjectURL(newGroupWorkout.imagePreview);
+                  }
+                  setNewGroupWorkout({
+                    ...newGroupWorkout,
+                    imageFile: null,
+                    imagePreview: null
+                  });
+                }}
+                sx={{
+                  bgcolor: 'rgba(0,0,0,0.5)',
+                  color: '#fff',
+                  '&:hover': {
+                    bgcolor: 'rgba(0,0,0,0.7)',
+                  }
+                }}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+        ) : selectedGroupWorkout?.image ? (
+          <Box 
+            sx={{ 
+              width: '100%',
+              marginBottom: 2,
+              textAlign: 'center'
+            }}
+          >
+            <Box
+              component="img"
+              src={selectedGroupWorkout.image}
+              alt="Current workout image"
+              sx={{ 
+                maxWidth: '100%',
+                maxHeight: '200px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            />
+          </Box>
+        ) : (
+          <label htmlFor="workout-image-upload">
+            <Box
+              sx={{
+                width: '100%',
+                height: 200,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                borderRadius: '8px',
+                mb: 2,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                }
+              }}
+            >
+              <Image 
+                sx={{ 
+                  fontSize: 48, 
+                  color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+                  mb: 1
+                }}
+              />
+              <Typography variant="body2" sx={{ color: isDarkMode ? '#aaa' : '#666' }}>
+                Click to upload
+              </Typography>
+            </Box>
+          </label>
+        )}
+        
+        {/* Upload/Change button */}
+        <label htmlFor="workout-image-upload">
+          <Button
+            variant="contained"
+            component="span"
+            startIcon={<Image />}
+            sx={{
+              background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+              color: isDarkMode ? '#fff' : '#333',
+              '&:hover': {
+                background: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+              }
+            }}
+          >
+            {newGroupWorkout.imageFile ? 'Change Image' : (selectedGroupWorkout?.image ? 'Change Image' : 'Upload Image')}
+          </Button>
+        </label>
+      </Box>
+      
+      <Typography variant="caption" sx={{ mt: 1, color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+        Upload an image for your group workout (JPG, PNG, max 2MB)
+      </Typography>
+    </Box>
+  </Grid>
+
+  // Update image upload function to include more debugging
+  const handleImageUpload = async (file) => {
+    try {
+      console.log("Starting image upload process...");
+      if (!file) {
+        console.error('No file provided to handleImageUpload');
+        return null;
+      }
+      
+      console.log('File:', file.name, 'Type:', file.type, 'Size:', file.size);
+      
+      // Convert file to base64
+      const base64Image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          console.log("File read successfully, data length:", reader.result.length);
+          resolve(reader.result);
+        };
+        reader.onerror = (error) => {
+          console.error("FileReader error:", error);
+          reject(error);
+        };
+        console.log("Starting file read as data URL...");
+        reader.readAsDataURL(file);
+      });
+      
+      console.log("Base64 conversion complete. Making API request to upload image...");
+      
+      // Upload the base64 image to the server
+      const response = await axios.post(
+        'http://localhost:8080/api/images/upload-base64', 
+        { image: base64Image },
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      
+      console.log('Image upload API response:', response.data);
+      return response.data.imagePath;
+    } catch (error) {
+      console.error('Error in handleImageUpload:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      showAlert('Failed to upload image: ' + error.message, 'error');
+      return null;
+    }
+  };
+
+  // Add this function to handle file input change for individual workouts
+  const handleWorkoutFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("Workout image selected:", file.name, file.type, file.size);
+      
+      // Create a preview URL for the image
+      const previewUrl = URL.createObjectURL(file);
+      
+      setNewWorkout({
+        ...newWorkout,
+        imageFile: file,
+        imagePreview: previewUrl
+      });
+    }
+  };
+
+  // Add this function to handle workout image upload
+  const handleWorkoutImageUpload = async (file) => {
+    // Use the exact same image upload function that works for group workouts
+    return await handleImageUpload(file);
   };
 
   return (

@@ -49,7 +49,9 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
     calories: 0,
     equipment: [],
     targetMuscles: [],
-    exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }]
+    exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }],
+    imageFile: null,
+    imagePreview: null
   });
 
   const [selectedType, setSelectedType] = useState('all');
@@ -297,7 +299,9 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
       calories: 0,
       equipment: [],
       targetMuscles: [],
-      exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }]
+      exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }],
+      imageFile: null,
+      imagePreview: null
     });
     setShowCreateModal(true);
   };
@@ -348,57 +352,124 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
 
   // Handle exercise input change
   const handleExerciseChange = (e) => {
-    const { name, value } = e.target;
-    setNewExercise(prev => ({
-      ...prev,
-      [name]: name === 'sets' ? parseInt(value, 10) || 0 : value
-    }));
+    const { id, name, value } = e.target;
+    
+    // Handle exercise input fields in the add exercise form
+    if (id && id.startsWith('exercise-')) {
+      const fieldName = id.split('-')[1];
+      const index = parseInt(id.split('-')[2]);
+      
+      setNewProgram(prevState => {
+        const updatedExercises = [...prevState.exercises];
+        updatedExercises[index] = {
+          ...updatedExercises[index],
+          [fieldName]: value
+        };
+        return {
+          ...prevState,
+          exercises: updatedExercises
+        };
+      });
+    } 
+    // Handle form inputs in the edit modal
+    else if (name) {
+      setEditFormData(prevData => ({
+        ...prevData,
+        [name]: value
+      }));
+    }
+  };
+
+  // Add this new function to specifically handle exercise input changes in the create modal
+  const handleExerciseInputChange = (index, field, value) => {
+    setNewProgram(prevState => {
+      const updatedExercises = [...prevState.exercises];
+      updatedExercises[index] = {
+        ...updatedExercises[index],
+        [field]: value
+      };
+      return {
+        ...prevState,
+        exercises: updatedExercises
+      };
+    });
   };
 
   // Handle submit new program
   const handleSubmitProgram = async () => {
-    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-    const currentUserId = getUserId();
-    
-    // Validate form
-    if (!newProgram.name || !newProgram.description || !newProgram.duration || !newProgram.type || !newProgram.difficulty) {
-      alert('Please fill in all required fields');
+    // Validation check
+    if (!newProgram.name || !newProgram.type || !newProgram.difficulty || !newProgram.duration) {
+      // Show error message
       return;
     }
 
-    // Check if all exercises have at least name, sets and repRange
-    const validExercises = newProgram.exercises.every(ex => ex.exerciseName && ex.sets && ex.repRange);
-    if (!validExercises) {
-      alert('Please complete all exercise information');
-      return;
-    }
-
+    setLoading(true);
     try {
-      // Create the workout in the database
-      const response = await axios.post(
-        `${API_BASE_URL}/api/workouts?userId=${currentUserId}`, 
-        newProgram
-      );
+      const userId = localStorage.getItem('userId');
       
-      // Refresh workouts list
-      await fetchUserWorkouts(API_BASE_URL);
+      // Handle image upload if there's a file
+      let imagePath = "";
+      if (newProgram.imageFile) {
+        try {
+          const uploadedImagePath = await handleImageUpload(newProgram.imageFile);
+          if (uploadedImagePath) {
+            imagePath = uploadedImagePath;
+            console.log("Successfully uploaded image:", imagePath);
+          }
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+        }
+      }
+      
+      // Prepare workout data
+      const workoutData = {
+        name: newProgram.name,
+        type: newProgram.type,
+        difficulty: newProgram.difficulty,
+        duration: parseInt(newProgram.duration),
+        calories: parseInt(newProgram.calories) || 0,
+        description: newProgram.description,
+        equipment: newProgram.equipment,
+        targetMuscles: newProgram.targetMuscles,
+        exercises: newProgram.exercises.map(exercise => ({
+          exerciseName: exercise.exerciseName,
+          sets: parseInt(exercise.sets),
+          repRange: exercise.repRange
+        })),
+        imagePath: imagePath
+      };
+
+      console.log("Sending workout data:", workoutData);
+
+      const response = await axios.post(
+        `http://localhost:8080/api/workouts?userId=${userId}`,
+        workoutData
+      );
+
+      console.log("Workout created successfully:", response.data);
       
       // Reset form and close modal
       setNewProgram({
         name: '',
+        description: '',
         type: '',
         difficulty: '',
-        duration: 30,
-        description: '',
-        calories: 0,
+        duration: '',
+        calories: '',
         equipment: [],
         targetMuscles: [],
-        exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }]
+        exercises: [{ exerciseName: '', sets: 3, repRange: '8-12 reps' }],
+        imageFile: null,
+        imagePreview: null
       });
       setShowCreateModal(false);
-    } catch (err) {
-      console.error("Error creating workout:", err);
-      alert("Failed to create workout. Please try again.");
+      
+      // Refresh programs list
+      fetchUserWorkouts();
+    } catch (error) {
+      console.error("Error creating workout program:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -455,62 +526,55 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   // Modify handleEditFormSubmit to properly count exercises
   const handleEditFormSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!editingProgram || !editingProgram.id) {
-      setError("Cannot edit program: Program ID is missing");
-      return;
-    }
+    setLoading(true);
 
     try {
-      setLoading(true);
+      // Handle image upload if there's a new file
+      let imagePath = editingProgram.imagePath || "";
       
-      // Prepare equipment and targetMuscles as arrays if they're strings
-      const equipmentArray = typeof editFormData.equipment === 'string' 
-        ? editFormData.equipment.split(',').map(item => item.trim()).filter(item => item) 
-        : editFormData.equipment || [];
-        
-      const targetMusclesArray = typeof editFormData.targetMuscles === 'string' 
-        ? editFormData.targetMuscles.split(',').map(item => item.trim()).filter(item => item) 
-        : editFormData.targetMuscles || [];
-      
-      const updatedProgram = {
+      if (editingProgram.imageFile) {
+        try {
+          const uploadedImagePath = await handleImageUpload(editingProgram.imageFile);
+          if (uploadedImagePath) {
+            imagePath = uploadedImagePath;
+            console.log("Successfully uploaded new image:", imagePath);
+          }
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+        }
+      }
+
+      // Prepare the workout data
+      const workoutData = {
         name: editFormData.name,
-        description: editFormData.description,
-        duration: parseInt(editFormData.duration, 10) || 0,
         type: editFormData.type,
         difficulty: editFormData.difficulty,
-        equipment: equipmentArray,
-        targetMuscles: targetMusclesArray,
-        calories: parseInt(editFormData.calories, 10) || 0,
-        exercises: editExercises
+        duration: parseInt(editFormData.duration),
+        calories: parseInt(editFormData.calories) || 0,
+        description: editFormData.description,
+        equipment: editFormData.equipment.split(',').map(item => item.trim()),
+        targetMuscles: editFormData.targetMuscles.split(',').map(item => item.trim()),
+        exercises: editExercises.map(exercise => ({
+          exerciseName: exercise.exerciseName,
+          sets: parseInt(exercise.sets),
+          repRange: exercise.repRange
+        })),
+        imagePath: imagePath
       };
+
+      console.log("Sending updated workout data:", workoutData);
+
+      const response = await axios.put(
+        `http://localhost:8080/api/workouts/${editingProgram.id}`,
+        workoutData
+      );
+
+      console.log("Workout updated successfully:", response.data);
       
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-      await axios.put(`${API_BASE_URL}/api/workouts/${editingProgram.id}`, updatedProgram);
-      
-      // Refresh workout programs data
-      await fetchUserWorkouts(API_BASE_URL);
-      
-      // Close the edit modal
       setShowEditModal(false);
-      setEditingProgram(null);
-      setEditFormData({
-        name: '',
-        description: '',
-        duration: '',
-        type: '',
-        difficulty: '',
-        equipment: '',
-        targetMuscles: '',
-        calories: ''
-      });
-      setEditExercises([]);
-      
-      toast.success("Workout program updated successfully!");
+      fetchUserWorkouts();
     } catch (error) {
       console.error("Error updating workout program:", error);
-      setError("Failed to update workout program. Please try again.");
-      toast.error("Failed to update workout program. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -556,6 +620,88 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
       console.error('Error adding workout to weekly plan:', error);
       toast.error("Error adding workout to weekly plan: " + error.message);
     });
+  };
+
+  // Add a file input handler for workouts
+  const handleWorkoutFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("Workout image selected:", file.name, file.type, file.size);
+      
+      // Create a preview URL for the image
+      const previewUrl = URL.createObjectURL(file);
+      
+      setNewProgram({
+        ...newProgram,
+        imageFile: file,
+        imagePreview: previewUrl
+      });
+    }
+  };
+
+  // Add a file input handler for editing workouts
+  const handleEditWorkoutFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("Edit workout image selected:", file.name, file.type, file.size);
+      
+      // Create a preview URL for the image
+      const previewUrl = URL.createObjectURL(file);
+      
+      setEditingProgram({
+        ...editingProgram,
+        imageFile: file,
+        imagePreview: previewUrl
+      });
+    }
+  };
+
+  // Add the image upload function
+  const handleImageUpload = async (file) => {
+    try {
+      console.log("Starting image upload process...");
+      if (!file) {
+        console.error('No file provided to handleImageUpload');
+        return null;
+      }
+      
+      console.log('File:', file.name, 'Type:', file.type, 'Size:', file.size);
+      
+      // Convert file to base64
+      const base64Image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          console.log("File read successfully, data length:", reader.result.length);
+          resolve(reader.result);
+        };
+        reader.onerror = (error) => {
+          console.error("FileReader error:", error);
+          reject(error);
+        };
+        console.log("Starting file read as data URL...");
+        reader.readAsDataURL(file);
+      });
+      
+      console.log("Base64 conversion complete. Making API request to upload image...");
+      
+      // Upload the base64 image to the server
+      const response = await axios.post(
+        'http://localhost:8080/api/images/upload-base64', 
+        { image: base64Image },
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      
+      console.log('Image upload API response:', response.data);
+      return response.data.imagePath;
+    } catch (error) {
+      console.error('Error in handleImageUpload:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+      }
+      return null;
+    }
   };
 
   if (loading) {
@@ -631,7 +777,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
               {filteredMyPrograms.map(program => (
                 <div key={program.id} className="program-card-workout my-program-card-workout">
                   <div className="program-image-workout">
-                    <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt={program.name} />
+                    <img src={program.imagePath || 'https://via.placeholder.com/300x150?text=No+Image'} alt={program.name} />
                     <div className="program-type-badge-workout">{program.type}</div>
                   </div>
                   <div className="program-content-workout">
@@ -676,7 +822,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
             {filteredTrainerPrograms.map(program => (
               <div key={program.id} className="program-card-workout trainer-program-card-workout">
                 <div className="program-image-workout">
-                  <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt={program.name} />
+                  <img src={program.imagePath || 'https://via.placeholder.com/300x150?text=No+Image'} alt={program.name} />
                   <div className="program-type-badge-workout">{program.type}</div>
                   <div className="program-level-badge-workout">{program.difficulty}</div>
                 </div>
@@ -960,6 +1106,47 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                 />
               </div>
               
+              <div className="form-row">
+                <label>Workout Image</label>
+                <div className="image-upload-container">
+                  {newProgram.imagePreview ? (
+                    <div className="image-preview-container">
+                      <img 
+                        src={newProgram.imagePreview} 
+                        alt="Preview" 
+                        className="image-preview" 
+                      />
+                      <button 
+                        className="remove-image-btn"
+                        onClick={() => {
+                          URL.revokeObjectURL(newProgram.imagePreview);
+                          setNewProgram({
+                            ...newProgram,
+                            imageFile: null,
+                            imagePreview: null
+                          });
+                        }}
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="upload-placeholder">
+                      <input
+                        type="file"
+                        id="workout-image-upload"
+                        accept="image/*"
+                        onChange={handleWorkoutFileChange}
+                        style={{ display: 'none' }}
+                      />
+                      <label htmlFor="workout-image-upload" className="upload-btn">
+                        <FaPlus /> Upload Image
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               <div className="exercises-section-workout">
                 <div className="section-header-workout">
                   <h3>Exercises</h3>
@@ -994,7 +1181,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                           type="text" 
                           id={`exercise-name-${index}`}
                           value={exercise.exerciseName}
-                          onChange={(e) => handleExerciseChange(e)}
+                          onChange={(e) => handleExerciseInputChange(index, 'exerciseName', e.target.value)}
                           placeholder="e.g., Bench Press"
                           required
                         />
@@ -1008,7 +1195,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                           type="number" 
                           id={`exercise-sets-${index}`}
                           value={exercise.sets}
-                          onChange={(e) => handleExerciseChange(e)}
+                          onChange={(e) => handleExerciseInputChange(index, 'sets', e.target.value)}
                           placeholder="e.g., 3"
                           min="1"
                           required
@@ -1021,7 +1208,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                           type="text" 
                           id={`exercise-reps-${index}`}
                           value={exercise.repRange}
-                          onChange={(e) => handleExerciseChange(e)}
+                          onChange={(e) => handleExerciseInputChange(index, 'repRange', e.target.value)}
                           placeholder="e.g., 8-12 reps"
                           required
                         />
@@ -1171,7 +1358,42 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                   ></textarea>
                 </div>
                 
-                {/* Exercise section */}
+                <div className="form-row">
+                  <label>Workout Image</label>
+                  <div className="image-upload-container">
+                    {editingProgram?.imagePreview ? (
+                      <div className="image-preview-container">
+                        <img 
+                          src={editingProgram.imagePreview} 
+                          alt="Preview" 
+                          className="image-preview" 
+                        />
+                      </div>
+                    ) : editingProgram?.imagePath ? (
+                      <div className="image-preview-container">
+                        <img 
+                          src={editingProgram.imagePath} 
+                          alt="Current" 
+                          className="image-preview" 
+                        />
+                      </div>
+                    ) : null}
+                    
+                    <div className="upload-placeholder">
+                      <input
+                        type="file"
+                        id="edit-workout-image-upload"
+                        accept="image/*"
+                        onChange={handleEditWorkoutFileChange}
+                        style={{ display: 'none' }}
+                      />
+                      <label htmlFor="edit-workout-image-upload" className="upload-btn">
+                        <FaPlus /> {editingProgram?.imagePath || editingProgram?.imagePreview ? 'Change Image' : 'Upload Image'}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
                 <div className="exercises-section-workout">
                   <h3 className="section-title-workout">Exercises</h3>
                   
