@@ -162,6 +162,38 @@ const CustomersPanel = () => {
     }
     
     try {
+      // Check if email or phone is already in use by another user
+      // Skip this check if email/phone hasn't changed from the original
+      const originalCustomer = customers.find(c => c.id === id);
+      
+      if (updatedData.email !== originalCustomer.email || updatedData.phone !== originalCustomer.phone) {
+        const validateResponse = await axios.post('http://localhost:8080/api/auth/validate-credentials', {
+          email: updatedData.email,
+          phoneNumber: updatedData.phone,
+          userId: id
+        });
+        
+        // If the email exists and belongs to another user
+        if (updatedData.email !== originalCustomer.email) {
+          console.log("Updated email:", updatedData.email);
+          console.log("Original email:", originalCustomer.email);
+          if (validateResponse.data.emailExists) {
+            message.error('This email is already in use by another user');
+            return;
+          }
+        }
+        
+        // If the phone number exists and belongs to another user
+        if (updatedData.phone !== originalCustomer.phone) {
+          console.log("Updated phone:", updatedData.phone);
+          console.log("Original phone:", originalCustomer.phone);
+          if (validateResponse.data.phoneExists) {
+            message.error('This phone number is already in use by another user');
+            return;
+          }
+        }
+      }
+
       // Format name and surname properly before saving
       const formattedData = {
         ...updatedData,
