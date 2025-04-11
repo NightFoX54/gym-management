@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 11 Nis 2025, 13:25:43
+-- Üretim Zamanı: 11 Nis 2025, 16:30:50
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -75,36 +75,6 @@ CREATE TABLE `contact_forms` (
 
 INSERT INTO `contact_forms` (`id`, `name`, `email`, `subject`, `message`, `is_read`, `date_created`) VALUES
 (3, 'deneme', 'deneme@gmail.com', 'deneme', 'deneme', 1, '2025-04-10 20:50:06');
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `contact_requests`
---
-
-CREATE TABLE `contact_requests` (
-  `id` bigint NOT NULL,
-  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `subject` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
-  `message` text COLLATE utf8mb4_general_ci NOT NULL,
-  `submission_date` datetime DEFAULT CURRENT_TIMESTAMP,
-  `is_read` tinyint(1) DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `employee_info`
---
-
-CREATE TABLE `employee_info` (
-  `id` bigint NOT NULL,
-  `user_id` bigint NOT NULL,
-  `salary` decimal(10,2) NOT NULL,
-  `weekly_hours` int NOT NULL,
-  `shift_schedule_path` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -241,20 +211,6 @@ INSERT INTO `group_workouts` (`id`, `name`, `description`, `capacity`, `duration
 (7, 'Advanced Yoga Flow', 'Challenging yoga poses for experienced practitioners.', 10, 75, 3, 3, 1, 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (8, 'Beginner Cardio Kickstart', 'Light cardio for beginners to get moving.', 20, 35, 1, 3, 4, 'https://images.unsplash.com/photo-1534258936925-c58bed479fcb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
 (23, 'deneme', '', 12, 123, 1, 3, 1, '/uploads/images/ebc8427b-9bc2-4915-bee3-55fc59fd5897.png');
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `group_workouts_ratings`
---
-
-CREATE TABLE `group_workouts_ratings` (
-  `id` int NOT NULL,
-  `member_id` bigint NOT NULL,
-  `session_id` int NOT NULL,
-  `rating` tinyint DEFAULT NULL,
-  `comment` text COLLATE utf8mb4_general_ci
-) ;
 
 -- --------------------------------------------------------
 
@@ -439,19 +395,6 @@ INSERT INTO `market_product_sales` (`id`, `invoice_id`, `product_id`, `quantity`
 -- --------------------------------------------------------
 
 --
--- Tablo için tablo yapısı `market_purchases`
---
-
-CREATE TABLE `market_purchases` (
-  `id` bigint NOT NULL,
-  `product_id` bigint NOT NULL,
-  `total_paid` decimal(10,2) NOT NULL,
-  `purchase_date` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Tablo için tablo yapısı `market_sales_invoices`
 --
 
@@ -512,7 +455,8 @@ INSERT INTO `memberships` (`id`, `user_id`, `plan_id`, `discount_amount`, `paid_
 (13, 27, 1, 240.00, 2160.00, '2025-04-08', '2025-07-08', 0, NULL, NULL),
 (14, 55, 1, 0.00, 800.00, '2025-04-08', '2025-05-08', 0, NULL, NULL),
 (15, 60, 2, 390.30, 3512.70, '2025-04-10', '2025-07-10', 0, NULL, NULL),
-(16, 61, 2, 0.00, 1301.00, '2025-04-10', '2025-05-10', 0, NULL, NULL);
+(16, 61, 2, 0.00, 1301.00, '2025-04-10', '2025-05-10', 0, NULL, NULL),
+(19, 64, 2, 390.30, 3512.70, '2025-04-11', '2025-07-11', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -630,7 +574,8 @@ INSERT INTO `payment_method` (`id`, `user_id`, `card_holder_name`, `card_number`
 (3, 27, 'berkay arıkan', '1234567891234123', '11/28', 123),
 (4, 55, 'berkay arıkan', '1243576124134124', '11/25', 123),
 (5, 60, 'berkay arıkan', '1243574654252637', '11/28', 123),
-(6, 61, 'berkay arıkan', '1241241234125123', '12/22', 123);
+(6, 61, 'berkay arıkan', '1241241234125123', '12/22', 123),
+(9, 64, 'berkay arıkan', '1251356135214124', '11/27', 123);
 
 -- --------------------------------------------------------
 
@@ -674,53 +619,6 @@ CREATE TABLE `pt_session_buy` (
 
 INSERT INTO `pt_session_buy` (`id`, `client_id`, `amount_of_sessions`, `total_price`, `purchase_date`) VALUES
 (2, 3, 1, 200.00, '2025-04-10 12:41:59');
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `services`
---
-
-CREATE TABLE `services` (
-  `id` bigint NOT NULL,
-  `font_awesome_icon` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `title` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `description` text COLLATE utf8mb4_general_ci NOT NULL,
-  `feature_1` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `feature_2` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `feature_3` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `feature_4` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `site_settings`
---
-
-CREATE TABLE `site_settings` (
-  `id` bigint NOT NULL,
-  `phone_number` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `address` text COLLATE utf8mb4_general_ci,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `working_hours` text COLLATE utf8mb4_general_ci,
-  `favicon_path` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `youtube_link` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `instagram_link` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `facebook_link` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `slider_settings`
---
-
-CREATE TABLE `slider_settings` (
-  `id` bigint NOT NULL,
-  `image_path` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `display_order` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -881,7 +779,7 @@ CREATE TABLE `trainer_settings` (
 --
 
 INSERT INTO `trainer_settings` (`id`, `trainer_id`, `bio`, `specialization`, `new_client_notifications`, `progress_update_notifications`, `mobile_notifications`, `desktop_notifications`) VALUES
-(1, 3, 'Professional trainer with 5 years of experience in strength training and fitness coaching.', 'Strength Training, Weight Loss, Nutrition', 1, 1, 1, 1);
+(1, 3, 'Professional trainer with 5 years of experience in strength training and fitness coaching.', 'Strength Training, Weight Loss, Nutrition', 1, 0, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -908,7 +806,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `profile_photo_path`, `email`, `phone_number`, `role`, `registration_date`, `password`) VALUES
 (1, 'Admin', 'User', '	/uploads/images/default-avatar.jpg	', 'admin@gymflex.com', NULL, 'ADMIN', '2025-03-15 01:50:43', '$2a$10$iZe2uBOqAzOxwqsNL80SIe90LOhfnGyhQ70Ht3tzjh4wIk5RTNr/S'),
 (2, 'Member', 'User', '	/uploads/images/default-avatar.jpg	', 'member@gymflex.com', NULL, 'MEMBER', '2025-03-15 01:50:43', '$2a$10$cUtC6MRZ9DT8DoOtCb.C6uPZS5XRO8WcaRuZ3b/ihEIkW8j.2Wkgi'),
-(3, 'Trainer', 'User', '	/uploads/images/default-avatar.jpg	', 'trainer@gymflex.com', '', 'TRAINER', '2025-03-15 01:50:43', '$2a$10$a7vrShLBpgQ35TdWGI7i4uGKmI5AEMgcQMdPgi5fk3zbQhAS/sjfu'),
+(3, 'Trainer', 'User', '	/uploads/images/default-avatar.jpg	', 'trainer@gymflex.com', '+905555555555', 'TRAINER', '2025-03-15 01:50:43', '$2a$10$a7vrShLBpgQ35TdWGI7i4uGKmI5AEMgcQMdPgi5fk3zbQhAS/sjfu'),
 (13, 'berkay', 'arıkan', '/uploads/e2145a25-9c1c-4316-8fef-c82042f649ed.jpeg', 'berkayyy5445@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$.XoDe3Ce/3ZNLAJDY7FdIOvpF8SkCv6MMOx1xFb1gIwjzXhSwH6Ku'),
 (14, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$wHy72hXdOg6nxTrDyceFSezZm17bqSfxcMA3/Pr.Er.atZ9zbipqO'),
 (15, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay112233@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:24:37', '$2a$10$LIWsqpC/CqIIfqDmnFJUpuZvGbyvPPlU8hklt2JofubVYFrMX2ts.'),
@@ -916,20 +814,8 @@ INSERT INTO `users` (`id`, `first_name`, `last_name`, `profile_photo_path`, `ema
 (27, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'deneme@gmail.com', '05397837419', 'MEMBER', '2025-04-08 12:08:41', '$2a$10$fnhRBNHd9FkiEXs33JFvDOo9YWhwQrmEQXWjUnJy7PuB5C.1cSGg.'),
 (55, 'deneme', 'deneme', '/uploads/images/default-avatar.jpg', 'denem123e@gmail.com', '05397837419', 'MEMBER', '2025-04-08 12:40:32', '$2a$10$ybJPWvBZTHUTc3OPv9PyWeNq9S/SelsYuPZXrnG5WXsiJEg/juWtS'),
 (60, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'de1261neme@gmail.com', '05397837419', 'MEMBER', '2025-04-10 20:06:28', '$2a$10$5EcpMlQ.MTvXnqTfoC4NXufCVHy5O.c9dJK.gMUMTvI6nDCfp18gq'),
-(61, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'denem123123e@gmail.com', '05397837419', 'MEMBER', '2025-04-10 23:37:33', '$2a$10$vPNiXKzA2dOaICab2hwu2.MB2x0L.1b6p6NLoapsvR5Q6dGM4I552');
-
--- --------------------------------------------------------
-
---
--- Tablo için tablo yapısı `why_choose_us`
---
-
-CREATE TABLE `why_choose_us` (
-  `id` bigint NOT NULL,
-  `title` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `content` text COLLATE utf8mb4_general_ci NOT NULL,
-  `display_order` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+(61, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'denem123123e@gmail.com', '05397837419', 'MEMBER', '2025-04-10 23:37:33', '$2a$10$vPNiXKzA2dOaICab2hwu2.MB2x0L.1b6p6NLoapsvR5Q6dGM4I552'),
+(64, 'Berkay Mustafa', 'Arıkan', '/uploads/images/default-avatar.jpg', 'deneme123123@gmail.com', '05397837419', 'MEMBER', '2025-04-11 16:35:03', '$2a$10$71TUBLBIkj/0YihfTL/JaeyJirs.dic0jMcQlbK6VotBkkbGNRXtO');
 
 -- --------------------------------------------------------
 
@@ -957,9 +843,9 @@ CREATE TABLE `workouts` (
 --
 
 INSERT INTO `workouts` (`id`, `user_id`, `is_trainer`, `level_id`, `category_id`, `duration`, `calories`, `description`, `equipment`, `name`, `target_muscles`, `image_path`) VALUES
-(1, 3, 1, 1, 1, 60, 450, 'Complete full body workout focusing on major muscle groups', 'Dumbbells,Barbell,Resistance Bands', 'Full Body Strength', 'Chest,Back,Legs,Shoulders', '/uploads/images/d9b2ed31-0105-4ff0-8a94-42ee1e6f2605.png'),
+(1, 3, 1, 1, 1, 60, 450, 'Complete full body workout focusing on major muscle groups', 'Dumbbells,Barbell,Resistance Bands', 'Full Body Strength', 'Chest,Back,Legs,Shoulders', '/uploads/images/12c11445-5fbd-48e7-b925-abe6311a03f1.jpeg'),
 (2, 3, 1, 3, 2, 45, 600, 'High-intensity interval training for maximum calorie burn', 'Kettlebell,Jump Rope,Yoga Mat', 'HIIT Cardio Blast', 'Core,Legs,Shoulders', 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'),
-(6, 13, 0, 2, 3, 45, 350, 'asdfg', 'Dumbbells', 'deneme', 'Chest', '/uploads/images/27067959-30fa-40b8-b2b6-39a0ef92e9a0.png');
+(6, 13, 0, 2, 3, 45, 350, 'asdfg', 'Dumbbells', 'deneme', 'Chest', '/uploads/images/adc246d3-353c-4d80-8c35-5958380603a5.jpeg');
 
 -- --------------------------------------------------------
 
@@ -1005,12 +891,12 @@ INSERT INTO `workout_exercises` (`id`, `workout_id`, `exercise_name`, `sets`, `r
 (148, 2, 'Burpees', 5, '45 seconds'),
 (149, 2, 'Mountain Climbers', 5, '45 seconds'),
 (150, 2, 'Jump Rope', 5, '60 seconds'),
-(163, 1, 'Barbell Squat', 4, '8-12 reps'),
-(164, 1, 'Bench Press', 4, '8-12 reps'),
-(165, 1, 'Deadlift', 3, '8-10 reps'),
-(169, 6, 'Bench Press', 3, '8-12'),
-(170, 6, 'deneme', 3, '8-12'),
-(171, 6, 'deneme', 3, '8-12');
+(177, 6, 'Bench Press', 3, '8-12'),
+(178, 6, 'deneme', 3, '8-12'),
+(179, 6, 'deneme', 3, '8-12'),
+(180, 1, 'Barbell Squat', 4, '8-12 reps'),
+(181, 1, 'Bench Press', 4, '8-12 reps'),
+(182, 1, 'Deadlift', 3, '8-10 reps');
 
 -- --------------------------------------------------------
 
@@ -1048,19 +934,6 @@ ALTER TABLE `club_visits`
 --
 ALTER TABLE `contact_forms`
   ADD PRIMARY KEY (`id`);
-
---
--- Tablo için indeksler `contact_requests`
---
-ALTER TABLE `contact_requests`
-  ADD PRIMARY KEY (`id`);
-
---
--- Tablo için indeksler `employee_info`
---
-ALTER TABLE `employee_info`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
 
 --
 -- Tablo için indeksler `expenses`
@@ -1105,14 +978,6 @@ ALTER TABLE `group_workouts`
   ADD KEY `level_id` (`level_id`),
   ADD KEY `trainer_id` (`trainer_id`),
   ADD KEY `category_id` (`category_id`);
-
---
--- Tablo için indeksler `group_workouts_ratings`
---
-ALTER TABLE `group_workouts_ratings`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `member_id` (`member_id`),
-  ADD KEY `session_id` (`session_id`);
 
 --
 -- Tablo için indeksler `group_workout_categories`
@@ -1160,13 +1025,6 @@ ALTER TABLE `market_products`
 ALTER TABLE `market_product_sales`
   ADD PRIMARY KEY (`id`),
   ADD KEY `invoice_id` (`invoice_id`),
-  ADD KEY `product_id` (`product_id`);
-
---
--- Tablo için indeksler `market_purchases`
---
-ALTER TABLE `market_purchases`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `product_id` (`product_id`);
 
 --
@@ -1235,24 +1093,6 @@ ALTER TABLE `pt_session_buy`
   ADD KEY `client_id` (`client_id`);
 
 --
--- Tablo için indeksler `services`
---
-ALTER TABLE `services`
-  ADD PRIMARY KEY (`id`);
-
---
--- Tablo için indeksler `site_settings`
---
-ALTER TABLE `site_settings`
-  ADD PRIMARY KEY (`id`);
-
---
--- Tablo için indeksler `slider_settings`
---
-ALTER TABLE `slider_settings`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Tablo için indeksler `trainer_clients`
 --
 ALTER TABLE `trainer_clients`
@@ -1313,12 +1153,6 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Tablo için indeksler `why_choose_us`
---
-ALTER TABLE `why_choose_us`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Tablo için indeksler `workouts`
 --
 ALTER TABLE `workouts`
@@ -1363,18 +1197,6 @@ ALTER TABLE `contact_forms`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- Tablo için AUTO_INCREMENT değeri `contact_requests`
---
-ALTER TABLE `contact_requests`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- Tablo için AUTO_INCREMENT değeri `employee_info`
---
-ALTER TABLE `employee_info`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
 -- Tablo için AUTO_INCREMENT değeri `expenses`
 --
 ALTER TABLE `expenses`
@@ -1409,12 +1231,6 @@ ALTER TABLE `group_classes_sale`
 --
 ALTER TABLE `group_workouts`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
-
---
--- Tablo için AUTO_INCREMENT değeri `group_workouts_ratings`
---
-ALTER TABLE `group_workouts_ratings`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `group_workout_categories`
@@ -1459,12 +1275,6 @@ ALTER TABLE `market_product_sales`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
--- Tablo için AUTO_INCREMENT değeri `market_purchases`
---
-ALTER TABLE `market_purchases`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
 -- Tablo için AUTO_INCREMENT değeri `market_sales_invoices`
 --
 ALTER TABLE `market_sales_invoices`
@@ -1474,7 +1284,7 @@ ALTER TABLE `market_sales_invoices`
 -- Tablo için AUTO_INCREMENT değeri `memberships`
 --
 ALTER TABLE `memberships`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `membership_plans`
@@ -1504,7 +1314,7 @@ ALTER TABLE `password_reset_tokens`
 -- Tablo için AUTO_INCREMENT değeri `payment_method`
 --
 ALTER TABLE `payment_method`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `personal_training_ratings`
@@ -1517,24 +1327,6 @@ ALTER TABLE `personal_training_ratings`
 --
 ALTER TABLE `pt_session_buy`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- Tablo için AUTO_INCREMENT değeri `services`
---
-ALTER TABLE `services`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- Tablo için AUTO_INCREMENT değeri `site_settings`
---
-ALTER TABLE `site_settings`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
-
---
--- Tablo için AUTO_INCREMENT değeri `slider_settings`
---
-ALTER TABLE `slider_settings`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_clients`
@@ -1582,19 +1374,13 @@ ALTER TABLE `trainer_settings`
 -- Tablo için AUTO_INCREMENT değeri `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
-
---
--- Tablo için AUTO_INCREMENT değeri `why_choose_us`
---
-ALTER TABLE `why_choose_us`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workouts`
 --
 ALTER TABLE `workouts`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workout_categories`
@@ -1606,7 +1392,7 @@ ALTER TABLE `workout_categories`
 -- Tablo için AUTO_INCREMENT değeri `workout_exercises`
 --
 ALTER TABLE `workout_exercises`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=172;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=183;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workout_levels`
@@ -1623,12 +1409,6 @@ ALTER TABLE `workout_levels`
 --
 ALTER TABLE `club_visits`
   ADD CONSTRAINT `club_visits_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
---
--- Tablo kısıtlamaları `employee_info`
---
-ALTER TABLE `employee_info`
-  ADD CONSTRAINT `employee_info_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
 -- Tablo kısıtlamaları `expenses`
@@ -1659,13 +1439,6 @@ ALTER TABLE `group_workouts`
   ADD CONSTRAINT `group_workouts_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `group_workout_categories` (`id`);
 
 --
--- Tablo kısıtlamaları `group_workouts_ratings`
---
-ALTER TABLE `group_workouts_ratings`
-  ADD CONSTRAINT `group_workouts_ratings_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `group_workouts_ratings_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `group_workout_sessions` (`id`);
-
---
 -- Tablo kısıtlamaları `group_workout_enrolls`
 --
 ALTER TABLE `group_workout_enrolls`
@@ -1690,12 +1463,6 @@ ALTER TABLE `market_products`
 ALTER TABLE `market_product_sales`
   ADD CONSTRAINT `market_product_sales_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `market_sales_invoices` (`id`),
   ADD CONSTRAINT `market_product_sales_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `market_products` (`id`);
-
---
--- Tablo kısıtlamaları `market_purchases`
---
-ALTER TABLE `market_purchases`
-  ADD CONSTRAINT `market_purchases_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `market_products` (`id`);
 
 --
 -- Tablo kısıtlamaları `market_sales_invoices`
