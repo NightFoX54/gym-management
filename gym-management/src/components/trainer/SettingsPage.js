@@ -76,6 +76,14 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
     sunday: { active: false, start: '09:00', end: '13:00' },
   });
   const [profileLoading, setProfileLoading] = useState(true);
+  const [originalProfile, setOriginalProfile] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    specialization: '',
+    bio: '',
+    avatar: null
+  });
 
   useEffect(() => {
     fetchTrainerProfile();
@@ -100,8 +108,7 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
       
       if (response.status === 200) {
         const data = response.data;
-        setFormData(prev => ({
-          ...prev,
+        const profileData = {
           fullName: data.fullName || '',
           email: data.email || '',
           phone: data.phone || '',
@@ -112,7 +119,10 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
           notifyClientProgress: data.progressUpdateNotifications !== undefined ? data.progressUpdateNotifications : true,
           notifyMobile: data.mobileNotifications !== undefined ? data.mobileNotifications : true,
           notifyDesktop: data.desktopNotifications !== undefined ? data.desktopNotifications : true,
-        }));
+        };
+        
+        setFormData(profileData);
+        setOriginalProfile(profileData); // Store original data
         showAlert('Profile loaded successfully', 'success');
       } else {
         showAlert('Failed to load profile data', 'error');
@@ -399,6 +409,40 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
         setLoading(false);
         return;
       }
+
+      // Check if email or phone is already in use by another user
+      // Skip this check if email/phone hasn't changed from the original
+      if (formData.email !== originalProfile.email || formData.phone !== originalProfile.phone) {
+        const validateResponse = await axios.post('http://localhost:8080/api/auth/validate-credentials', {
+          email: formData.email,
+          phoneNumber: formData.phone,
+          userId: trainerId
+        });
+
+        if (validateResponse.data) {
+          // If the email exists and belongs to another user
+          if (formData.email !== originalProfile.email) {
+            console.log("Profile email:", formData.email);
+            console.log("Original email:", originalProfile.email);
+            if (validateResponse.data.emailExists) {
+              showAlert('This email is already in use by another user', 'error');
+              setLoading(false);
+              return;
+            }
+          }
+
+          // If the phone number exists and belongs to another user
+          if (formData.phone !== originalProfile.phone) {
+            console.log("Profile phone:", formData.phone);
+            console.log("Original phone:", originalProfile.phone);
+            if (validateResponse.data.phoneExists) {
+              showAlert('This phone number is already in use by another user', 'error');
+              setLoading(false);
+              return;
+            }
+          }
+        }
+      }
       
       // Parse the full name into first and last name
       const nameParts = formData.fullName.trim().split(' ');
@@ -430,6 +474,13 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
       if (response.status === 200) {
         showAlert('Profile updated successfully', 'success');
         
+        // Update originalProfile with new values
+        setOriginalProfile({
+          ...originalProfile,
+          email: formData.email,
+          phone: formData.phone
+        });
+
         // Notify parent component to update the navbar
         if (onSettingsUpdate) {
           onSettingsUpdate(response.data);
