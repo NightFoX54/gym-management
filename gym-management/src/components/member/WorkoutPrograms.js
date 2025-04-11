@@ -288,47 +288,121 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   };
 
   // Handle create new program
-  const handleCreateProgram = () => {
-    // Reset form first
+  const handleCreateProgram = async () => {
+    try {
+      setLoading(true);
+      
+      // Handle image upload if there's a file
+      let imagePath = '';
+      if (newProgram.imageFile) {
+        try {
+          const uploadedImagePath = await handleImageUpload(newProgram.imageFile);
+          if (uploadedImagePath) {
+            imagePath = uploadedImagePath;
+          }
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+        }
+      }
+      
+      // Parse equipment and targetMuscles from comma-separated strings to arrays
+      const equipmentArray = parseCommaSeparatedValues(newProgram.equipment);
+      const targetMusclesArray = parseCommaSeparatedValues(newProgram.targetMuscles);
+      
+      const workoutData = {
+        name: newProgram.name,
+        type: newProgram.type,
+        difficulty: newProgram.difficulty,
+        duration: parseInt(newProgram.duration),
+        calories: parseInt(newProgram.calories) || 0,
+        description: newProgram.description,
+        equipment: equipmentArray,
+        targetMuscles: targetMusclesArray,
+        exercises: newProgram.exercises.map(exercise => ({
+          exerciseName: exercise.exerciseName,
+          sets: parseInt(exercise.sets),
+          repRange: exercise.repRange
+        })),
+        imagePath: imagePath
+      };
+      
+      console.log("Sending workout data:", workoutData);
+      
+      await axios.post(
+        'http://localhost:8080/api/workouts',
+        workoutData,
+        {
+          params: {
+            userId: userId,
+            isTrainer: false
+          }
+        }
+      );
+      
+      setShowCreateModal(false);
+      setNewProgram({
+        name: '',
+        type: '',
+        difficulty: '',
+        duration: '',
+        calories: '',
+        description: '',
+        equipment: '',
+        targetMuscles: '',
+        exercises: [{ exerciseName: '', sets: '', repRange: '' }],
+        imageFile: null,
+        imagePreview: null
+      });
+      
+      // Refresh programs list
+      fetchUserWorkouts();
+    } catch (error) {
+      console.error("Error creating workout program:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add this function to handle opening the create modal
+  const handleOpenCreateModal = () => {
+    setShowCreateModal(true);
+    // Initialize with empty values
     setNewProgram({
       name: '',
-      type: programTypes.length > 1 ? programTypes[1].name : '', // First real type (skip "All Types")
-      difficulty: programLevels.length > 0 ? programLevels[0].name : 'Beginner',
-      duration: 30,
+      type: '',
+      difficulty: '',
+      duration: '',
+      calories: '',
       description: '',
-      calories: 0,
-      equipment: [],
-      targetMuscles: [],
-      exercises: [{ exerciseName: '', sets: 3, repRange: '8-12' }],
+      equipment: '',
+      targetMuscles: '',
+      exercises: [{ exerciseName: '', sets: '', repRange: '' }],
       imageFile: null,
       imagePreview: null
     });
-    setShowCreateModal(true);
   };
 
   // Handle adding exercise to new program
   const handleAddExercise = () => {
-    if (!newExercise.exerciseName) {
-      toast.error("Exercise name is required");
-      return;
-    }
-    
-    // Add the new exercise to the list
-    setEditExercises([...editExercises, { ...newExercise, id: Date.now() }]);
-    
-    // Clear the form
-    setNewExercise({
-      exerciseName: '',
-      sets: 3,
-      repRange: '8-12'
-    });
+    setNewProgram(prevState => ({
+      ...prevState,
+      exercises: [
+        ...prevState.exercises,
+        { exerciseName: '', sets: '', repRange: '' }
+      ]
+    }));
   };
 
   // Handle removing exercise from new program
   const handleRemoveExercise = (index) => {
-    const updatedExercises = [...editExercises];
-    updatedExercises.splice(index, 1);
-    setEditExercises(updatedExercises);
+    setNewProgram(prevState => {
+      const updatedExercises = [...prevState.exercises];
+      updatedExercises.splice(index, 1);
+      return {
+        ...prevState,
+        exercises: updatedExercises
+      };
+    });
   };
 
   // Handle input change for new program
@@ -395,82 +469,39 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
     });
   };
 
-  // Handle submit new program
-  const handleSubmitProgram = async () => {
-    // Validation check
-    if (!newProgram.name || !newProgram.type || !newProgram.difficulty || !newProgram.duration) {
-      // Show error message
-      return;
-    }
+  // Add these functions to handle equipment and target muscles
+  const handleEquipmentChange = (e) => {
+    setNewProgram({
+      ...newProgram,
+      equipment: e.target.value
+    });
+  };
 
-    setLoading(true);
-    try {
-      const userId = localStorage.getItem('userId');
-      
-      // Handle image upload if there's a file
-      let imagePath = "";
-      if (newProgram.imageFile) {
-        try {
-          const uploadedImagePath = await handleImageUpload(newProgram.imageFile);
-          if (uploadedImagePath) {
-            imagePath = uploadedImagePath;
-            console.log("Successfully uploaded image:", imagePath);
-          }
-        } catch (uploadError) {
-          console.error("Image upload failed:", uploadError);
-        }
-      }
-      
-      // Prepare workout data
-      const workoutData = {
-        name: newProgram.name,
-        type: newProgram.type,
-        difficulty: newProgram.difficulty,
-        duration: parseInt(newProgram.duration),
-        calories: parseInt(newProgram.calories) || 0,
-        description: newProgram.description,
-        equipment: newProgram.equipment,
-        targetMuscles: newProgram.targetMuscles,
-        exercises: newProgram.exercises.map(exercise => ({
-          exerciseName: exercise.exerciseName,
-          sets: parseInt(exercise.sets),
-          repRange: exercise.repRange
-        })),
-        imagePath: imagePath
-      };
+  const handleTargetMusclesChange = (e) => {
+    setNewProgram({
+      ...newProgram,
+      targetMuscles: e.target.value
+    });
+  };
 
-      console.log("Sending workout data:", workoutData);
+  const handleEditEquipmentChange = (e) => {
+    setEditFormData({
+      ...editFormData,
+      equipment: e.target.value
+    });
+  };
 
-      const response = await axios.post(
-        `http://localhost:8080/api/workouts?userId=${userId}`,
-        workoutData
-      );
+  const handleEditTargetMusclesChange = (e) => {
+    setEditFormData({
+      ...editFormData,
+      targetMuscles: e.target.value
+    });
+  };
 
-      console.log("Workout created successfully:", response.data);
-      
-      // Reset form and close modal
-      setNewProgram({
-        name: '',
-        description: '',
-        type: '',
-        difficulty: '',
-        duration: '',
-        calories: '',
-        equipment: [],
-        targetMuscles: [],
-        exercises: [{ exerciseName: '', sets: 3, repRange: '8-12 reps' }],
-        imageFile: null,
-        imagePreview: null
-      });
-      setShowCreateModal(false);
-      
-      // Refresh programs list
-      fetchUserWorkouts();
-    } catch (error) {
-      console.error("Error creating workout program:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Add this function to parse comma-separated values into arrays
+  const parseCommaSeparatedValues = (value) => {
+    if (!value) return [];
+    return value.split(',').map(item => item.trim()).filter(item => item !== '');
   };
 
   // Handle delete program
@@ -552,8 +583,8 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
         duration: parseInt(editFormData.duration),
         calories: parseInt(editFormData.calories) || 0,
         description: editFormData.description,
-        equipment: editFormData.equipment.split(',').map(item => item.trim()),
-        targetMuscles: editFormData.targetMuscles.split(',').map(item => item.trim()),
+        equipment: parseCommaSeparatedValues(editFormData.equipment),
+        targetMuscles: parseCommaSeparatedValues(editFormData.targetMuscles),
         exercises: editExercises.map(exercise => ({
           exerciseName: exercise.exerciseName,
           sets: parseInt(exercise.sets),
@@ -704,6 +735,44 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
     }
   };
 
+  // Add these styles for the tag boxes
+  const tagStyles = {
+    container: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '8px',
+      marginTop: '10px'
+    },
+    tag: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? '#2d3436' : '#f0f0f0',
+      color: isDarkMode ? '#ffffff' : '#333333',
+      borderRadius: '20px',
+      padding: '5px 12px',
+      fontSize: '14px',
+      fontWeight: '500',
+      border: isDarkMode ? '1px solid #3d4446' : '1px solid #e0e0e0',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    },
+    removeBtn: {
+      marginLeft: '6px',
+      cursor: 'pointer',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '18px',
+      height: '18px',
+      borderRadius: '50%',
+      backgroundColor: isDarkMode ? '#3d4446' : '#e0e0e0',
+      color: isDarkMode ? '#ffffff' : '#666666',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      transform: 'translateY(-1px)',
+      transition: 'all 0.2s ease'
+    }
+  };
+
   if (loading) {
     return <div className="loading-container">Loading workout programs...</div>;
   }
@@ -763,7 +832,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
         <>
           <div className="my-programs-header-workout">
             <h2>My Workout Programs</h2>
-            <button className="create-program-button-workout" onClick={handleCreateProgram}>
+            <button className="create-program-button-workout" onClick={handleOpenCreateModal}>
               <FaPlus /> Create New Program
             </button>
           </div>
@@ -1083,27 +1152,65 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
               </div>
               
               <div className="form-group-workout">
-                <label htmlFor="equipment">Equipment (comma-separated)</label>
-                <input 
-                  type="text" 
-                  id="equipment" 
-                  name="equipment" 
-                  value={newProgram.equipment.join(', ')}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Dumbbells, Barbell, Yoga Mat"
+                <label htmlFor="equipment">Equipment Needed</label>
+                <input
+                  type="text"
+                  id="equipment"
+                  value={newProgram.equipment}
+                  onChange={handleEquipmentChange}
+                  placeholder="e.g., Dumbbells, Barbell, Resistance Bands (comma separated)"
                 />
+                {newProgram.equipment && (
+                  <div style={tagStyles.container}>
+                    {parseCommaSeparatedValues(newProgram.equipment).map((item, index) => (
+                      <div key={index} style={tagStyles.tag}>
+                        {item}
+                        <span 
+                          style={tagStyles.removeBtn}
+                          onClick={() => {
+                            const updatedEquipment = parseCommaSeparatedValues(newProgram.equipment)
+                              .filter((_, i) => i !== index)
+                              .join(', ');
+                            setNewProgram({...newProgram, equipment: updatedEquipment});
+                          }}
+                        >
+                          ×
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="form-group-workout">
-                <label htmlFor="targetMuscles">Target Muscles (comma-separated)</label>
-                <input 
-                  type="text" 
-                  id="targetMuscles" 
-                  name="targetMuscles" 
-                  value={newProgram.targetMuscles.join(', ')}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Chest, Back, Legs"
+                <label htmlFor="targetMuscles">Target Muscle Groups</label>
+                <input
+                  type="text"
+                  id="targetMuscles"
+                  value={newProgram.targetMuscles}
+                  onChange={handleTargetMusclesChange}
+                  placeholder="e.g., Chest, Back, Legs (comma separated)"
                 />
+                {newProgram.targetMuscles && (
+                  <div style={tagStyles.container}>
+                    {parseCommaSeparatedValues(newProgram.targetMuscles).map((item, index) => (
+                      <div key={index} style={tagStyles.tag}>
+                        {item}
+                        <span 
+                          style={tagStyles.removeBtn}
+                          onClick={() => {
+                            const updatedMuscles = parseCommaSeparatedValues(newProgram.targetMuscles)
+                              .filter((_, i) => i !== index)
+                              .join(', ');
+                            setNewProgram({...newProgram, targetMuscles: updatedMuscles});
+                          }}
+                        >
+                          ×
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="form-row">
@@ -1230,7 +1337,7 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
               <button 
                 type="button"
                 className="create-button-workout"
-                onClick={handleSubmitProgram}
+                onClick={handleCreateProgram}
               >
                 <FaCheck /> Create Program
               </button>
@@ -1329,9 +1436,29 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                     id="edit-equipment"
                     name="equipment"
                     value={editFormData.equipment}
-                    onChange={(e) => handleExerciseChange(e)}
-                    placeholder="e.g., Dumbbells, Resistance Bands, None"
+                    onChange={handleEditEquipmentChange}
+                    placeholder="e.g., Dumbbells, Resistance Bands, None (comma separated)"
                   />
+                  {editFormData.equipment && (
+                    <div style={tagStyles.container}>
+                      {parseCommaSeparatedValues(editFormData.equipment).map((item, index) => (
+                        <div key={index} style={tagStyles.tag}>
+                          {item}
+                          <span 
+                            style={tagStyles.removeBtn}
+                            onClick={() => {
+                              const updatedEquipment = parseCommaSeparatedValues(editFormData.equipment)
+                                .filter((_, i) => i !== index)
+                                .join(', ');
+                              setEditFormData({...editFormData, equipment: updatedEquipment});
+                            }}
+                          >
+                            ×
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="form-group-workout">
@@ -1341,9 +1468,29 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
                     id="edit-targetMuscles"
                     name="targetMuscles"
                     value={editFormData.targetMuscles}
-                    onChange={(e) => handleExerciseChange(e)}
-                    placeholder="e.g., Chest, Back, Legs"
+                    onChange={handleEditTargetMusclesChange}
+                    placeholder="e.g., Chest, Back, Legs (comma separated)"
                   />
+                  {editFormData.targetMuscles && (
+                    <div style={tagStyles.container}>
+                      {parseCommaSeparatedValues(editFormData.targetMuscles).map((item, index) => (
+                        <div key={index} style={tagStyles.tag}>
+                          {item}
+                          <span 
+                            style={tagStyles.removeBtn}
+                            onClick={() => {
+                              const updatedMuscles = parseCommaSeparatedValues(editFormData.targetMuscles)
+                                .filter((_, i) => i !== index)
+                                .join(', ');
+                              setEditFormData({...editFormData, targetMuscles: updatedMuscles});
+                            }}
+                          >
+                            ×
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="form-group-workout">
