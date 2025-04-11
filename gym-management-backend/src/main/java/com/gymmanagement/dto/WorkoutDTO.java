@@ -24,4 +24,5 @@ public class WorkoutDTO {
     private Integer exercises; // Number of exercises
     private Integer completion; // Completion percentage (for UI)
     private List<WorkoutExerciseDTO> exerciseList;
+    private String imagePath;
 }

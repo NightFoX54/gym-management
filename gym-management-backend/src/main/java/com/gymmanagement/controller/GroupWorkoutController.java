@@ -220,7 +220,7 @@ public class GroupWorkoutController {
             Integer categoryId = Integer.parseInt(request.get("category_id").toString());
             Long trainerId = Long.parseLong(request.get("trainer_id").toString());
             
-            // Fix image path handling - check both possible keys
+            // Handle image path - check both image properties
             String imagePath = null;
             if (request.get("imagePath") != null) {
                 imagePath = (String) request.get("imagePath");
@@ -298,7 +298,14 @@ public class GroupWorkoutController {
             Integer duration = Integer.parseInt(request.get("duration").toString());
             Integer levelId = Integer.parseInt(request.get("level_id").toString());
             Integer categoryId = Integer.parseInt(request.get("category_id").toString());
-            String imagePath = request.get("imagePath") != null ? (String) request.get("imagePath") : null;
+            
+            // Check both image path properties to ensure we capture the field
+            String imagePath = null;
+            if (request.get("imagePath") != null) {
+                imagePath = (String) request.get("imagePath");
+            } else if (request.get("image_path") != null) {
+                imagePath = (String) request.get("image_path");
+            }
             
             GroupWorkout updatedWorkout = groupWorkoutService.updateGroupWorkout(
                 workoutId, name, description, capacity, duration, levelId, categoryId, imagePath);
@@ -313,6 +320,7 @@ public class GroupWorkoutController {
             response.put("category", updatedWorkout.getCategory().getCategoryName());
             response.put("trainer", updatedWorkout.getTrainer().getFirstName() + " " + updatedWorkout.getTrainer().getLastName());
             response.put("message", "Group workout updated successfully");
+            response.put("image", updatedWorkout.getImagePath()); // Add image path to response
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {

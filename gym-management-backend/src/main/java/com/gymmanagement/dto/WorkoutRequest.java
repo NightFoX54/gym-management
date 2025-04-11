@@ -19,4 +19,5 @@ public class WorkoutRequest {
     private List<String> equipment;
     private List<String> targetMuscles;
     private List<WorkoutExerciseDTO> exercises;
+    private String imagePath;
 }
