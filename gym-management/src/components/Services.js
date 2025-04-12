@@ -6,17 +6,6 @@ import { useNavigate } from 'react-router-dom';
 function Services({ isDarkMode, setIsDarkMode }) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setIsDarkMode(savedDarkMode);
-    document.body.classList.toggle('dark-mode', savedDarkMode);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', isDarkMode);
-    document.body.classList.toggle('dark-mode', isDarkMode);
-  }, [isDarkMode]);
-
   const services = [
     {
       id: 1,

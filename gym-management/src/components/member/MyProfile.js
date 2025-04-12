@@ -603,6 +603,43 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const toggleNewPasswordVisibility = () => setShowNewPassword(!showNewPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
+  // Enhanced phone number validation and formatting
+  const validatePhoneInput = (value, previousValue) => {
+    // If empty, return empty
+    if (!value) return '';
+    
+    // Allow only + at the beginning and numbers
+    const regex = /^(\+)?[0-9\s]*$/;
+    
+    if (!regex.test(value)) {
+      return previousValue;
+    }
+    
+    // Format: +XX XXX XXX XX XX or 0XXX XXX XX XX
+    let formatted = value.replace(/\s/g, ''); // Remove all spaces
+    
+    if (formatted.startsWith('+')) {
+      // International format
+      if (formatted.length > 13) {
+        formatted = formatted.slice(0, 13);
+      }
+      // Add spaces for international format
+      if (formatted.length > 3) formatted = formatted.slice(0, 3) + ' ' + formatted.slice(3);
+      if (formatted.length > 7) formatted = formatted.slice(0, 7) + ' ' + formatted.slice(7);
+      if (formatted.length > 11) formatted = formatted.slice(0, 11) + ' ' + formatted.slice(11);
+    } else {
+      // Local format
+      if (formatted.length > 11) {
+        formatted = formatted.slice(0, 11);
+      }
+      // Add spaces for local format
+      if (formatted.length > 4) formatted = formatted.slice(0, 4) + ' ' + formatted.slice(4);
+      if (formatted.length > 8) formatted = formatted.slice(0, 8) + ' ' + formatted.slice(8);
+    }
+    
+    return formatted;
+  };
+
   if (isLoading) {
     return (
       <div className="loading-container">
@@ -732,7 +769,10 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
                   type="tel"
                   name="phone"
                   value={profile.phone}
-                  onChange={handleChangeMember}
+                  onChange={(e) => {
+                    const newValue = validatePhoneInput(e.target.value, profile.phone);
+                    setProfile({...profile, phone: newValue});
+                  }}
                 />
               ) : (
                 <p>{profile.phone}</p>

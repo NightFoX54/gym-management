@@ -110,8 +110,18 @@ const FinancialPanel = () => {
   };
 
   const formatCurrencyForPDF = (amount, isExpense = false) => {
-    const formattedAmount = amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return `${isExpense ? '-' : '+'} ${formattedAmount},00 TL`;
+    // Format with 2 decimal places and proper thousand separators
+    const absAmount = Math.abs(amount);
+    const integerPart = Math.floor(absAmount);
+    const decimalPart = Math.round((absAmount - integerPart) * 100);
+    
+    // Format integer part with dot separators for thousands
+    const formattedInteger = integerPart.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    
+    // Combine with properly formatted decimal part
+    const formattedAmount = `${formattedInteger},${decimalPart.toString().padStart(2, '0')}`;
+    
+    return `${isExpense ? '-' : '+'} ${formattedAmount} TL`;
   };
 
   const currentData = financialData[timeFrame];

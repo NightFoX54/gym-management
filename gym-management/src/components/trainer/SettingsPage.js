@@ -151,10 +151,9 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
       }
     }
 
-    // For phone field, only allow numbers and basic phone characters
+    // For phone field, use our standardized validation and formatting
     if (field === 'phone') {
-      const phoneRegex = /^[0-9+\- ]*$/;
-      if (!phoneRegex.test(value)) return;
+      updatedValue = validatePhoneInput(value, formData.phone);
     }
 
     // Validate and set errors immediately
@@ -183,12 +182,15 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
         return '';
 
       case 'phone':
-        const phoneRegex = /^\+?[1-9][0-9\s-]{8,14}$/;
         if (!value) return 'Phone number is required';
-        if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+        // Use simple regex just to check for international or local format
+        const isValidPhone = value.startsWith('+') 
+          ? value.replace(/\s/g, '').length >= 8  // International format
+          : value.replace(/\s/g, '').length >= 10; // Local format
+        
+        if (!isValidPhone) {
           return 'Invalid phone format (e.g., +90 532 123 4567)';
         }
-        if (value.length > 255) return 'Phone number must be less than 255 characters';
         return '';
 
       case 'specialization':
@@ -221,7 +223,7 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
   };
 
   const validatePhoneNumber = (phone) => {
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    const phoneRegex = /^\+?[1-9][0-9\s-]{8,14}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   };
 
@@ -1184,6 +1186,43 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
       default:
         return null;
     }
+  };
+
+  // Enhanced phone number validation and formatting
+  const validatePhoneInput = (value, previousValue) => {
+    // If empty, return empty
+    if (!value) return '';
+    
+    // Allow only + at the beginning and numbers
+    const regex = /^(\+)?[0-9\s]*$/;
+    
+    if (!regex.test(value)) {
+      return previousValue;
+    }
+    
+    // Format: +XX XXX XXX XX XX or 0XXX XXX XX XX
+    let formatted = value.replace(/\s/g, ''); // Remove all spaces
+    
+    if (formatted.startsWith('+')) {
+      // International format
+      if (formatted.length > 13) {
+        formatted = formatted.slice(0, 13);
+      }
+      // Add spaces for international format
+      if (formatted.length > 3) formatted = formatted.slice(0, 3) + ' ' + formatted.slice(3);
+      if (formatted.length > 7) formatted = formatted.slice(0, 7) + ' ' + formatted.slice(7);
+      if (formatted.length > 11) formatted = formatted.slice(0, 11) + ' ' + formatted.slice(11);
+    } else {
+      // Local format
+      if (formatted.length > 11) {
+        formatted = formatted.slice(0, 11);
+      }
+      // Add spaces for local format
+      if (formatted.length > 4) formatted = formatted.slice(0, 4) + ' ' + formatted.slice(4);
+      if (formatted.length > 8) formatted = formatted.slice(0, 8) + ' ' + formatted.slice(8);
+    }
+    
+    return formatted;
   };
 
   return (

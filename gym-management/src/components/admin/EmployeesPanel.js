@@ -131,7 +131,7 @@ const EmployeesPanel = () => {
     return regex.test(email);
   };
 
-  // Phone number validation function
+  // Enhanced phone number validation and formatting
   const validatePhoneInput = (value, previousValue) => {
     // If empty, return empty
     if (!value) return '';
@@ -143,7 +143,29 @@ const EmployeesPanel = () => {
       return previousValue;
     }
     
-    return value;
+    // Format: +XX XXX XXX XX XX or 0XXX XXX XX XX
+    let formatted = value.replace(/\s/g, ''); // Remove all spaces
+    
+    if (formatted.startsWith('+')) {
+      // International format
+      if (formatted.length > 13) {
+        formatted = formatted.slice(0, 13);
+      }
+      // Add spaces for international format
+      if (formatted.length > 3) formatted = formatted.slice(0, 3) + ' ' + formatted.slice(3);
+      if (formatted.length > 7) formatted = formatted.slice(0, 7) + ' ' + formatted.slice(7);
+      if (formatted.length > 11) formatted = formatted.slice(0, 11) + ' ' + formatted.slice(11);
+    } else {
+      // Local format
+      if (formatted.length > 11) {
+        formatted = formatted.slice(0, 11);
+      }
+      // Add spaces for local format
+      if (formatted.length > 4) formatted = formatted.slice(0, 4) + ' ' + formatted.slice(4);
+      if (formatted.length > 8) formatted = formatted.slice(0, 8) + ' ' + formatted.slice(8);
+    }
+    
+    return formatted;
   };
 
   // Function to capitalize first letter of each word
@@ -585,7 +607,7 @@ const EmployeesPanel = () => {
       {showAddForm && (
         <div className="modal-overlay">
           <div className="modal">
-            <h3>Add New Employee</h3>
+            <h3>Add New Trainer</h3>
             <form onSubmit={handleAddEmployee}>
               <div className="add-employee-form">
                 <div className="form-content">
@@ -640,7 +662,7 @@ const EmployeesPanel = () => {
                         })}
                         required
                       />
-                      <small className="input-hint">Only numbers and a plus sign at the beginning are allowed</small>
+                      <small className="input-hint">Format: +XX XXX XXX XX XX or 0XXX XXX XX XX</small>
                     </div>
 
                     <div className="form-grid-full">

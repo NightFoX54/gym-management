@@ -368,7 +368,7 @@
 
 .body-diagram-image {
   max-height: 100%;
-  max-width: 100%;
+  max-width: 70%;
   object-fit: contain;
   z-index: 0;
   filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.15));
@@ -516,7 +516,7 @@
 
 .body-part-button.forearms-left {
   top: 35%;
-  left: 27%;
+  left: 25%;
   width: 28px;
   height: 30px;
   border-radius: 40%;
@@ -524,7 +524,7 @@
 
 .body-part-button.forearms-right {
   top: 35%;
-  right: 26%;
+  right: 24%;
   width: 28px;
   height: 30px;
   border-radius: 40%;
@@ -534,7 +534,7 @@
   top: 50%;
   left: 38%;
   width: 34px;
-  height: 55px;
+  height: 75px;
   border-radius: 40%;
 }
 
@@ -542,7 +542,7 @@
   top: 50%;
   right: 38%;
   width: 34px;
-  height: 55px;
+  height: 75px;
   border-radius: 40%;
 }
 
