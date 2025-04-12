@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 11 Nis 2025, 18:08:30
+-- Üretim Zamanı: 12 Nis 2025, 13:15:05
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -51,7 +51,8 @@ INSERT INTO `club_visits` (`id`, `user_id`, `check_in_date`, `check_in_time`, `c
 (8, 13, '2025-04-08', '23:59:40', '2025-04-08', '23:59:40'),
 (9, 13, '2025-04-09', '13:34:41', '2025-04-09', '13:34:41'),
 (10, 13, '2025-04-09', '13:34:46', '2025-04-09', '13:34:46'),
-(11, 13, '2025-04-10', '23:15:25', '2025-04-10', '23:15:26');
+(11, 13, '2025-04-10', '23:15:25', '2025-04-10', '23:15:26'),
+(12, 13, '2025-04-11', '21:32:29', '2025-04-11', '21:32:31');
 
 -- --------------------------------------------------------
 
@@ -74,7 +75,8 @@ CREATE TABLE `contact_forms` (
 --
 
 INSERT INTO `contact_forms` (`id`, `name`, `email`, `subject`, `message`, `is_read`, `date_created`) VALUES
-(3, 'deneme', 'deneme@gmail.com', 'deneme', 'deneme', 1, '2025-04-10 20:50:06');
+(3, 'deneme', 'deneme@gmail.com', 'deneme', 'deneme', 1, '2025-04-10 20:50:06'),
+(4, 'berkay', 'berkay@gmail.com', 'message', 'message', 1, '2025-04-11 21:28:51');
 
 -- --------------------------------------------------------
 
@@ -344,9 +346,9 @@ CREATE TABLE `market_products` (
 --
 
 INSERT INTO `market_products` (`id`, `image_path`, `product_name`, `category_id`, `price`, `stock`, `description`) VALUES
-(1, '/protein.png', 'Whey Protein Powder', 1, 599.99, 37, 'High-quality whey protein powder for muscle recovery - 2000g'),
-(2, '/bcaa.png', 'BCAA Amino Acids', 1, 299.99, 53, 'Essential amino acids for muscle growth and recovery - 400g'),
-(3, '/preworkout.png', 'Pre-Workout Energy', 1, 349.99, 37, 'Advanced pre-workout formula for maximum performance - 300g'),
+(1, '/protein.png', 'Whey Protein Powder', 1, 599.99, 36, 'High-quality whey protein powder for muscle recovery - 2000g'),
+(2, '/bcaa.png', 'BCAA Amino Acids', 1, 299.99, 52, 'Essential amino acids for muscle growth and recovery - 400g'),
+(3, '/preworkout.png', 'Pre-Workout Energy', 1, 349.99, 36, 'Advanced pre-workout formula for maximum performance - 300g'),
 (4, '/yoga-mat.png', 'Premium Yoga Mat', 2, 199.99, 25, 'Non-slip, eco-friendly yoga mat with alignment lines'),
 (5, '/dumbbells.png', 'Adjustable Dumbbell Set', 2, 1499.99, 12, 'Space-saving adjustable dumbbells 2-24kg each'),
 (6, '/bands.png', 'Resistance Bands Set', 2, 249.99, 30, 'Set of 5 resistance bands with different strength levels'),
@@ -390,7 +392,10 @@ INSERT INTO `market_product_sales` (`id`, `invoice_id`, `product_id`, `quantity`
 (12, 9, 2, 1),
 (13, 10, 1, 1),
 (14, 10, 2, 1),
-(15, 11, 2, 3);
+(15, 11, 2, 3),
+(16, 13, 1, 1),
+(17, 13, 2, 1),
+(18, 13, 3, 1);
 
 -- --------------------------------------------------------
 
@@ -422,7 +427,8 @@ INSERT INTO `market_sales_invoices` (`id`, `user_id`, `total_items`, `total_pric
 (8, 13, 2, 809.98, '2025-04-10 09:55:37', 'GYM-20250410-0001'),
 (9, 13, 2, 809.98, '2025-04-10 09:55:57', 'GYM-20250410-0002'),
 (10, 13, 2, 809.98, '2025-04-10 10:36:39', 'GYM-20250410-0003'),
-(11, 13, 3, 809.97, '2025-04-10 10:36:54', 'GYM-20250410-0004');
+(11, 13, 3, 809.97, '2025-04-10 10:36:54', 'GYM-20250410-0004'),
+(13, 13, 3, 1124.97, '2025-04-11 21:35:13', 'GYM-20250411-0001');
 
 -- --------------------------------------------------------
 
@@ -456,7 +462,8 @@ INSERT INTO `memberships` (`id`, `user_id`, `plan_id`, `discount_amount`, `paid_
 (14, 55, 1, 0.00, 800.00, '2025-04-08', '2025-05-08', 0, NULL, NULL),
 (15, 60, 2, 390.30, 3512.70, '2025-04-10', '2025-07-10', 0, NULL, NULL),
 (16, 61, 2, 0.00, 1301.00, '2025-04-10', '2025-05-10', 0, NULL, NULL),
-(19, 64, 2, 390.30, 3512.70, '2025-04-11', '2025-07-11', 0, NULL, NULL);
+(19, 64, 2, 390.30, 3512.70, '2025-04-11', '2025-07-11', 0, NULL, NULL),
+(20, 65, 2, 390.30, 3512.70, '2025-04-11', '2025-07-11', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -542,13 +549,6 @@ CREATE TABLE `password_reset_tokens` (
   `expiry_date` timestamp NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Tablo döküm verisi `password_reset_tokens`
---
-
-INSERT INTO `password_reset_tokens` (`id`, `token`, `user_id`, `expiry_date`) VALUES
-(19, 'ce025ae4-5f1a-4fcd-957f-a501c4918574', 13, '2025-04-11 20:23:17');
-
 -- --------------------------------------------------------
 
 --
@@ -575,7 +575,8 @@ INSERT INTO `payment_method` (`id`, `user_id`, `card_holder_name`, `card_number`
 (4, 55, 'berkay arıkan', '1243576124134124', '11/25', 123),
 (5, 60, 'berkay arıkan', '1243574654252637', '11/28', 123),
 (6, 61, 'berkay arıkan', '1241241234125123', '12/22', 123),
-(9, 64, 'berkay arıkan', '1251356135214124', '11/27', 123);
+(9, 64, 'berkay arıkan', '1251356135214124', '11/27', 123),
+(10, 65, 'Berkay Arıkan', '1245682341613413', '11/27', 123);
 
 -- --------------------------------------------------------
 
@@ -805,17 +806,18 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `profile_photo_path`, `email`, `phone_number`, `role`, `registration_date`, `password`) VALUES
 (1, 'Admin', 'User', '	/uploads/images/default-avatar.jpg	', 'admin@gymflex.com', NULL, 'ADMIN', '2025-03-15 01:50:43', '$2a$10$iZe2uBOqAzOxwqsNL80SIe90LOhfnGyhQ70Ht3tzjh4wIk5RTNr/S'),
-(2, 'Member', 'User', '	/uploads/images/default-avatar.jpg	', 'member@gymflex.com', NULL, 'MEMBER', '2025-03-15 01:50:43', '$2a$10$cUtC6MRZ9DT8DoOtCb.C6uPZS5XRO8WcaRuZ3b/ihEIkW8j.2Wkgi'),
-(3, 'Trainer', 'User', '	/uploads/images/default-avatar.jpg	', 'trainer@gymflex.com', '+905555555555', 'TRAINER', '2025-03-15 01:50:43', '$2a$10$lCA4owT8/KaSBzK02o5mYOXOYBmAzCekRRHdtiJMllCxt1fBA2mVu'),
-(13, 'berkay', 'arıkan', '/uploads/e2145a25-9c1c-4316-8fef-c82042f649ed.jpeg', 'berkayyy5445@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$.XoDe3Ce/3ZNLAJDY7FdIOvpF8SkCv6MMOx1xFb1gIwjzXhSwH6Ku'),
-(14, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$wHy72hXdOg6nxTrDyceFSezZm17bqSfxcMA3/Pr.Er.atZ9zbipqO'),
-(15, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay112233@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:24:37', '$2a$10$LIWsqpC/CqIIfqDmnFJUpuZvGbyvPPlU8hklt2JofubVYFrMX2ts.'),
-(16, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay123123@gmail.com', '05397837419', 'MEMBER', '2025-03-16 17:26:01', '$2a$10$/Z7JudNXYosrwAR7J2w9rOBR5xXJ7B/jOsh9Us7oyBJo85MTP79ou'),
-(27, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'deneme@gmail.com', '05397837419', 'MEMBER', '2025-04-08 12:08:41', '$2a$10$fnhRBNHd9FkiEXs33JFvDOo9YWhwQrmEQXWjUnJy7PuB5C.1cSGg.'),
-(55, 'deneme', 'deneme', '/uploads/images/default-avatar.jpg', 'denem123e@gmail.com', '05397837419', 'MEMBER', '2025-04-08 12:40:32', '$2a$10$ybJPWvBZTHUTc3OPv9PyWeNq9S/SelsYuPZXrnG5WXsiJEg/juWtS'),
-(60, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'de1261neme@gmail.com', '05397837419', 'MEMBER', '2025-04-10 20:06:28', '$2a$10$5EcpMlQ.MTvXnqTfoC4NXufCVHy5O.c9dJK.gMUMTvI6nDCfp18gq'),
-(61, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'denem123123e@gmail.com', '05397837419', 'MEMBER', '2025-04-10 23:37:33', '$2a$10$vPNiXKzA2dOaICab2hwu2.MB2x0L.1b6p6NLoapsvR5Q6dGM4I552'),
-(64, 'Berkay Mustafa', 'Arıkan', '/uploads/images/default-avatar.jpg', 'deneme123123@gmail.com', '05397837419', 'MEMBER', '2025-04-11 16:35:03', '$2a$10$71TUBLBIkj/0YihfTL/JaeyJirs.dic0jMcQlbK6VotBkkbGNRXtO');
+(2, 'Member', 'User', '	/uploads/images/default-avatar.jpg	', 'member@gymflex.com', '0539 783 7419', 'MEMBER', '2025-03-15 01:50:43', '$2a$10$cUtC6MRZ9DT8DoOtCb.C6uPZS5XRO8WcaRuZ3b/ihEIkW8j.2Wkgi'),
+(3, 'Trainer', 'User', '	/uploads/images/default-avatar.jpg	', 'trainer@gymflex.com', '0555 444 3322', 'TRAINER', '2025-03-15 01:50:43', '$2a$10$lCA4owT8/KaSBzK02o5mYOXOYBmAzCekRRHdtiJMllCxt1fBA2mVu'),
+(13, 'Berkay', 'Arıkan', '/uploads/e2145a25-9c1c-4316-8fef-c82042f649ed.jpeg', 'berkayyy5445@gmail.com', '0539 783 7419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$jy/b.Y3WgjB34MLw.my6le4mzZ5NIKrH7dx0ERwAS6iegYei8JyJO'),
+(14, 'Berkay', 'Arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '0555 999 8877', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$wHy72hXdOg6nxTrDyceFSezZm17bqSfxcMA3/Pr.Er.atZ9zbipqO'),
+(15, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay112233@gmail.com', '0555 888 7766', 'MEMBER', '2025-03-16 17:24:37', '$2a$10$LIWsqpC/CqIIfqDmnFJUpuZvGbyvPPlU8hklt2JofubVYFrMX2ts.'),
+(16, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay123123@gmail.com', '0555 777 6655', 'MEMBER', '2025-03-16 17:26:01', '$2a$10$/Z7JudNXYosrwAR7J2w9rOBR5xXJ7B/jOsh9Us7oyBJo85MTP79ou'),
+(27, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'deneme@gmail.com', '0555 666 5544', 'MEMBER', '2025-04-08 12:08:41', '$2a$10$fnhRBNHd9FkiEXs33JFvDOo9YWhwQrmEQXWjUnJy7PuB5C.1cSGg.'),
+(55, 'deneme', 'deneme', '/uploads/images/default-avatar.jpg', 'denem123e@gmail.com', '0555 555 4433', 'MEMBER', '2025-04-08 12:40:32', '$2a$10$ybJPWvBZTHUTc3OPv9PyWeNq9S/SelsYuPZXrnG5WXsiJEg/juWtS'),
+(60, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'de1261neme@gmail.com', '0555 987 6543', 'MEMBER', '2025-04-10 20:06:28', '$2a$10$5EcpMlQ.MTvXnqTfoC4NXufCVHy5O.c9dJK.gMUMTvI6nDCfp18gq'),
+(61, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'denem123123e@gmail.com', '0555 876 5432', 'MEMBER', '2025-04-10 23:37:33', '$2a$10$vPNiXKzA2dOaICab2hwu2.MB2x0L.1b6p6NLoapsvR5Q6dGM4I552'),
+(64, 'Berkay Mustafa', 'Arıkan', '/uploads/images/default-avatar.jpg', 'deneme123123@gmail.com', '0555 765 4321', 'MEMBER', '2025-04-11 16:35:03', '$2a$10$71TUBLBIkj/0YihfTL/JaeyJirs.dic0jMcQlbK6VotBkkbGNRXtO'),
+(65, 'Berkay', 'Arıkan', '/uploads/images/default-avatar.jpg', 'berkay123@gmail.com', '0555 333 2211', 'MEMBER', '2025-04-11 21:31:06', '$2a$10$iSOqmpMzL8UdxG7a0RkM1OOE7i6eZRnyeT8qfN.TVa1Q8L9aGHEuq');
 
 -- --------------------------------------------------------
 
@@ -1188,19 +1190,19 @@ ALTER TABLE `workout_levels`
 -- Tablo için AUTO_INCREMENT değeri `club_visits`
 --
 ALTER TABLE `club_visits`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `contact_forms`
 --
 ALTER TABLE `contact_forms`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `expenses_categories`
@@ -1272,19 +1274,19 @@ ALTER TABLE `market_products`
 -- Tablo için AUTO_INCREMENT değeri `market_product_sales`
 --
 ALTER TABLE `market_product_sales`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `market_sales_invoices`
 --
 ALTER TABLE `market_sales_invoices`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `memberships`
 --
 ALTER TABLE `memberships`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `membership_plans`
@@ -1308,13 +1310,13 @@ ALTER TABLE `member_training_plans`
 -- Tablo için AUTO_INCREMENT değeri `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `payment_method`
 --
 ALTER TABLE `payment_method`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `personal_training_ratings`
@@ -1374,7 +1376,7 @@ ALTER TABLE `trainer_settings`
 -- Tablo için AUTO_INCREMENT değeri `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workouts`
