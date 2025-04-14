@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import '../../styles/AdminPanels.css';
 import { message } from 'antd';
 import { FaUserFriends, FaUsers, FaEdit } from 'react-icons/fa';
+import { EditOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 const MembershipPanel = () => {
   // States for membership plans
@@ -11,6 +13,9 @@ const MembershipPanel = () => {
   // States for general prices
   const [generalPrices, setGeneralPrices] = useState([]);
   const [editingPrice, setEditingPrice] = useState(null);
+
+  // New states for edit mode (from CustomersPanel)
+  const [isEditing, setIsEditing] = useState(false);
 
   // Loading state
   const [loading, setLoading] = useState(true);
@@ -93,37 +98,36 @@ const MembershipPanel = () => {
     }
   };
 
-  // Handle membership plan edit
-  const handleEditPlan = (plan) => {
-    setEditingPlan({...plan});
-  };
-
-  // Handle general price edit
-  const handleEditPrice = (price) => {
-    setEditingPrice({...price});
-  };
-
-  // Handle cancel plan edit
-  const handleCancelPlan = () => {
+  // New edit system from CustomersPanel
+  const handleEditClick = () => {
+    setIsEditing(!isEditing);
     setEditingPlan(null);
-  };
-
-  // Handle cancel price edit
-  const handleCancelPrice = () => {
     setEditingPrice(null);
   };
 
-  // Save updated membership plan
-  const handleSavePlan = async () => {
+  const handleSelectPlan = (plan) => {
+    if (isEditing && !editingPlan) {
+      setEditingPlan({...plan});
+    }
+  };
+
+  const handleSelectPrice = (price) => {
+    if (isEditing && !editingPrice) {
+      setEditingPrice({...price});
+    }
+  };
+
+  // Handle save plan (using the new edit system)
+  const handleSavePlan = async (id, updatedData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/membership-management/plans/${editingPlan.id}`, {
+      const response = await fetch(`http://localhost:8080/api/membership-management/plans/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(editingPlan)
+        body: JSON.stringify(updatedData)
       });
       
       if (response.ok) {
@@ -142,17 +146,17 @@ const MembershipPanel = () => {
     }
   };
 
-  // Save updated general price
-  const handleSavePrice = async () => {
+  // Handle save price (using the new edit system)
+  const handleSavePrice = async (id, updatedData) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/membership-management/general-prices/${editingPrice.id}`, {
+      const response = await fetch(`http://localhost:8080/api/membership-management/general-prices/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(editingPrice)
+        body: JSON.stringify(updatedData)
       });
       
       if (response.ok) {
@@ -195,9 +199,26 @@ const MembershipPanel = () => {
     <div className="panel-container">
       <div className="panel-header">
         <h2>Membership Management</h2>
+        <div className="search-and-actions">
+          <div className="button-group">
+            <button 
+              onClick={handleEditClick} 
+              className={`edit-button ${isEditing ? 'active' : ''}`}
+            >
+              ✎
+            </button>
+          </div>
+        </div>
         <p className="subtitle">Configure membership plan prices and service rates</p>
       </div>
       
+      {isEditing && (
+        <div className="edit-mode-banner">
+          <span className="edit-icon">✏️</span>
+          <span className="edit-text">Edit Mode: Click on any row to edit information.</span>
+        </div>
+      )}
+
       {/* Membership Plans Section */}
       <div className="table-section">
         <div className="section-header">
@@ -218,95 +239,109 @@ const MembershipPanel = () => {
               No membership plans found.
             </div>
           ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Plan Name</th>
-                  <th>Price</th>
-                  <th>PT Sessions</th>
-                  <th>Market Discount (%)</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {membershipPlans.map(plan => (
-                  <tr key={plan.id} className={editingPlan && editingPlan.id === plan.id ? 'editing-row' : ''}>
-                    {editingPlan && editingPlan.id === plan.id ? (
-                      // Edit mode
-                      <>
-                        <td className="plan-name">{plan.planName}</td>
-                        <td>
-                          <div className="input-with-icon">
-                            <span className="currency-icon">₺</span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              className="price-input"
-                              value={editingPlan.planPrice}
-                              onChange={(e) => setEditingPlan({
-                                ...editingPlan,
-                                planPrice: parseFloat(e.target.value)
-                              })}
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            className="numeric-input"
-                            value={editingPlan.monthlyPtSessions}
-                            onChange={(e) => setEditingPlan({
-                              ...editingPlan,
-                              monthlyPtSessions: parseInt(e.target.value, 10)
-                            })}
-                          />
-                        </td>
-                        <td>
-                          <div className="input-with-icon">
-                            <input
-                              type="number"
-                              className="numeric-input percentage-input"
-                              value={editingPlan.marketDiscount}
-                              onChange={(e) => setEditingPlan({
-                                ...editingPlan,
-                                marketDiscount: parseInt(e.target.value, 10)
-                              })}
-                            />
-                            <span className="percentage-icon">%</span>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            <button className="save-button" onClick={handleSavePlan}>
-                              Save
-                            </button>
-                            <button className="cancel-button" onClick={handleCancelPlan}>
-                              Cancel
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      // View mode
-                      <>
-                        <td className="plan-name">{plan.planName}</td>
-                        <td><PriceBadge amount={plan.planPrice} /></td>
-                        <td><span className="session-count">{plan.monthlyPtSessions}</span></td>
-                        <td><span className="discount-badge">{plan.marketDiscount}%</span></td>
-                        <td>
-                          <div className="action-buttons">
-                            <button className="edit-button" onClick={() => handleEditPlan(plan)}>
-                              <FaEdit className="button-icon" />
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    )}
+            <div className={isEditing ? 'edit-mode-container' : ''}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Plan Name</th>
+                    <th>Price</th>
+                    <th>PT Sessions</th>
+                    <th>Market Discount (%)</th>
+                    {editingPlan && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {membershipPlans.map(plan => (
+                    <tr 
+                      key={plan.id} 
+                      onClick={() => handleSelectPlan(plan)}
+                      className={
+                        isEditing && !editingPlan
+                          ? 'selectable-row' 
+                          : ''
+                      }
+                    >
+                      {editingPlan?.id === plan.id ? (
+                        // Edit mode using CustomersPanel approach
+                        <>
+                          <td className="plan-name">{plan.planName}</td>
+                          <td>
+                            <div className="input-with-icon">
+                              <span className="currency-icon">₺</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                className="price-input"
+                                value={editingPlan.planPrice}
+                                onChange={(e) => setEditingPlan({
+                                  ...editingPlan,
+                                  planPrice: parseFloat(e.target.value)
+                                })}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              className="numeric-input"
+                              value={editingPlan.monthlyPtSessions}
+                              onChange={(e) => setEditingPlan({
+                                ...editingPlan,
+                                monthlyPtSessions: parseInt(e.target.value, 10)
+                              })}
+                            />
+                          </td>
+                          <td>
+                            <div className="input-with-icon">
+                              <input
+                                type="number"
+                                className="numeric-input percentage-input"
+                                value={editingPlan.marketDiscount}
+                                onChange={(e) => setEditingPlan({
+                                  ...editingPlan,
+                                  marketDiscount: parseInt(e.target.value, 10)
+                                })}
+                              />
+                              <span className="percentage-icon">%</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSavePlan(plan.id, editingPlan);
+                                }}
+                                className="save-button"
+                              >
+                                Save
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingPlan(null);
+                                }}
+                                className="cancel-button"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        // View mode 
+                        <>
+                          <td className="plan-name">{plan.planName}</td>
+                          <td><PriceBadge amount={plan.planPrice} /></td>
+                          <td><span className="session-count">{plan.monthlyPtSessions}</span></td>
+                          <td><span className="discount-badge">{plan.marketDiscount}%</span></td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -331,66 +366,80 @@ const MembershipPanel = () => {
               No service prices found.
             </div>
           ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Service Name</th>
-                  <th>Price</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {generalPrices.map(price => (
-                  <tr key={price.id} className={editingPrice && editingPrice.id === price.id ? 'editing-row' : ''}>
-                    {editingPrice && editingPrice.id === price.id ? (
-                      // Edit mode
-                      <>
-                        <td>{formatServiceName(price.name)}</td>
-                        <td>
-                          <div className="input-with-icon">
-                            <span className="currency-icon">₺</span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              className="price-input"
-                              value={editingPrice.price}
-                              onChange={(e) => setEditingPrice({
-                                ...editingPrice,
-                                price: parseFloat(e.target.value)
-                              })}
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            <button className="save-button" onClick={handleSavePrice}>
-                              Save
-                            </button>
-                            <button className="cancel-button" onClick={handleCancelPrice}>
-                              Cancel
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      // View mode
-                      <>
-                        <td>{formatServiceName(price.name)}</td>
-                        <td><PriceBadge amount={price.price} /></td>
-                        <td>
-                          <div className="action-buttons">
-                            <button className="edit-button" onClick={() => handleEditPrice(price)}>
-                              <FaEdit className="button-icon" />
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    )}
+            <div className={isEditing ? 'edit-mode-container' : ''}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Price</th>
+                    {editingPrice && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {generalPrices.map(price => (
+                    <tr 
+                      key={price.id} 
+                      onClick={() => handleSelectPrice(price)}
+                      className={
+                        isEditing && !editingPrice
+                          ? 'selectable-row' 
+                          : ''
+                      }
+                    >
+                      {editingPrice?.id === price.id ? (
+                        // Edit mode using CustomersPanel approach
+                        <>
+                          <td>{formatServiceName(price.name)}</td>
+                          <td>
+                            <div className="input-with-icon">
+                              <span className="currency-icon">₺</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                className="price-input"
+                                value={editingPrice.price}
+                                onChange={(e) => setEditingPrice({
+                                  ...editingPrice,
+                                  price: parseFloat(e.target.value)
+                                })}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSavePrice(price.id, editingPrice);
+                                }}
+                                className="save-button"
+                              >
+                                Save
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingPrice(null);
+                                }}
+                                className="cancel-button"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        // View mode 
+                        <>
+                          <td>{formatServiceName(price.name)}</td>
+                          <td><PriceBadge amount={price.price} /></td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -404,7 +453,7 @@ const MembershipPanel = () => {
         }
 
         .dark-mode .panel-container {
-          background: #2d3436;
+          background: #2c2c2c;
           color: #f5f6fa;
         }
         
@@ -412,6 +461,8 @@ const MembershipPanel = () => {
           margin-bottom: 2.5rem;
           border-bottom: 1px solid rgba(0, 0, 0, 0.1);
           padding-bottom: 1.5rem;
+          display: flex;
+          flex-direction: column;
         }
         
         .dark-mode .panel-header {
@@ -437,6 +488,70 @@ const MembershipPanel = () => {
         .dark-mode .subtitle {
           color: #bdc3c7;
         }
+
+        .search-and-actions {
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+
+        .button-group {
+          display: flex;
+          gap: 10px;
+        }
+
+        .edit-button {
+          background-color: #f0f0f0;
+          border: none;
+          border-radius: 4px;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 16px;
+          transition: all 0.2s ease;
+          color: #ffffff;
+        }
+
+        .edit-button:hover {
+          background-color: #e0e0e0;
+          transform: translateY(-2px);
+          box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-button.active {
+          background-color: #1890ff;
+          color: white;
+        }
+
+        .edit-mode-banner {
+          display: flex;
+          align-items: center;
+          background-color: #e8f5e9;
+          padding: 10px 15px;
+          border-radius: 5px;
+          margin-bottom: 20px;
+        }
+
+        .edit-icon {
+          margin-right: 10px;
+          font-size: 18px;
+        }
+
+        .edit-text {
+          color: #2e7d32;
+        }
+
+        .selectable-row {
+          cursor: pointer;
+        }
+
+        .selectable-row:hover {
+          background-color: #f1f8ff;
+        }
         
         .table-section {
           margin-bottom: 3rem;
@@ -445,12 +560,12 @@ const MembershipPanel = () => {
           padding: 1.5rem;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
-
-        .dark-mode .table-section {
-          background: #343a40;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
         
+        .dark-mode .table-section {
+          background: #222222;
+          color: #f5f6fa;
+        }
+
         .section-header {
           display: flex;
           justify-content: space-between;
@@ -549,16 +664,6 @@ const MembershipPanel = () => {
           background-color: rgba(255, 255, 255, 0.03);
         }
         
-        .editing-row {
-          background-color: rgba(52, 152, 219, 0.05);
-          box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-          transition: all 0.3s ease;
-        }
-        
-        .dark-mode .editing-row {
-          background-color: rgba(52, 152, 219, 0.1);
-        }
-        
         .price-badge {
           display: inline-block;
           padding: 0.45rem 0.7rem;
@@ -607,8 +712,9 @@ const MembershipPanel = () => {
         }
         
         .service-icon {
-          margin-right: 0.75rem;
-          color: #3498db;
+          margin-top: 1.5rem;
+          margin-right: 0.5rem;
+          color: #ff4757;
           font-size: 1.2rem;
         }
         
@@ -666,75 +772,6 @@ const MembershipPanel = () => {
           font-size: 1.05rem;
         }
         
-        .button-icon {
-          margin-right: 8px;
-        }
-        
-        .action-buttons {
-          display: flex;
-          gap: 10px;
-        }
-        
-        .edit-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 8px 16px;
-          background-color: #3498db;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-weight: 500;
-        }
-        
-        .edit-button:hover {
-          background-color: #2980b9;
-          transform: translateY(-2px);
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .save-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 8px 16px;
-          background-color: #2ecc71;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-weight: 500;
-        }
-        
-        .save-button:hover {
-          background-color: #27ae60;
-          transform: translateY(-2px);
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .cancel-button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 8px 16px;
-          background-color: #e74c3c;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-weight: 500;
-        }
-        
-        .cancel-button:hover {
-          background-color: #c0392b;
-          transform: translateY(-2px);
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-        }
-        
         .loading-cell {
           text-align: center;
         }
@@ -789,6 +826,51 @@ const MembershipPanel = () => {
         
         .mt-5 {
           margin-top: 2.5rem;
+        }
+
+        .action-buttons {
+          display: flex;
+          gap: 10px;
+        }
+        
+        .save-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 16px;
+          background-color: #2ecc71;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-weight: 500;
+        }
+        
+        .save-button:hover {
+          background-color: #27ae60;
+          transform: translateY(-2px);
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cancel-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 16px;
+          background-color: #e74c3c;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-weight: 500;
+        }
+        
+        .cancel-button:hover {
+          background-color:rgb(167, 52, 39) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
         }
       `}</style>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSun, FaMoon, FaArrowLeft, FaCamera, FaSpinner, FaKey, FaEye, FaEyeSlash } from 'react-icons/fa';
 import '../../styles/MyProfile.css';
+import '../../styles/Navbar.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -659,12 +660,12 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
           </button>
 
           <button 
-            className={`dark-mode-toggle-myprofile ${isDarkMode ? 'active' : ''}`} 
+            className={`dark-mode-toggle-main ${isDarkMode ? 'active' : ''}`} 
             onClick={toggleDarkModeMember}
           >
-            <FaSun className="toggle-icon-myprofile sun-myprofile" />
-            <div className="toggle-circle-myprofile"></div>
-            <FaMoon className="toggle-icon-myprofile moon-myprofile" />
+            <i className="fas fa-sun toggle-icon-main" style={{ marginLeft: '2px' }}></i>
+            <div className="toggle-circle-main"></div>
+            <i className="fas fa-moon toggle-icon-main" style={{ marginRight: '2px' }}></i>
           </button>
         </div>
 

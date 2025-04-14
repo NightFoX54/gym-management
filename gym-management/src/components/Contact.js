@@ -16,6 +16,11 @@ function Contact({ isDarkMode, setIsDarkMode }) {
   const [isSuccess, setIsSuccess] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Define icon styles to differentiate from trainer page
+  const iconStyle = {
+    color: '#ff4757', // Blue color for all icons
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -108,7 +113,7 @@ function Contact({ isDarkMode, setIsDarkMode }) {
           <div className="contact-info">
             <div className="info-card">
               <div className="info-icon">
-                <i className="fas fa-map-marker-alt"></i>
+                <i className="fas fa-map-marker-alt" style={iconStyle}></i>
               </div>
               <h3>Visit Us</h3>
               <p>Barbaros Mahallesi, Begonya Sokak No:15</p>
@@ -117,7 +122,7 @@ function Contact({ isDarkMode, setIsDarkMode }) {
 
             <div className="info-card">
               <div className="info-icon">
-                <i className="fas fa-phone"></i>
+                <i className="fas fa-phone" style={iconStyle}></i>
               </div>
               <h3>Call Us</h3>
               <p>+90 (0212) 527 00 27</p>
@@ -126,7 +131,7 @@ function Contact({ isDarkMode, setIsDarkMode }) {
 
             <div className="info-card">
               <div className="info-icon">
-                <i className="fas fa-envelope"></i>
+                <i className="fas fa-envelope" style={iconStyle}></i>
               </div>
               <h3>Email Us</h3>
               <p>info@gymflex.com</p>
@@ -135,7 +140,7 @@ function Contact({ isDarkMode, setIsDarkMode }) {
 
             <div className="info-card">
               <div className="info-icon">
-                <i className="fas fa-clock"></i>
+                <i className="fas fa-clock" style={iconStyle}></i>
               </div>
               <h3>Working Hours</h3>
               <p>Monday - Sunday</p>

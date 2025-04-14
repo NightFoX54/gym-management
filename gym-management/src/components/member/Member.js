@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   FaBell,
   FaUserCircle,
@@ -23,11 +24,15 @@ import {
   FaSignOutAlt,
   FaStopwatch,
   FaPlay,
+  FaEdit,
+  FaUserCog,
+  FaIdCard,
 } from "react-icons/fa";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import "../../styles/Member.css";
 import "../../styles/PageTransitions.css";
+import "../../styles/Navbar.css";
 import { logout } from '../../utils/auth';
 
 const Member = ({ isDarkMode, setIsDarkMode }) => {
@@ -609,12 +614,12 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
           <div className="member-header-member card-animate stagger-1">
             <h1>Member Dashboard</h1>
             <button
-              className={`dark-mode-toggle-member ${isDarkMode ? "active" : ""}`}
+              className={`dark-mode-toggle-main ${isDarkMode ? "active" : ""}`}
               onClick={toggleDarkMode}
             >
-              <FaSun className="toggle-icon-member sun-member" />
-              <div className="toggle-circle-member"></div>
-              <FaMoon className="toggle-icon-member moon-member" />
+              <i className="fas fa-sun toggle-icon-main" style={{ marginLeft: '2px' }}></i>
+              <div className="toggle-circle-main"></div>
+              <i className="fas fa-moon toggle-icon-main" style={{ marginRight: '2px' }}></i>
             </button>
           </div>
 

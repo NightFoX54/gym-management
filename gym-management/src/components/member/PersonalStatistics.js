@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowLeft, FaSun, FaMoon, FaChartLine, FaDumbbell, FaRunning, FaHeartbeat } from 'react-icons/fa';
+import { FaArrowLeft, FaSun, FaMoon, FaChartLine, FaChartPie, FaChartBar, FaCalendarAlt } from 'react-icons/fa';
 import '../../styles/PersonalStatistics.css';
+import '../../styles/Navbar.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -63,12 +64,12 @@ const PersonalStatistics = ({ isDarkMode, setIsDarkMode }) => {
           </button>
 
           <button 
-            className={`dark-mode-toggle-personalstatistics ${isDarkMode ? 'active' : ''}`} 
+            className={`dark-mode-toggle-main ${isDarkMode ? 'active' : ''}`} 
             onClick={toggleDarkModeMember}
           >
-            <FaSun className="toggle-icon-personalstatistics sun-personalstatistics" />
-            <div className="toggle-circle-personalstatistics"></div>
-            <FaMoon className="toggle-icon-personalstatistics moon-personalstatistics" />
+            <i className="fas fa-sun toggle-icon-main" style={{ marginLeft: '2px' }}></i>
+            <div className="toggle-circle-main"></div>
+            <i className="fas fa-moon toggle-icon-main" style={{ marginRight: '2px' }}></i>
           </button>
         </div>
 
@@ -79,7 +80,7 @@ const PersonalStatistics = ({ isDarkMode, setIsDarkMode }) => {
 
         <div className="statistics-grid-personalstatistics">
           <div className="stat-card-personalstatistics card-animate stagger-1">
-            <FaDumbbell className="stat-icon-personalstatistics" />
+            <FaChartPie className="stat-icon-personalstatistics" />
             <h3>Workout Stats</h3>
             <div className="stat-details-personalstatistics">
               <p>Total Workouts: {stats.workouts.total}</p>
@@ -89,7 +90,7 @@ const PersonalStatistics = ({ isDarkMode, setIsDarkMode }) => {
           </div>
 
           <div className="stat-card-personalstatistics card-animate stagger-2">
-            <FaRunning className="stat-icon-personalstatistics" />
+            <FaChartBar className="stat-icon-personalstatistics" />
             <h3>Progress</h3>
             <div className="stat-details-personalstatistics">
               <p>Current Weight: {stats.progress.weight} kg</p>
@@ -100,7 +101,7 @@ const PersonalStatistics = ({ isDarkMode, setIsDarkMode }) => {
           </div>
 
           <div className="stat-card-personalstatistics card-animate stagger-3">
-            <FaHeartbeat className="stat-icon-personalstatistics" />
+            <FaCalendarAlt className="stat-icon-personalstatistics" />
             <h3>Achievements</h3>
             <div className="achievements-list-personalstatistics">
               {stats.achievements.map((achievement, index) => (

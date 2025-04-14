@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaCreditCard, FaCheckCircle, FaTimesCircle, FaArrowLeft, FaSun, FaMoon, FaSync, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import '../../styles/MembershipStatus.css';
+import '../../styles/Navbar.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -485,12 +486,12 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
           </button>
 
           <button 
-            className={`dark-mode-toggle-membershipstatus ${isDarkMode ? 'active' : ''}`} 
+            className={`dark-mode-toggle-main ${isDarkMode ? 'active' : ''}`} 
             onClick={toggleDarkModeMember}
           >
-            <FaSun className="toggle-icon-membershipstatus sun-membershipstatus" />
-            <div className="toggle-circle-membershipstatus"></div>
-            <FaMoon className="toggle-icon-membershipstatus moon-membershipstatus" />
+            <i className="fas fa-sun toggle-icon-main" style={{ marginLeft: '2px' }}></i>
+            <div className="toggle-circle-main"></div>
+            <i className="fas fa-moon toggle-icon-main" style={{ marginRight: '2px' }}></i>
           </button>
         </div>
 
