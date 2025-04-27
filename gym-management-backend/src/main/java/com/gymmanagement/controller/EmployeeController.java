@@ -230,6 +230,7 @@ public class EmployeeController {
             newTrainer.setPhoneNumber(request.get("phone").toString());
             newTrainer.setRole("TRAINER");
             newTrainer.setRegistrationDate(LocalDateTime.now());
+            newTrainer.setProfilePhotoPath("/uploads/images/default-avatar.jpg");
             
             // Set default password and encrypt it
             newTrainer.setPassword(passwordEncoder.encode("trainer123"));
