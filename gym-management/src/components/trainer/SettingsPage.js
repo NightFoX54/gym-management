@@ -184,12 +184,14 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
       case 'phone':
         if (!value) return 'Phone number is required';
         // Use simple regex just to check for international or local format
-        const isValidPhone = value.startsWith('+') 
-          ? value.replace(/\s/g, '').length >= 8  // International format
-          : value.replace(/\s/g, '').length >= 10; // Local format
-        
+        const cleaned = value.replace(/\s/g, ''); // remove all spaces
+
+        const isValidPhone = value.startsWith('+')
+          ? cleaned.length >= 8
+          : (cleaned.length === 10 || (cleaned.length === 11 && cleaned.startsWith('0')));
+
         if (!isValidPhone) {
-          return 'Invalid phone format (e.g., +90 532 123 4567)';
+          return 'Invalid phone format (e.g., +90 532 123 4567 or 0539 783 7419)';
         }
         return '';
 
@@ -223,9 +225,12 @@ const SettingsPage = ({ isDarkMode, onSettingsUpdate }) => {
   };
 
   const validatePhoneNumber = (phone) => {
-    const phoneRegex = /^\+?[1-9][0-9\s-]{8,14}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ''));
+    const cleaned = phone.replace(/\s/g, ''); // remove spaces
+  
+    const phoneRegex = /^(\+?[1-9][0-9]{7,13}|0[0-9]{10})$/;
+    return phoneRegex.test(cleaned);
   };
+  
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

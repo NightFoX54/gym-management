@@ -12,6 +12,7 @@ function Login({ isDarkMode = false, setIsDarkMode = () => {} }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
 
@@ -39,15 +40,19 @@ function Login({ isDarkMode = false, setIsDarkMode = () => {} }) {
       });
 
       if (response.data && response.data.token) {
-        localStorage.setItem('user', JSON.stringify({
+        const userData = {
           id: response.data.id,
           token: response.data.token,
           role: response.data.role,
-          name: response.data.name
-        }));
+          name: response.data.name,
+          email: response.data.email,
+          rememberMe: rememberMe,
+          loginTime: new Date().getTime()
+        };
+
+        localStorage.setItem('user', JSON.stringify(userData));
 
         console.log('Login successful:', response.data);
-
         navigate(response.data.redirectUrl || '/');
       }
     } catch (err) {
@@ -120,7 +125,7 @@ function Login({ isDarkMode = false, setIsDarkMode = () => {} }) {
 
           <div className="form-options">
             <label className="remember-me">
-              <input type="checkbox" /> Remember me
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Remember me
             </label>
             <a href="/forgot-password" className="forgot-password">Forgot password?</a>
           </div>

@@ -27,6 +27,8 @@ import {
   FaEdit,
   FaUserCog,
   FaIdCard,
+  FaEyeSlash,
+  FaEye,
 } from "react-icons/fa";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -112,6 +114,69 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
   // Replace the mock upcoming sessions with actual sessions data
   const [upcomingSessions, setUpcomingSessions] = useState([]);
+
+  // Add state for password change modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Add new state for password change success modal
+  const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false);
+
+  // Add styles directly in component
+  const styles = {
+    successModal: {
+      backgroundColor: isDarkMode ? '#444444' : 'white',
+      borderRadius: '10px',
+      padding: '30px',
+      width: '400px',
+      maxWidth: '90vw',
+      boxShadow: '0 5px 20px rgba(0, 0, 0, 0.2)',
+      textAlign: 'center',
+      position: 'relative',
+      color: isDarkMode ? 'var(--text-light)' : 'inherit'
+    },
+    successIcon: {
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      width: '70px',
+      height: '70px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '32px',
+      margin: '0 auto 20px'
+    },
+    heading: {
+      fontSize: '22px',
+      marginBottom: '15px',
+      color: '#4CAF50'
+    },
+    paragraph: {
+      marginBottom: '25px',
+      fontSize: '16px',
+      lineHeight: '1.5'
+    },
+    button: {
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      border: 'none',
+      padding: '10px 25px',
+      borderRadius: '5px',
+      fontSize: '16px',
+      cursor: 'pointer',
+      transition: 'background-color 0.3s'
+    }
+  };
 
   // Fetch user profile data
   useEffect(() => {
@@ -300,6 +365,33 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   useEffect(() => {
     fetchUserSessions();
   }, [userId, userInfo.token]);
+
+  // Check for default password on component mount
+  useEffect(() => {
+    const checkDefaultPassword = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: userInfo.email,
+            password: 'member123' // Default password
+          })
+        });
+
+        if (response.ok) {
+          // If login with default password succeeds, show password change modal
+          setShowPasswordModal(true);
+        }
+      } catch (err) {
+        console.error('Error checking password:', err);
+      }
+    };
+
+    checkDefaultPassword();
+  }, [userInfo.email]);
 
   const handleLogoutMember = () => {
     logout();
@@ -564,6 +656,149 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
     } catch (err) {
       console.error(`Error ${workoutStatus.isCheckedIn ? 'checking out' : 'checking in'}:`, err);
     }
+  };
+
+  // Add password change handlers from MyProfile.js
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Validate password strength for new password
+    if (name === 'newPassword') {
+      const error = validatePassword(value);
+      setPasswordErrors(prev => ({
+        ...prev,
+        newPassword: error
+      }));
+    }
+    
+    // Check if passwords match for confirm password
+    if (name === 'confirmPassword') {
+      if (value !== passwordData.newPassword) {
+        setPasswordErrors(prev => ({
+          ...prev,
+          confirmPassword: "Passwords don't match"
+        }));
+      } else {
+        setPasswordErrors(prev => ({
+          ...prev,
+          confirmPassword: ""
+        }));
+      }
+    }
+  };
+
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    if (password.length < minLength) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!hasUpperCase) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!hasNumber) {
+      return "Password must contain at least one number";
+    }
+    if (!hasSpecialChar) {
+      return "Password must contain at least one special character";
+    }
+    
+    return ""; // No error
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validatePasswordForm()) {
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    setPasswordErrors({});
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/members/${userId}/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify({
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        if (data.message === 'Incorrect old password') {
+          setPasswordErrors(prev => ({
+            ...prev,
+            oldPassword: 'Current password is incorrect'
+          }));
+        } else {
+          setPasswordErrors(prev => ({
+            ...prev,
+            general: data.message || 'Failed to change password'
+          }));
+        }
+        return;
+      }
+      
+      // Password changed successfully
+      setShowPasswordModal(false);
+      setPasswordData({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      
+      // Show success modal
+      setShowPasswordSuccessModal(true);
+      
+    } catch (err) {
+      console.error('Error changing password:', err);
+      setPasswordErrors(prev => ({
+        ...prev,
+        general: 'Network error. Please try again.'
+      }));
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const validatePasswordForm = () => {
+    const errors = {};
+    
+    if (!passwordData.oldPassword) {
+      errors.oldPassword = "Current password is required";
+    }
+    
+    const newPasswordError = validatePassword(passwordData.newPassword);
+    if (newPasswordError) {
+      errors.newPassword = newPasswordError;
+    }
+    
+    if (!passwordData.confirmPassword) {
+      errors.confirmPassword = "Please confirm your new password";
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      errors.confirmPassword = "Passwords don't match";
+    }
+    
+    setPasswordErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Add function to close success modal
+  const closeSuccessModal = () => {
+    setShowPasswordSuccessModal(false);
   };
 
   return (
@@ -888,6 +1123,118 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
                   Save
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add Password Change Modal */}
+        {showPasswordModal && (
+          <div className="password-modal-overlay">
+            <div className="password-modal">
+              <h3>Change Your Password</h3>
+              <p className="password-change-warning">
+                Your password needs to be changed for security reasons.
+              </p>
+              
+              {passwordErrors.general && (
+                <div className="password-error-message">{passwordErrors.general}</div>
+              )}
+              
+              <div className="password-field">
+                <label htmlFor="oldPassword">Current Password</label>
+                <div className="password-input-container">
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    id="oldPassword"
+                    name="oldPassword"
+                    value={passwordData.oldPassword}
+                    onChange={handlePasswordChange}
+                    className={passwordErrors.oldPassword ? 'error' : ''}
+                  />
+                  <div className="password-toggle-icon" onClick={() => setShowOldPassword(!showOldPassword)}>
+                    {showOldPassword ? <FaEyeSlash /> : <FaEye />}
+                  </div>
+                </div>
+                {passwordErrors.oldPassword && <span className="field-error">{passwordErrors.oldPassword}</span>}
+              </div>
+              
+              <div className="password-field">
+                <label htmlFor="newPassword">New Password</label>
+                <div className="password-input-container">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    id="newPassword"
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className={passwordErrors.newPassword ? 'error' : ''}
+                  />
+                  <div className="password-toggle-icon" onClick={() => setShowNewPassword(!showNewPassword)}>
+                    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                  </div>
+                </div>
+                {passwordErrors.newPassword && <span className="field-error">{passwordErrors.newPassword}</span>}
+                <div className="password-requirements">
+                  <p><strong>Password must include:</strong></p>
+                  <ul>
+                    <li>At least 8 characters</li>
+                    <li>At least one uppercase letter (A-Z)</li>
+                    <li>At least one number (0-9)</li>
+                    <li>At least one special character (!@#$%^&*)</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="password-field">
+                <label htmlFor="confirmPassword">Confirm New Password</label>
+                <div className="password-input-container">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className={passwordErrors.confirmPassword ? 'error' : ''}
+                  />
+                  <div className="password-toggle-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </div>
+                </div>
+                {passwordErrors.confirmPassword && <span className="field-error">{passwordErrors.confirmPassword}</span>}
+              </div>
+              
+              <div className="password-modal-buttons">
+                <button 
+                  className="save-button" 
+                  onClick={handlePasswordSubmit}
+                  disabled={isChangingPassword || 
+                    !passwordData.oldPassword || 
+                    !passwordData.newPassword || 
+                    !passwordData.confirmPassword ||
+                    Object.values(passwordErrors).some(error => error !== '')}
+                >
+                  {isChangingPassword ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Password Success Modal */}
+        {showPasswordSuccessModal && (
+          <div className="modal-overlay">
+            <div style={styles.successModal}>
+              <div style={styles.successIcon}>
+                <FaCheck />
+              </div>
+              <h3 style={styles.heading}>Password Changed Successfully!</h3>
+              <p style={styles.paragraph}>Your password has been updated. Please use your new password the next time you log in.</p>
+              <button 
+                style={styles.button} 
+                onClick={closeSuccessModal}
+              >
+                OK
+              </button>
             </div>
           </div>
         )}

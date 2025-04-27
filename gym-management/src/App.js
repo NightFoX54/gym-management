@@ -216,9 +216,48 @@ function App() {
     localStorage.getItem('darkMode') === 'true' || false
   );
   
+  // Add a state to track authentication
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  
   useEffect(() => {
     localStorage.setItem('darkMode', isDarkMode);
   }, [isDarkMode]);
+
+  // Check authentication when the app loads
+  useEffect(() => {
+    const user = checkAuth();
+    setIsUserAuthenticated(!!user);
+    
+    // Optional: You can also recheck periodically
+    const intervalId = setInterval(() => {
+      const currentUser = checkAuth();
+      setIsUserAuthenticated(!!currentUser);
+    }, 60000); // Check every minute
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const checkAuth = () => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      return null;
+    }
+
+    const user = JSON.parse(userData);
+    // If rememberMe is false, check if session is still valid (e.g., 24 hours)
+    if (!user.rememberMe) {
+      const sessionTimeout = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
+      const currentTime = new Date().getTime();
+      
+      if (currentTime - user.loginTime > sessionTimeout) {
+        console.log("deneme");
+        localStorage.removeItem('user');
+        return null;
+      }
+    }
+    
+    return user;
+  };
 
   return (
     <>

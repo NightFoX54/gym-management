@@ -692,20 +692,6 @@ const EmployeesPanel = () => {
                               required
                             />
                           </div>
-                          
-                          <div className="form-grid-full">
-                            <div className="input-group">
-                              <label htmlFor="shift-schedule">Shift Schedule Image URL</label>
-                              <input
-                                id="shift-schedule"
-                                type="text"
-                                placeholder="Enter image URL for shift schedule"
-                                value={newEmployee.shiftSchedule}
-                                onChange={(e) => setNewEmployee({...newEmployee, shiftSchedule: e.target.value})}
-                                required
-                              />
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>

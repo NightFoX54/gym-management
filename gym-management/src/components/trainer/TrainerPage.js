@@ -68,6 +68,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SettingsPage from './SettingsPage';
 import axios from 'axios'; // Add the axios import
 import { format } from 'date-fns'; // Add date-fns import
+import { FaCheck, FaEye, FaEyeSlash } from 'react-icons/fa'; // Add these icons
 
 const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -127,12 +128,229 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
   const [dialogSessionErrors, setDialogSessionErrors] = useState({});
   const [dialogSessionValid, setDialogSessionValid] = useState(false);
 
+  // Add state for password change modal
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Add state for success modal
+  const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false);
+  
+  // Add styles directly in component
+  const styles = {
+    successModal: {
+      backgroundColor: isDarkMode ? '#444444' : 'white',
+      borderRadius: '10px',
+      padding: '30px',
+      width: '400px',
+      maxWidth: '90vw',
+      boxShadow: '0 5px 20px rgba(0, 0, 0, 0.2)',
+      textAlign: 'center',
+      position: 'relative',
+      color: isDarkMode ? 'var(--text-light)' : 'inherit'
+    },
+    successIcon: {
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      width: '70px',
+      height: '70px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '32px',
+      margin: '0 auto 20px'
+    },
+    heading: {
+      fontSize: '22px',
+      marginBottom: '15px',
+      color: '#4CAF50'
+    },
+    paragraph: {
+      marginBottom: '25px',
+      fontSize: '16px',
+      lineHeight: '1.5'
+    },
+    button: {
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      border: 'none',
+      padding: '10px 25px',
+      borderRadius: '5px',
+      fontSize: '16px',
+      cursor: 'pointer',
+      transition: 'background-color 0.3s'
+    }
+  };
+
   useEffect(() => {
     fetchTrainerData();
     fetchTodaySessions();
     fetchTrainerRatings();
     fetchClients(); // Add this new function call
   }, []);
+
+  // Get user info from localStorage
+  const userInfoString = localStorage.getItem('user');
+  const userInfo = JSON.parse(userInfoString || '{}');
+  const userId = userInfo.id;
+  
+  // Check for default password on component mount
+  useEffect(() => {
+    const checkDefaultPassword = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: userInfo.email,
+            password: 'trainer123' // Default password for trainers
+          })
+        });
+
+        if (response.ok) {
+          // If login with default password succeeds, show password change modal
+          setShowPasswordModal(true);
+        }
+      } catch (err) {
+        console.error('Error checking password:', err);
+      }
+    };
+
+    checkDefaultPassword();
+  }, [userInfo.email]);
+  
+  // Password validation function
+  const validatePassword = (password) => {
+    if (!password) return 'Password is required';
+    if (password.length < 8) return 'Password must be at least 8 characters';
+    if (!/[A-Z]/.test(password)) return 'Password must include an uppercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must include a number';
+    if (!/[!@#$%^&*]/.test(password)) return 'Password must include a special character';
+    return '';
+  };
+  
+  // Password form validation
+  const validatePasswordForm = () => {
+    const errors = {};
+    
+    const oldPasswordError = passwordData.oldPassword ? '' : 'Current password is required';
+    if (oldPasswordError) errors.oldPassword = oldPasswordError;
+    
+    const newPasswordError = validatePassword(passwordData.newPassword);
+    if (newPasswordError) errors.newPassword = newPasswordError;
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setPasswordErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
+  // Password input change handler
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Validate password strength for new password
+    if (name === 'newPassword') {
+      const error = validatePassword(value);
+      setPasswordErrors(prev => ({
+        ...prev,
+        newPassword: error
+      }));
+    }
+    
+    // Validate confirm password
+    if (name === 'confirmPassword') {
+      const error = value !== passwordData.newPassword ? 'Passwords do not match' : '';
+      setPasswordErrors(prev => ({
+        ...prev,
+        confirmPassword: error
+      }));
+    }
+  };
+  
+  // Submit password change
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validatePasswordForm()) {
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    setPasswordErrors({});
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/members/${userId}/change-password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userInfo.token}`
+        },
+        body: JSON.stringify({
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        if (data.message === 'Incorrect old password') {
+          setPasswordErrors(prev => ({
+            ...prev,
+            oldPassword: 'Current password is incorrect'
+          }));
+        } else {
+          setPasswordErrors(prev => ({
+            ...prev,
+            general: data.message || 'Failed to change password'
+          }));
+        }
+        return;
+      }
+      
+      // Password changed successfully
+      setShowPasswordModal(false);
+      setPasswordData({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      
+      // Show success modal
+      setShowPasswordSuccessModal(true);
+      
+    } catch (err) {
+      console.error('Error changing password:', err);
+      setPasswordErrors(prev => ({
+        ...prev,
+        general: 'Network error. Please try again.'
+      }));
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+  
+  // Function to close success modal
+  const closeSuccessModal = () => {
+    setShowPasswordSuccessModal(false);
+  };
 
   // Add the showAlert function that was missing
   const showAlert = (message, severity) => {
@@ -1797,6 +2015,120 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
           )}
         </AnimatePresence>
       </Box>
+      
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="modal-overlay">
+          <div className="password-modal">
+            <h3>Change Your Password</h3>
+            {passwordData.oldPassword === 'trainer123' ? (
+              <p className="alert-message">
+                You are using the default password. Please change it for security purposes.
+              </p>
+            ) : null}
+            
+            {passwordErrors.general && (
+              <p className="error-message">{passwordErrors.general}</p>
+            )}
+            
+            <div className="password-field">
+              <label htmlFor="oldPassword">Current Password</label>
+              <div className="password-input-container">
+                <input
+                  type={showOldPassword ? "text" : "password"}
+                  id="oldPassword"
+                  name="oldPassword"
+                  value={passwordData.oldPassword}
+                  onChange={handlePasswordChange}
+                  className={passwordErrors.oldPassword ? 'error' : ''}
+                />
+                <div className="password-toggle-icon" onClick={() => setShowOldPassword(!showOldPassword)}>
+                  {showOldPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </div>
+              {passwordErrors.oldPassword && <span className="field-error">{passwordErrors.oldPassword}</span>}
+            </div>
+            
+            <div className="password-field">
+              <label htmlFor="newPassword">New Password</label>
+              <div className="password-input-container">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  id="newPassword"
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                  className={passwordErrors.newPassword ? 'error' : ''}
+                />
+                <div className="password-toggle-icon" onClick={() => setShowNewPassword(!showNewPassword)}>
+                  {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </div>
+              {passwordErrors.newPassword && <span className="field-error">{passwordErrors.newPassword}</span>}
+              <div className="password-requirements">
+                <p><strong>Password must include:</strong></p>
+                <ul>
+                  <li>At least 8 characters</li>
+                  <li>At least one uppercase letter (A-Z)</li>
+                  <li>At least one number (0-9)</li>
+                  <li>At least one special character (!@#$%^&*)</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="password-field">
+              <label htmlFor="confirmPassword">Confirm New Password</label>
+              <div className="password-input-container">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                  className={passwordErrors.confirmPassword ? 'error' : ''}
+                />
+                <div className="password-toggle-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </div>
+              {passwordErrors.confirmPassword && <span className="field-error">{passwordErrors.confirmPassword}</span>}
+            </div>
+            
+            <div className="password-modal-buttons">
+              <button 
+                className="save-button" 
+                onClick={handlePasswordSubmit}
+                disabled={isChangingPassword || 
+                  !passwordData.oldPassword || 
+                  !passwordData.newPassword || 
+                  !passwordData.confirmPassword ||
+                  Object.values(passwordErrors).some(error => error !== '')}
+              >
+                {isChangingPassword ? 'Changing...' : 'Change Password'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Password Success Modal */}
+      {showPasswordSuccessModal && (
+        <div className="modal-overlay">
+          <div style={styles.successModal}>
+            <div style={styles.successIcon}>
+              <FaCheck />
+            </div>
+            <h3 style={styles.heading}>Password Changed Successfully!</h3>
+            <p style={styles.paragraph}>Your password has been updated. Please use your new password the next time you log in.</p>
+            <button 
+              style={styles.button} 
+              onClick={closeSuccessModal}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
