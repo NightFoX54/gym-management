@@ -48,6 +48,7 @@ public class AuthService {
                 .token(token)
                 .role(user.getRole())
                 .name(user.getName())
+                .email(user.getEmail())
                 .redirectUrl(redirectUrl)
                 .build();
     }
