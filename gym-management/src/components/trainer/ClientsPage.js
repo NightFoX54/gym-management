@@ -76,6 +76,7 @@ import {
   History as HistoryIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
+  FitnessCenter as FitnessCenterIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import RequestCard from './RequestCard';
@@ -111,6 +112,37 @@ const ClientsPage = ({ isDarkMode }) => {
   const [clientDetails, setClientDetails] = useState(null);
   const [clientDetailsLoading, setClientDetailsLoading] = useState(false);
   const [requestTabValue, setRequestTabValue] = useState(0);
+  const [progressData, setProgressData] = useState(null);
+  const [progressLoading, setProgressLoading] = useState(false);
+  const [goalFormOpen, setGoalFormOpen] = useState(false);
+  const [statFormOpen, setStatFormOpen] = useState(false);
+  const [newGoal, setNewGoal] = useState({ targetWeight: '', targetBodyFat: '', notes: '' });
+  const [newStat, setNewStat] = useState({ weight: '', bodyFat: '', height: '', notes: '' });
+  const [sessionDetails, setSessionDetails] = useState(null);
+  const [sessionDetailsLoading, setSessionDetailsLoading] = useState(false);
+  const [exerciseProgress, setExerciseProgress] = useState(null);
+  const [exerciseProgressLoading, setExerciseProgressLoading] = useState(false);
+  const [exerciseGoalFormOpen, setExerciseGoalFormOpen] = useState(false);
+  const [exerciseProgressFormOpen, setExerciseProgressFormOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [newExerciseGoal, setNewExerciseGoal] = useState({
+    exerciseName: '',
+    targetWeight: '',
+    targetReps: '',
+    targetDuration: '',
+    targetDistance: '',
+    notes: '',
+    goalDate: new Date().toISOString().slice(0, 10)
+  });
+  const [newExerciseProgress, setNewExerciseProgress] = useState({
+    exerciseName: '',
+    weight: '',
+    reps: '',
+    duration: '',
+    distance: '',
+    notes: '',
+    entryDate: new Date().toISOString().slice(0, 10)
+  });
 
   useEffect(() => {
     // Get the trainer ID from user in local storage
@@ -146,6 +178,33 @@ const ClientsPage = ({ isDarkMode }) => {
       fetchRescheduleRequests();
     }
   }, [trainerId]);
+
+  useEffect(() => {
+    if (clientDetails) {
+      // Always start with profile tab when opening client details
+      setClientDetailTab(0);
+    }
+  }, [clientDetails]);
+
+  useEffect(() => {
+    if (clientDetails && clientDetailTab === 1) {
+      setProgressLoading(true);
+      fetch(`http://localhost:8080/api/progress/${clientDetails.id}`)
+        .then(res => res.json())
+        .then(data => setProgressData(data))
+        .finally(() => setProgressLoading(false));
+    }
+  }, [clientDetails, clientDetailTab]);
+
+  useEffect(() => {
+    if (clientDetails && clientDetailTab === 3) {
+      setExerciseProgressLoading(true);
+      fetch(`http://localhost:8080/api/exercise-progress/${clientDetails.id}`)
+        .then(res => res.json())
+        .then(data => setExerciseProgress(data))
+        .finally(() => setExerciseProgressLoading(false));
+    }
+  }, [clientDetails, clientDetailTab]);
 
   const fetchClients = async () => {
     setLoading(true);
@@ -533,84 +592,44 @@ const ClientsPage = ({ isDarkMode }) => {
     // Toggle expanded state
     if (expandedClientId === clientId) {
       setExpandedClientId(null);
+      setSessionDetails(null);
       return;
     }
     
     setExpandedClientId(clientId);
     setClientDetailTab(0);
     setClientDetailsLoading(true);
+    setSessionDetailsLoading(true);
     
     try {
-      // In a real application, fetch detailed client data from API
-      // For now, we'll simulate a response with more detailed info
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
       // Find the basic client info from our current list
       const clientBasicInfo = clients.find(c => c.id === clientId);
-      
       if (!clientBasicInfo) {
         throw new Error("Client not found");
       }
-      
-      // Mock additional client details
-      const mockClientDetails = {
-        ...clientBasicInfo,
-        age: 32,
-        height: 175, // cm
-        currentWeight: 78, // kg
-        startingWeight: 85, // kg
-        targetWeight: 72, // kg
-        bodyFatPercentage: 18,
-        fitnessGoals: ["Weight loss", "Muscle gain", "Increased endurance"],
-        medicalConditions: "None",
-        dietaryRestrictions: "Lactose intolerant",
-        emergencyContact: {
-          name: "John Smith",
-          relation: "Spouse",
-          phone: "+1234567890"
-        },
-        progressHistory: [
-          { date: "2023-01-10", weight: 85, notes: "Initial assessment" },
-          { date: "2023-02-10", weight: 83, notes: "Good progress with cardio" },
-          { date: "2023-03-10", weight: 81, notes: "Started strength training" },
-          { date: "2023-04-10", weight: 79, notes: "Improved diet adherence" },
-          { date: "2023-05-10", weight: 78, notes: "Current weight" }
-        ],
-        upcomingSessions: [
-          { date: "2023-05-25", time: "09:00", type: "Personal Training" },
-          { date: "2023-05-27", time: "10:30", type: "Assessment" },
-          { date: "2023-05-31", time: "09:00", type: "Personal Training" }
-        ],
-        completedSessions: 22,
-        missedSessions: 3,
-        workoutPlans: [
-          { 
-            name: "Full Body Strength", 
-            days: ["Monday", "Thursday"],
-            exercises: [
-              { name: "Squats", sets: 3, reps: "10-12", weight: "50kg" },
-              { name: "Bench Press", sets: 3, reps: "8-10", weight: "60kg" },
-              { name: "Deadlifts", sets: 3, reps: "8", weight: "70kg" }
-            ] 
-          },
-          { 
-            name: "Cardio", 
-            days: ["Tuesday", "Friday"],
-            exercises: [
-              { name: "Treadmill", duration: "20min", intensity: "Moderate" },
-              { name: "Cycling", duration: "15min", intensity: "High" },
-              { name: "Rowing", duration: "10min", intensity: "Moderate" }
-            ] 
-          }
-        ]
-      };
-      
-      setClientDetails(mockClientDetails);
+      setClientDetails(clientBasicInfo);
+
+      // Fetch session details
+      console.log('Fetching session details for client:', clientId);
+      const sessionRes = await fetch(`http://localhost:8080/api/trainer/${trainerId}/clients/${clientId}/sessions`);
+      if (!sessionRes.ok) throw new Error('Failed to fetch session details');
+      const sessionData = await sessionRes.json();
+      console.log('Session details received:', sessionData);
+      setSessionDetails(sessionData);
+
+      // Fetch progress data
+      setProgressLoading(true);
+      const progressRes = await fetch(`http://localhost:8080/api/progress/${clientId}`);
+      if (!progressRes.ok) throw new Error('Failed to fetch progress data');
+      const progress = await progressRes.json();
+      setProgressData(progress);
     } catch (error) {
       console.error('Error fetching client details:', error);
       showAlert('Failed to load client details', 'error');
     } finally {
       setClientDetailsLoading(false);
+      setSessionDetailsLoading(false);
+      setProgressLoading(false);
     }
   };
 
@@ -637,7 +656,7 @@ const ClientsPage = ({ isDarkMode }) => {
 
     return (
       <TableRow>
-        <TableCell colSpan={6} sx={{ p: 0, borderBottom: '1px solid', borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)' }}>
+        <TableCell colSpan={6} sx={{ p: 0, borderBottom: '1px solid', borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255,255,255,0.1)' }}>
           <Collapse 
             in={true} 
             timeout={500} 
@@ -696,8 +715,9 @@ const ClientsPage = ({ isDarkMode }) => {
                   }}
                 >
                   <Tab label="Profile" icon={<InfoIcon />} iconPosition="start" />
-                  <Tab label="Progress" icon={<BarChartIcon />} iconPosition="start" />
+                  <Tab label="Weight Progress" icon={<BarChartIcon />} iconPosition="start" />
                   <Tab label="Sessions" icon={<HistoryIcon />} iconPosition="start" />
+                  <Tab label="Exercise Progress" icon={<FitnessCenterIcon />} iconPosition="start" />
                 </Tabs>
                 
                 {/* Profile Tab */}
@@ -729,25 +749,13 @@ const ClientsPage = ({ isDarkMode }) => {
                           <Stack spacing={2}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                               <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                Age
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
-                                color: '#fff', // White text in both modes
-                                fontWeight: 500
-                              }}>
-                                {clientDetails.age} years
-                              </Typography>
-                            </Box>
-                            {/* Update the remaining info boxes similarly */}
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
                                 Height
                               </Typography>
                               <Typography variant="body2" sx={{ 
                                 color: '#fff', // White text in both modes
                                 fontWeight: 500
                               }}>
-                                {clientDetails.height} cm
+                                {progressData?.statisticsHistory[progressData?.statisticsHistory.length - 1]?.height || '-'} cm
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -758,7 +766,7 @@ const ClientsPage = ({ isDarkMode }) => {
                                 color: '#fff', // White text in both modes
                                 fontWeight: 500
                               }}>
-                                {clientDetails.startingWeight} kg
+                                {progressData?.statisticsHistory[0]?.weight || '-'} kg
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -769,7 +777,7 @@ const ClientsPage = ({ isDarkMode }) => {
                                 color: '#fff', // White text in both modes
                                 fontWeight: 500
                               }}>
-                                {clientDetails.currentWeight} kg
+                                {progressData?.statisticsHistory[progressData?.statisticsHistory.length - 1]?.weight || '-'} kg
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -780,7 +788,7 @@ const ClientsPage = ({ isDarkMode }) => {
                                 color: '#fff', // White text in both modes
                                 fontWeight: 500
                               }}>
-                                {clientDetails.targetWeight} kg
+                                {progressData?.goal?.targetWeight || '-'} kg
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -791,13 +799,27 @@ const ClientsPage = ({ isDarkMode }) => {
                                 color: '#fff', // White text in both modes
                                 fontWeight: 500
                               }}>
-                                {clientDetails.bodyFatPercentage}%
+                                {progressData?.statisticsHistory[progressData?.statisticsHistory.length - 1]?.bodyFat || '-'} %
                               </Typography>
                             </Box>
                           </Stack>
+                          {(!progressData?.goal) && (
+                            <Box sx={{ mt: 3, textAlign: 'center' }}>
+                              <Button 
+                                variant="contained" 
+                                color="primary" 
+                                onClick={() => setClientDetailTab(1)}
+                                sx={{ 
+                                  bgcolor: '#ff4757',
+                                  '&:hover': { bgcolor: '#ff3747' }
+                                }}
+                              >
+                                Set Client Goals
+                              </Button>
+                            </Box>
+                          )}
                         </Box>
                       </Grid>
-                    
                       
                       <Grid item xs={12} md={4}>
                         <Box sx={{ 
@@ -841,27 +863,39 @@ const ClientsPage = ({ isDarkMode }) => {
                               {clientDetails.phone || 'Not provided'}
                             </Typography>
                           </Box>
-                          
-                          <Typography variant="subtitle2" sx={{ 
-                            color: '#ff6b81', // Keep accent color
-                            mt: 2, 
-                            mb: 0.5,
-                            fontWeight: 600
-                          }}>
-                            Emergency Contact
-                          </Typography>
-                          <Box>
-                            <Typography variant="body2" sx={{ 
-                              color: '#fff', // White text in both modes
-                              fontWeight: 500
-                            }}>
-                              {clientDetails.emergencyContact.name} ({clientDetails.emergencyContact.relation})
-                            </Typography>
-                            <Typography variant="body2" sx={{ 
-                              color: 'rgba(255,255,255,0.75)' // Slightly dimmed white
-                            }}>
-                              {clientDetails.emergencyContact.phone}
-                            </Typography>
+                          <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                            {clientDetails.phone && (
+                              <Button
+                                variant="outlined"
+                                startIcon={<WhatsApp />}
+                                onClick={() => handleContactAction('whatsapp', clientDetails.phone)}
+                                sx={{
+                                  color: '#25D366',
+                                  borderColor: '#25D366',
+                                  '&:hover': {
+                                    borderColor: '#25D366',
+                                    bgcolor: 'rgba(37, 211, 102, 0.1)',
+                                  }
+                                }}
+                              >
+                                WhatsApp
+                              </Button>
+                            )}
+                            <Button
+                              variant="outlined"
+                              startIcon={<Mail />}
+                              onClick={() => handleContactAction('email', clientDetails.email)}
+                              sx={{
+                                color: '#EA4335',
+                                borderColor: '#EA4335',
+                                '&:hover': {
+                                  borderColor: '#EA4335',
+                                  bgcolor: 'rgba(234, 67, 53, 0.1)',
+                                }
+                              }}
+                            >
+                              Email
+                            </Button>
                           </Box>
                         </Box>
                       </Grid>
@@ -876,208 +910,259 @@ const ClientsPage = ({ isDarkMode }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <Grid container spacing={3}>
-                      <Grid item xs={12} md={6}>
-                        <Box sx={{ 
-                          p: 2.5, 
-                          bgcolor: 'rgba(255,255,255,0.08)', // Lighter panel that complements header gradient
-                          borderRadius: '10px',
-                          border: '1px solid',
-                          borderColor: 'rgba(255,255,255,0.12)',
-                        }}>
-                          <Typography variant="subtitle1" gutterBottom sx={{ 
-                            color: '#ff6b81', // Keep accent color
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1
-                          }}>
-                            <BarChartIcon fontSize="small" /> Weight Progress
-                          </Typography>
-                          <Divider sx={{ mb: 2 }} />
-                          
-                          <Box sx={{ 
-                            mt: 3, 
-                            mb: 4, 
-                            height: 20, 
-                            width: '100%', 
-                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                            borderRadius: 5,
-                            position: 'relative',
-                            overflow: 'hidden',
-                            border: '1px solid',
-                            borderColor: isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'
-                          }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={((clientDetails.startingWeight - clientDetails.currentWeight) / 
-                                    (clientDetails.startingWeight - clientDetails.targetWeight)) * 100}
-                              sx={{
-                                height: '100%',
-                                borderRadius: 5,
-                                backgroundColor: 'transparent',
-                                '& .MuiLinearProgress-bar': {
-                                  backgroundColor: '#ff4757',
-                                }
-                              }}
+                    {progressLoading ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                        <CircularProgress color="primary" />
+                      </Box>
+                    ) : progressData && !progressData.goal ? (
+                      <Box sx={{ textAlign: 'center', py: 6 }}>
+                        <Typography variant="h6" color="error" gutterBottom>
+                          No goal set. Please set a goal to start tracking progress.
+                        </Typography>
+                        <Button variant="contained" color="primary" onClick={() => setGoalFormOpen(true)}>
+                          Set Goal
+                        </Button>
+                        <Dialog open={goalFormOpen} onClose={() => setGoalFormOpen(false)}>
+                          <DialogTitle>Set Progress Goal</DialogTitle>
+                          <DialogContent>
+                            <TextField
+                              label="Target Weight (kg)"
+                              type="number"
+                              fullWidth
+                              margin="normal"
+                              value={newGoal.targetWeight}
+                              onChange={e => setNewGoal({ ...newGoal, targetWeight: e.target.value })}
                             />
-                            
-                            <Box sx={{ 
-                              position: 'absolute', 
-                              left: 0, 
-                              right: 0, 
-                              top: 0, 
-                              bottom: 0, 
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}>
-                              <Typography variant="caption" sx={{ 
-                                color: '#fff', 
-                                fontWeight: 'bold',
-                                textShadow: '0 1px 2px rgba(0,0,0,0.5)'
-                              }}>
-                                {Math.round(((clientDetails.startingWeight - clientDetails.currentWeight) / 
-                                          (clientDetails.startingWeight - clientDetails.targetWeight)) * 100)}%
-                              </Typography>
+                            <TextField
+                              label="Target Body Fat (%)"
+                              type="number"
+                              fullWidth
+                              margin="normal"
+                              value={newGoal.targetBodyFat}
+                              onChange={e => setNewGoal({ ...newGoal, targetBodyFat: e.target.value })}
+                            />
+                            <TextField
+                              label="Notes"
+                              fullWidth
+                              margin="normal"
+                              value={newGoal.notes}
+                              onChange={e => setNewGoal({ ...newGoal, notes: e.target.value })}
+                            />
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={() => setGoalFormOpen(false)}>Cancel</Button>
+                            <Button onClick={handleSetGoal} variant="contained" color="primary">Save Goal</Button>
+                          </DialogActions>
+                        </Dialog>
+                      </Box>
+                    ) : progressData && progressData.goal ? (
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} md={6}>
+                          <Box sx={{ p: 2.5, bgcolor: 'rgba(255,255,255,0.08)', borderRadius: '10px', border: '1px solid', borderColor: 'rgba(255,255,255,0.12)' }}>
+                            <Typography variant="subtitle1" gutterBottom sx={{ color: '#ff6b81', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <BarChartIcon fontSize="small" /> Weight Progress
+                            </Typography>
+                            <Divider sx={{ mb: 2 }} />
+                            <Box sx={{ mt: 3, mb: 4, height: 20, width: '100%', bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', borderRadius: 5, position: 'relative', overflow: 'hidden', border: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={(() => {
+                                  const stats = progressData.statisticsHistory;
+                                  if (!stats || stats.length === 0) return 0;
+                                  const start = stats[0].weight;
+                                  const current = stats[stats.length - 1].weight;
+                                  const target = progressData.goal.targetWeight;
+                                  if (!start || !current || !target || start === target) return 0;
+                                  return ((start - current) / (start - target)) * 100;
+                                })()}
+                                sx={{ height: '100%', borderRadius: 5, backgroundColor: 'transparent', '& .MuiLinearProgress-bar': { backgroundColor: '#ff4757' } }}
+                              />
+                              <Box sx={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Typography variant="caption" sx={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                  {(() => {
+                                    const stats = progressData.statisticsHistory;
+                                    if (!stats || stats.length === 0) return '0%';
+                                    const start = stats[0].weight;
+                                    const current = stats[stats.length - 1].weight;
+                                    const target = progressData.goal.targetWeight;
+                                    if (!start || !current || !target || start === target) return '0%';
+                                    return Math.round(((start - current) / (start - target)) * 100) + '%';
+                                  })()}
+                                </Typography>
+                              </Box>
                             </Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <Box>
+                                <Typography variant="caption" color="rgba(255,255,255,0.7)">Starting</Typography>
+                                <Typography variant="body2" sx={{ color: '#fff', fontWeight: 600 }}>
+                                  {progressData.statisticsHistory.length > 0 ? progressData.statisticsHistory[0].weight : '-'} kg
+                                </Typography>
+                              </Box>
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="caption" color="rgba(255,255,255,0.7)">Current</Typography>
+                                <Typography variant="body2" sx={{ color: '#ff4757', fontWeight: 600 }}>
+                                  {progressData.statisticsHistory.length > 0 ? progressData.statisticsHistory[progressData.statisticsHistory.length - 1].weight : '-'} kg
+                                </Typography>
+                              </Box>
+                              <Box sx={{ textAlign: 'right' }}>
+                                <Typography variant="caption" color="rgba(255,255,255,0.7)">Target</Typography>
+                                <Typography variant="body2" sx={{ color: '#fff', fontWeight: 600 }}>
+                                  {progressData.goal.targetWeight} kg
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Typography variant="subtitle2" sx={{ color: isDarkMode ? '#ff6b81' : '#ff4757', mt: 4, mb: 1, fontWeight: 600 }}>
+                              Weight Loss Stats
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                              <Box>
+                                <Typography variant="body2" color="rgba(255,255,255,0.7)">Total Loss</Typography>
+                                <Typography variant="body1" sx={{ color: '#fff', fontWeight: 600 }}>
+                                  {(() => {
+                                    const stats = progressData.statisticsHistory;
+                                    if (!stats || stats.length === 0) return '-';
+                                    const start = stats[0].weight;
+                                    const current = stats[stats.length - 1].weight;
+                                    return (start - current).toFixed(1) + ' kg';
+                                  })()}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="body2" color="rgba(255,255,255,0.7)">Still To Go</Typography>
+                                <Typography variant="body1" sx={{ color: '#fff', fontWeight: 600 }}>
+                                  {(() => {
+                                    const stats = progressData.statisticsHistory;
+                                    if (!stats || stats.length === 0) return '-';
+                                    const current = stats[stats.length - 1].weight;
+                                    const target = progressData.goal.targetWeight;
+                                    return (current - target).toFixed(1) + ' kg';
+                                  })()}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                              <Button variant="outlined" color="primary" onClick={() => setGoalFormOpen(true)}>
+                                Update Goal
+                              </Button>
+                              <Button variant="contained" color="primary" onClick={() => setStatFormOpen(true)}>
+                                Add Progress Entry
+                              </Button>
+                            </Box>
+                            {/* Goal Form Dialog */}
+                            <Dialog open={goalFormOpen} onClose={() => setGoalFormOpen(false)}>
+                              <DialogTitle>Set Progress Goal</DialogTitle>
+                              <DialogContent>
+                                <TextField
+                                  label="Target Weight (kg)"
+                                  type="number"
+                                  fullWidth
+                                  margin="normal"
+                                  value={newGoal.targetWeight}
+                                  onChange={e => setNewGoal({ ...newGoal, targetWeight: e.target.value })}
+                                />
+                                <TextField
+                                  label="Target Body Fat (%)"
+                                  type="number"
+                                  fullWidth
+                                  margin="normal"
+                                  value={newGoal.targetBodyFat}
+                                  onChange={e => setNewGoal({ ...newGoal, targetBodyFat: e.target.value })}
+                                />
+                                <TextField
+                                  label="Notes"
+                                  fullWidth
+                                  margin="normal"
+                                  value={newGoal.notes}
+                                  onChange={e => setNewGoal({ ...newGoal, notes: e.target.value })}
+                                />
+                              </DialogContent>
+                              <DialogActions>
+                                <Button onClick={() => setGoalFormOpen(false)}>Cancel</Button>
+                                <Button onClick={handleSetGoal} variant="contained" color="primary">Save Goal</Button>
+                              </DialogActions>
+                            </Dialog>
+                            {/* Stat Form Dialog */}
+                            <Dialog open={statFormOpen} onClose={() => setStatFormOpen(false)}>
+                              <DialogTitle>Add Progress Entry</DialogTitle>
+                              <DialogContent>
+                                <TextField
+                                  label="Weight (kg)"
+                                  type="number"
+                                  fullWidth
+                                  margin="normal"
+                                  value={newStat.weight}
+                                  onChange={e => setNewStat({ ...newStat, weight: e.target.value })}
+                                />
+                                <TextField
+                                  label="Body Fat (%)"
+                                  type="number"
+                                  fullWidth
+                                  margin="normal"
+                                  value={newStat.bodyFat}
+                                  onChange={e => setNewStat({ ...newStat, bodyFat: e.target.value })}
+                                />
+                                <TextField
+                                  label="Height (cm)"
+                                  type="number"
+                                  fullWidth
+                                  margin="normal"
+                                  value={newStat.height}
+                                  onChange={e => setNewStat({ ...newStat, height: e.target.value })}
+                                />
+                                <TextField
+                                  label="Notes"
+                                  fullWidth
+                                  margin="normal"
+                                  value={newStat.notes}
+                                  onChange={e => setNewStat({ ...newStat, notes: e.target.value })}
+                                />
+                              </DialogContent>
+                              <DialogActions>
+                                <Button onClick={() => setStatFormOpen(false)}>Cancel</Button>
+                                <Button onClick={handleAddStat} variant="contained" color="primary">Add Entry</Button>
+                              </DialogActions>
+                            </Dialog>
                           </Box>
-                          
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Box>
-                              <Typography variant="caption" color="rgba(255,255,255,0.7)">
-                                Starting
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
-                                color: '#fff', // White text in both modes
-                                fontWeight: 600
-                              }}>
-                                {clientDetails.startingWeight} kg
-                              </Typography>
-                            </Box>
-                            <Box sx={{ textAlign: 'center' }}>
-                              <Typography variant="caption" color="rgba(255,255,255,0.7)">
-                                Current
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
-                                color: '#ff4757', // Keep accent color for this highlight
-                                fontWeight: 600
-                              }}>
-                                {clientDetails.currentWeight} kg
-                              </Typography>
-                            </Box>
-                            <Box sx={{ textAlign: 'right' }}>
-                              <Typography variant="caption" color="rgba(255,255,255,0.7)">
-                                Target
-                              </Typography>
-                              <Typography variant="body2" sx={{ 
-                                color: '#fff', // White text in both modes
-                                fontWeight: 600
-                              }}>
-                                {clientDetails.targetWeight} kg
-                              </Typography>
-                            </Box>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Box sx={{ p: 2.5, bgcolor: 'rgba(255,255,255,0.08)', borderRadius: '10px', border: '1px solid', borderColor: 'rgba(255,255,255,0.12)' }}>
+                            <Typography variant="subtitle1" gutterBottom sx={{ color: '#ff6b81', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <MonitorWeightIcon fontSize="small" /> Progress History
+                            </Typography>
+                            <Divider sx={{ mb: 2 }} />
+                            <Timeline position="right" sx={{ p: 0 }}>
+                              {progressData.statisticsHistory && progressData.statisticsHistory.length > 0 ? progressData.statisticsHistory.map((progress, index) => (
+                                <TimelineItem key={index}>
+                                  <TimelineOppositeContent sx={{ flex: 0.2, color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+                                    {progress.entryDate}
+                                  </TimelineOppositeContent>
+                                  <TimelineSeparator>
+                                    <TimelineDot sx={{ bgcolor: '#ff4757', boxShadow: '0 0 0 4px rgba(255,71,87,0.2)' }}>
+                                      <MonitorWeightIcon fontSize="small" />
+                                    </TimelineDot>
+                                    {index < progressData.statisticsHistory.length - 1 && (
+                                      <TimelineConnector sx={{ bgcolor: isDarkMode ? 'rgba(255,71,87,0.4)' : 'rgba(255,71,87,0.3)', height: 40 }} />
+                                    )}
+                                  </TimelineSeparator>
+                                  <TimelineContent sx={{ py: '10px', px: 2 }}>
+                                    <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 600 }}>
+                                      {progress.weight} kg
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>
+                                      {progress.notes}
+                                    </Typography>
+                                  </TimelineContent>
+                                </TimelineItem>
+                              )) : (
+                                <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+                                  No progress entries yet.
+                                </Typography>
+                              )}
+                            </Timeline>
                           </Box>
-                          
-                          <Typography variant="subtitle2" sx={{ 
-                            color: isDarkMode ? '#ff6b81' : '#ff4757', 
-                            mt: 4, 
-                            mb: 1,
-                            fontWeight: 600 
-                          }}>
-                            Weight Loss Stats
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                            <Box>
-                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                Total Loss
-                              </Typography>
-                              <Typography variant="body1" sx={{ 
-                                color: '#fff', // White text in both modes
-                                fontWeight: 600
-                              }}>
-                                {clientDetails.startingWeight - clientDetails.currentWeight} kg
-                              </Typography>
-                            </Box>
-                            <Box>
-                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                Still To Go
-                              </Typography>
-                              <Typography variant="body1" sx={{ 
-                                color: '#fff', // White text in both modes
-                                fontWeight: 600
-                              }}>
-                                {clientDetails.currentWeight - clientDetails.targetWeight} kg
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </Box>
+                        </Grid>
                       </Grid>
-                      
-                      <Grid item xs={12} md={6}>
-                        <Box sx={{ 
-                          p: 2.5, 
-                          bgcolor: 'rgba(255,255,255,0.08)', // Lighter panel that complements header gradient
-                          borderRadius: '10px',
-                          border: '1px solid',
-                          borderColor: 'rgba(255,255,255,0.12)',
-                        }}>
-                          <Typography variant="subtitle1" gutterBottom sx={{ 
-                            color: '#ff6b81', // Keep accent color
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1
-                          }}>
-                            <MonitorWeightIcon fontSize="small" /> Progress History
-                          </Typography>
-                          <Divider sx={{ mb: 2 }} />
-                          
-                          <Timeline position="right" sx={{ p: 0 }}>
-                            {clientDetails.progressHistory.map((progress, index) => (
-                              <TimelineItem key={index}>
-                                <TimelineOppositeContent sx={{ 
-                                  flex: 0.2, 
-                                  color: 'rgba(255,255,255,0.7)',
-                                  fontSize: '0.8rem'
-                                }}>
-                                  {new Date(progress.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
-                                </TimelineOppositeContent>
-                                <TimelineSeparator>
-                                  <TimelineDot sx={{ 
-                                    bgcolor: '#ff4757',
-                                    boxShadow: '0 0 0 4px rgba(255,71,87,0.2)'
-                                  }}>
-                                    <MonitorWeightIcon fontSize="small" />
-                                  </TimelineDot>
-                                  {index < clientDetails.progressHistory.length - 1 && (
-                                    <TimelineConnector sx={{ 
-                                      bgcolor: isDarkMode ? 'rgba(255,71,87,0.4)' : 'rgba(255,71,87,0.3)',
-                                      height: 40
-                                    }} />
-                                  )}
-                                </TimelineSeparator>
-                                <TimelineContent sx={{ py: '10px', px: 2 }}>
-                                  <Typography variant="subtitle2" sx={{ 
-                                    color: '#fff', // White text in both modes
-                                    fontWeight: 600
-                                  }}>
-                                    {progress.weight} kg
-                                  </Typography>
-                                  <Typography variant="body2" sx={{
-                                    color: 'rgba(255,255,255,0.75)' // Slightly dimmed white
-                                  }}>
-                                    {progress.notes}
-                                  </Typography>
-                                </TimelineContent>
-                              </TimelineItem>
-                            ))}
-                          </Timeline>
-                        </Box>
-                      </Grid>
-                    </Grid>
+                    ) : null}
                   </motion.div>
                 )}
                 
@@ -1088,155 +1173,588 @@ const ClientsPage = ({ isDarkMode }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <Grid container spacing={3}>
-                      <Grid item xs={12} md={4}>
-                        <Box sx={{ 
-                          p: 2.5, 
-                          bgcolor: 'rgba(255,255,255,0.08)', // Lighter panel that complements header gradient
-                          borderRadius: '10px',
-                          border: '1px solid',
-                          borderColor: 'rgba(255,255,255,0.12)',
-                        }}>
-                          <Typography variant="subtitle1" gutterBottom sx={{ 
-                            color: '#ff6b81', // Keep accent color
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1
+                    {sessionDetailsLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={4} sx={{ textAlign: 'center', py: 3 }}>
+                          <CircularProgress />
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} md={4}>
+                          <Box sx={{ 
+                            p: 2.5, 
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            borderRadius: '10px',
+                            height: '100%',
+                            border: '1px solid',
+                            borderColor: 'rgba(255,255,255,0.12)',
                           }}>
-                            <HistoryIcon fontSize="small" /> Session Statistics
-                          </Typography>
-                          <Divider sx={{ mb: 2 }} />
-                          
-                          <Grid container spacing={2}>
-                            <Grid item xs={4}>
-                              <Box sx={{ textAlign: 'center', p: 1 }}>
-                                <Typography variant="h4" sx={{ 
-                                  color: '#ff4757', // Keep accent color for this highlight
-                                  fontWeight: 700,
-                                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                                }}>
-                                  {clientDetails.completedSessions}
-                                </Typography>
-                                <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                  Completed
-                                </Typography>
-                              </Box>
-                            </Grid>
-                            {/* ...similar updates for other statistics... */}
-                          </Grid>
-                          
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="body2" color="rgba(255,255,255,0.7)" gutterBottom>
-                              Attendance Rate
+                            <Typography variant="subtitle1" gutterBottom sx={{ 
+                              color: '#ff6b81',
+                              fontWeight: 600,
+                              fontSize: '1rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1
+                            }}>
+                              <HistoryIcon fontSize="small" /> Session Statistics
                             </Typography>
-                            <LinearProgress
-                              variant="determinate"
-                              value={(clientDetails.completedSessions / (clientDetails.completedSessions + clientDetails.missedSessions)) * 100}
-                              sx={{
-                                height: 10,
-                                borderRadius: 5,
-                                bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                                '& .MuiLinearProgress-bar': {
-                                  bgcolor: '#ff4757',
-                                },
-                                border: '1px solid',
-                                borderColor: isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'
-                              }}
-                            />
-                          </Box>
-                        </Box>
-                      </Grid>
-                      
-                      <Grid item xs={12} md={8}>
-                        <Box sx={{ 
-                          p: 2.5, 
-                          bgcolor: 'rgba(255,255,255,0.08)', // Lighter panel that complements header gradient
-                          borderRadius: '10px',
-                          border: '1px solid',
-                          borderColor: 'rgba(255,255,255,0.12)',
-                        }}>
-                          <Typography variant="subtitle1" gutterBottom sx={{ 
-                            color: '#ff6b81', // Keep accent color
-                            fontWeight: 600,
-                            fontSize: '1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1
-                          }}>
-                            <CalendarToday fontSize="small" /> Upcoming Sessions
-                          </Typography>
-                          <Divider sx={{ mb: 2 }} />
-                          
-                          <TableContainer>
-                            <Table size="small">
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell sx={{ 
-                                    color: '#fff', // White text in both modes
-                                    fontWeight: 600,
-                                    border: 'none',
-                                    fontSize: '0.875rem'
-                                  }}>Date</TableCell>
-                                  <TableCell sx={{ 
-                                    color: '#fff', // White text in both modes
-                                    fontWeight: 600,
-                                    border: 'none',
-                                    fontSize: '0.875rem'
-                                  }}>Time</TableCell>
-                                  <TableCell sx={{ 
-                                    color: '#fff', // White text in both modes
-                                    fontWeight: 600,
-                                    border: 'none',
-                                    fontSize: '0.875rem'
-                                  }}>Type</TableCell>
-                                  <TableCell align="right" sx={{ 
-                                    color: '#fff', // White text in both modes
-                                    fontWeight: 600,
-                                    border: 'none',
-                                    fontSize: '0.875rem'
-                                  }}>Status</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {clientDetails.upcomingSessions.map((session, index) => (
-                                  <TableRow key={index} hover sx={{
-                                    '&:hover': {
-                                      bgcolor: 'rgba(255,255,255,0.08)',
-                                    },
-                                    '& .MuiTableCell-root': {
-                                      border: 'none',
-                                      py: 1.5,
-                                      color: 'rgba(255,255,255,0.9)', // White text with slight transparency in both modes
-                                    }
+                            <Divider sx={{ mb: 2 }} />
+                            
+                            <Grid container spacing={2}>
+                              <Grid item xs={6}>
+                                <Box sx={{ textAlign: 'center', p: 1 }}>
+                                  <Typography variant="h4" sx={{ 
+                                    color: '#ff4757',
+                                    fontWeight: 700,
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                                   }}>
-                                    {/* ...existing code... */}
-                                  </TableRow>
+                                    {sessionDetails?.remainingSessions || 0}
+                                  </Typography>
+                                  <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                    Remaining
+                                  </Typography>
+                                </Box>
+                              </Grid>
+                              <Grid item xs={6}>
+                                <Box sx={{ textAlign: 'center', p: 1 }}>
+                                  <Typography variant="h4" sx={{ 
+                                    color: '#ff4757',
+                                    fontWeight: 700,
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                  }}>
+                                    {sessionDetails?.completedSessions || 0}
+                                  </Typography>
+                                  <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                    Completed
+                                  </Typography>
+                                </Box>
+                              </Grid>
+                            </Grid>
+                            
+                            <Box sx={{ mt: 3 }}>
+                              <Typography variant="body2" color="rgba(255,255,255,0.7)" gutterBottom>
+                                Sessions Progress
+                              </Typography>
+                              <Box sx={{ mt: 1, mb: 2, height: 20, width: '100%', bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', borderRadius: 5, position: 'relative', overflow: 'hidden', border: '1px solid', borderColor: isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }}>
+                                <LinearProgress
+                                  variant="determinate"
+                                  value={(() => {
+                                    const completed = sessionDetails?.completedSessions || 0;
+                                    const remaining = sessionDetails?.remainingSessions || 0;
+                                    const total = completed + remaining;
+                                    return total > 0 ? (completed / total) * 100 : 0;
+                                  })()}
+                                  sx={{ 
+                                    height: '100%', 
+                                    borderRadius: 5, 
+                                    backgroundColor: 'transparent',
+                                    '& .MuiLinearProgress-bar': { 
+                                      backgroundColor: '#ff4757',
+                                      transition: 'transform 1s ease-in-out'
+                                    }
+                                  }}
+                                />
+                                <Box sx={{ 
+                                  position: 'absolute', 
+                                  left: 0, 
+                                  right: 0, 
+                                  top: 0, 
+                                  bottom: 0, 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center'
+                                }}>
+                                  <Typography variant="caption" sx={{ 
+                                    color: '#fff', 
+                                    fontWeight: 'bold',
+                                    textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                  }}>
+                                    {(() => {
+                                      const completed = sessionDetails?.completedSessions || 0;
+                                      const remaining = sessionDetails?.remainingSessions || 0;
+                                      const total = completed + remaining;
+                                      return total > 0 ? Math.round((completed / total) * 100) : 0;
+                                    })()}%
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Box>
+
+                            <Box sx={{ mt: 3 }}>
+                              <Typography variant="body2" color="rgba(255,255,255,0.7)" gutterBottom>
+                                Session History
+                              </Typography>
+                              <Timeline position="right" sx={{ p: 0, mt: 2 }}>
+                                {sessionDetails?.pastSessions?.slice(0, 3).map((session, index) => (
+                                  <TimelineItem key={session.id}>
+                                    <TimelineOppositeContent sx={{ flex: 0.2, color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+                                      {new Date(session.date).toLocaleDateString()}
+                                    </TimelineOppositeContent>
+                                    <TimelineSeparator>
+                                      <TimelineDot sx={{ bgcolor: '#ff4757', boxShadow: '0 0 0 4px rgba(255,71,87,0.2)' }}>
+                                        <FitnessCenter fontSize="small" />
+                                      </TimelineDot>
+                                      {index < 2 && <TimelineConnector sx={{ bgcolor: isDarkMode ? 'rgba(255,71,87,0.4)' : 'rgba(255,71,87,0.3)' }} />}
+                                    </TimelineSeparator>
+                                    <TimelineContent sx={{ py: '12px', px: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 600 }}>
+                                        {session.type}
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>
+                                        {session.time}
+                                      </Typography>
+                                    </TimelineContent>
+                                  </TimelineItem>
                                 ))}
-                              </TableBody>
-                            </Table>
-                          </TableContainer>
-                          
-                          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              sx={{
-                                borderColor: '#ff4757',
-                                color: '#ff4757',
-                                '&:hover': {
-                                  borderColor: '#ff3747',
-                                  bgcolor: 'rgba(255,71,87,0.1)',
-                                }
-                              }}
+                              </Timeline>
+                            </Box>
+                          </Box>
+                        </Grid>
+                        
+                        <Grid item xs={12} md={8}>
+                          <Box sx={{ 
+                            p: 2.5, 
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            borderRadius: '10px',
+                            height: '100%',
+                            border: '1px solid',
+                            borderColor: 'rgba(255,255,255,0.12)',
+                          }}>
+                            <Typography variant="subtitle1" gutterBottom sx={{ 
+                              color: '#ff6b81',
+                              fontWeight: 600,
+                              fontSize: '1rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1
+                            }}>
+                              <CalendarToday fontSize="small" /> Upcoming Sessions
+                            </Typography>
+                            <Divider sx={{ mb: 2 }} />
+                            
+                            <TableContainer>
+                              <Table size="small">
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell sx={{ 
+                                      color: '#fff',
+                                      fontWeight: 600,
+                                      border: 'none',
+                                      fontSize: '0.875rem'
+                                    }}>Date</TableCell>
+                                    <TableCell sx={{ 
+                                      color: '#fff',
+                                      fontWeight: 600,
+                                      border: 'none',
+                                      fontSize: '0.875rem'
+                                    }}>Time</TableCell>
+                                    <TableCell sx={{ 
+                                      color: '#fff',
+                                      fontWeight: 600,
+                                      border: 'none',
+                                      fontSize: '0.875rem'
+                                    }}>Type</TableCell>
+                                    <TableCell align="right" sx={{ 
+                                      color: '#fff',
+                                      fontWeight: 600,
+                                      border: 'none',
+                                      fontSize: '0.875rem'
+                                    }}>Status</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {sessionDetails?.upcomingSessions?.map((session, index) => (
+                                    <TableRow key={session.id} hover sx={{
+                                      '&:hover': {
+                                        bgcolor: 'rgba(255,255,255,0.08)',
+                                      },
+                                      '& .MuiTableCell-root': {
+                                        border: 'none',
+                                        py: 1.5,
+                                        color: 'rgba(255,255,255,0.9)',
+                                      }
+                                    }}>
+                                      <TableCell>{new Date(session.date).toLocaleDateString()}</TableCell>
+                                      <TableCell>{session.time}</TableCell>
+                                      <TableCell>{session.type}</TableCell>
+                                      <TableCell align="right">
+                                        <Chip
+                                          label={session.status}
+                                          size="small"
+                                          sx={{
+                                            bgcolor: session.status === 'Confirmed' ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 71, 87, 0.2)',
+                                            color: session.status === 'Confirmed' ? '#2ecc71' : '#ff4757',
+                                            borderRadius: '4px',
+                                            '& .MuiChip-label': {
+                                              px: 1,
+                                            }
+                                          }}
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                  {(!sessionDetails?.upcomingSessions || sessionDetails.upcomingSessions.length === 0) && (
+                                    <TableRow>
+                                      <TableCell colSpan={4} sx={{ textAlign: 'center', py: 3, color: 'rgba(255,255,255,0.5)' }}>
+                                        No upcoming sessions
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                            
+                            
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* Exercise Progress Tab */}
+                {clientDetailTab === 3 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {exerciseProgressLoading ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                        <CircularProgress color="primary" />
+                      </Box>
+                    ) : (
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} md={6}>
+                          <Box sx={{ 
+                            p: 2.5, 
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            borderRadius: '10px',
+                            height: '100%',
+                            border: '1px solid',
+                            borderColor: 'rgba(255,255,255,0.12)',
+                          }}>
+                            <Typography variant="subtitle1" gutterBottom sx={{ 
+                              color: '#ff6b81',
+                              fontWeight: 600,
+                              fontSize: '1rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1
+                            }}>
+                              <FitnessCenterIcon fontSize="small" /> Exercise Goals
+                            </Typography>
+                            <Divider sx={{ mb: 2 }} />
+                            
+                            {exerciseProgress?.goals?.length > 0 ? (
+                              <Stack spacing={2}>
+                                {exerciseProgress.goals.map((goal, index) => (
+                                  <Box key={index} sx={{ 
+                                    p: 2, 
+                                    bgcolor: 'rgba(255,255,255,0.05)',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(255,255,255,0.1)'
+                                  }}>
+                                    <Typography variant="subtitle2" sx={{ color: '#ff4757', mb: 1 }}>
+                                      {goal.exerciseName}
+                                    </Typography>
+                                    <Grid container spacing={1}>
+                                      {goal.targetWeight && (
+                                        <Grid item xs={6}>
+                                          <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                            Target Weight: {goal.targetWeight} kg
+                                          </Typography>
+                                        </Grid>
+                                      )}
+                                      {goal.targetReps && (
+                                        <Grid item xs={6}>
+                                          <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                            Target Reps: {goal.targetReps}
+                                          </Typography>
+                                        </Grid>
+                                      )}
+                                      {goal.targetDuration && (
+                                        <Grid item xs={6}>
+                                          <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                            Target Duration: {goal.targetDuration} min
+                                          </Typography>
+                                        </Grid>
+                                      )}
+                                      {goal.targetDistance && (
+                                        <Grid item xs={6}>
+                                          <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                            Target Distance: {goal.targetDistance} km
+                                          </Typography>
+                                        </Grid>
+                                      )}
+                                    </Grid>
+                                    {goal.notes && (
+                                      <Typography variant="body2" color="rgba(255,255,255,0.5)" sx={{ mt: 1, fontSize: '0.8rem' }}>
+                                        {goal.notes}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                ))}
+                              </Stack>
+                            ) : (
+                              <Typography variant="body2" color="rgba(255,255,255,0.5)" align="center">
+                                No exercise goals set yet
+                              </Typography>
+                            )}
+                            
+                            <Button 
+                              variant="contained" 
+                              fullWidth 
+                              sx={{ mt: 2 }}
+                              onClick={() => setExerciseGoalFormOpen(true)}
                             >
-                              Add Session
+                              Set New Goal
                             </Button>
                           </Box>
-                        </Box>
+                        </Grid>
+                        
+                        <Grid item xs={12} md={6}>
+                          <Box sx={{ 
+                            p: 2.5, 
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            borderRadius: '10px',
+                            height: '100%',
+                            border: '1px solid',
+                            borderColor: 'rgba(255,255,255,0.12)',
+                          }}>
+                            <Typography variant="subtitle1" gutterBottom sx={{ 
+                              color: '#ff6b81',
+                              fontWeight: 600,
+                              fontSize: '1rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1
+                            }}>
+                              <BarChartIcon fontSize="small" /> Progress History
+                            </Typography>
+                            <Divider sx={{ mb: 2 }} />
+                            
+                            {exerciseProgress?.goals?.length > 0 ? (
+                              <>
+                                <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                                  <InputLabel>Select Exercise</InputLabel>
+                                  <Select
+                                    value={selectedExercise || ''}
+                                    onChange={(e) => setSelectedExercise(e.target.value)}
+                                    label="Select Exercise"
+                                  >
+                                    {exerciseProgress.goals.map((goal, index) => (
+                                      <MenuItem key={index} value={goal.exerciseName}>
+                                        {goal.exerciseName}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                </FormControl>
+
+                                {selectedExercise && (
+                                  <>
+                                    <Timeline position="right" sx={{ p: 0 }}>
+                                      {exerciseProgress.progress
+                                        .filter(p => p.exerciseName === selectedExercise)
+                                        .map((progress, index) => (
+                                          <TimelineItem key={index}>
+                                            <TimelineOppositeContent sx={{ flex: 0.2, color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+                                              {progress.entryDate}
+                                            </TimelineOppositeContent>
+                                            <TimelineSeparator>
+                                              <TimelineDot sx={{ bgcolor: '#ff4757' }}>
+                                                <FitnessCenterIcon fontSize="small" />
+                                              </TimelineDot>
+                                              {index < exerciseProgress.progress.length - 1 && (
+                                                <TimelineConnector sx={{ bgcolor: 'rgba(255,71,87,0.3)' }} />
+                                              )}
+                                            </TimelineSeparator>
+                                            <TimelineContent>
+                                              <Box sx={{ p: 1 }}>
+                                                <Grid container spacing={1}>
+                                                  {progress.weight && (
+                                                    <Grid item xs={6}>
+                                                      <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                                        Weight: {progress.weight} kg
+                                                      </Typography>
+                                                    </Grid>
+                                                  )}
+                                                  {progress.reps && (
+                                                    <Grid item xs={6}>
+                                                      <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                                        Reps: {progress.reps}
+                                                      </Typography>
+                                                    </Grid>
+                                                  )}
+                                                  {progress.duration && (
+                                                    <Grid item xs={6}>
+                                                      <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                                        Duration: {progress.duration} min
+                                                      </Typography>
+                                                    </Grid>
+                                                  )}
+                                                  {progress.distance && (
+                                                    <Grid item xs={6}>
+                                                      <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                                        Distance: {progress.distance} km
+                                                      </Typography>
+                                                    </Grid>
+                                                  )}
+                                                </Grid>
+                                                {progress.notes && (
+                                                  <Typography variant="body2" color="rgba(255,255,255,0.5)" sx={{ mt: 1, fontSize: '0.8rem' }}>
+                                                    {progress.notes}
+                                                  </Typography>
+                                                )}
+                                              </Box>
+                                            </TimelineContent>
+                                          </TimelineItem>
+                                        ))}
+                                    </Timeline>
+
+                                    <Button 
+                                      variant="contained" 
+                                      fullWidth 
+                                      sx={{ mt: 2 }}
+                                      onClick={() => setExerciseProgressFormOpen(true)}
+                                    >
+                                      Add Progress Entry
+                                    </Button>
+                                  </>
+                                )}
+                              </>
+                            ) : (
+                              <Typography variant="body2" color="rgba(255,255,255,0.5)" align="center">
+                                Set an exercise goal to start tracking progress
+                              </Typography>
+                            )}
+                          </Box>
+                        </Grid>
                       </Grid>
-                    </Grid>
+                    )}
+
+                    {/* Exercise Goal Form Dialog */}
+                    <Dialog 
+                      open={exerciseGoalFormOpen} 
+                      onClose={() => setExerciseGoalFormOpen(false)}
+                      maxWidth="sm"
+                      fullWidth
+                    >
+                      <DialogTitle>Set Exercise Goal</DialogTitle>
+                      <DialogContent>
+                        <TextField
+                          label="Exercise Name"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseGoal.exerciseName}
+                          onChange={e => setNewExerciseGoal({ ...newExerciseGoal, exerciseName: e.target.value })}
+                        />
+                        <TextField
+                          label="Target Weight (kg)"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseGoal.targetWeight}
+                          onChange={e => setNewExerciseGoal({ ...newExerciseGoal, targetWeight: e.target.value })}
+                        />
+                        <TextField
+                          label="Target Reps"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseGoal.targetReps}
+                          onChange={e => setNewExerciseGoal({ ...newExerciseGoal, targetReps: e.target.value })}
+                        />
+                        <TextField
+                          label="Target Duration (minutes)"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseGoal.targetDuration}
+                          onChange={e => setNewExerciseGoal({ ...newExerciseGoal, targetDuration: e.target.value })}
+                        />
+                        <TextField
+                          label="Target Distance (km)"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseGoal.targetDistance}
+                          onChange={e => setNewExerciseGoal({ ...newExerciseGoal, targetDistance: e.target.value })}
+                        />
+                        <TextField
+                          label="Notes"
+                          fullWidth
+                          multiline
+                          rows={3}
+                          margin="normal"
+                          value={newExerciseGoal.notes}
+                          onChange={e => setNewExerciseGoal({ ...newExerciseGoal, notes: e.target.value })}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={() => setExerciseGoalFormOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSetExerciseGoal} variant="contained" color="primary">Save Goal</Button>
+                      </DialogActions>
+                    </Dialog>
+
+                    {/* Exercise Progress Form Dialog */}
+                    <Dialog 
+                      open={exerciseProgressFormOpen} 
+                      onClose={() => setExerciseProgressFormOpen(false)}
+                      maxWidth="sm"
+                      fullWidth
+                    >
+                      <DialogTitle>Add Progress Entry</DialogTitle>
+                      <DialogContent>
+                        <TextField
+                          label="Weight (kg)"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseProgress.weight}
+                          onChange={e => setNewExerciseProgress({ ...newExerciseProgress, weight: e.target.value })}
+                        />
+                        <TextField
+                          label="Reps"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseProgress.reps}
+                          onChange={e => setNewExerciseProgress({ ...newExerciseProgress, reps: e.target.value })}
+                        />
+                        <TextField
+                          label="Duration (minutes)"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseProgress.duration}
+                          onChange={e => setNewExerciseProgress({ ...newExerciseProgress, duration: e.target.value })}
+                        />
+                        <TextField
+                          label="Distance (km)"
+                          type="number"
+                          fullWidth
+                          margin="normal"
+                          value={newExerciseProgress.distance}
+                          onChange={e => setNewExerciseProgress({ ...newExerciseProgress, distance: e.target.value })}
+                        />
+                        <TextField
+                          label="Notes"
+                          fullWidth
+                          multiline
+                          rows={3}
+                          margin="normal"
+                          value={newExerciseProgress.notes}
+                          onChange={e => setNewExerciseProgress({ ...newExerciseProgress, notes: e.target.value })}
+                        />
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={() => setExerciseProgressFormOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddExerciseProgress} variant="contained" color="primary">Add Entry</Button>
+                      </DialogActions>
+                    </Dialog>
                   </motion.div>
                 )}
               </Box>
@@ -2032,6 +2550,111 @@ const ClientsPage = ({ isDarkMode }) => {
       console.error('Error fetching sessions:', error);
       showAlert(`Failed to fetch sessions: ${error.message}`, 'error');
     }
+  };
+
+  const handleSetGoal = () => {
+    fetch('http://localhost:8080/api/progress/goal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...newGoal,
+        userId: clientDetails.id,
+        setBy: trainerId,
+        goalDate: new Date().toISOString().slice(0, 10)
+      })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setGoalFormOpen(false);
+        setNewGoal({ targetWeight: '', targetBodyFat: '', notes: '' });
+        fetch(`http://localhost:8080/api/progress/${clientDetails.id}`)
+          .then(res => res.json())
+          .then(data => setProgressData(data));
+      });
+  };
+
+  const handleAddStat = () => {
+    fetch('http://localhost:8080/api/progress/statistics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...newStat,
+        userId: clientDetails.id,
+        enteredBy: trainerId,
+        entryDate: new Date().toISOString().slice(0, 10)
+      })
+    })
+      .then(res => res.json())
+      .then(() => {
+        setStatFormOpen(false);
+        setNewStat({ weight: '', bodyFat: '', height: '', notes: '' });
+        fetch(`http://localhost:8080/api/progress/${clientDetails.id}`)
+          .then(res => res.json())
+          .then(data => setProgressData(data));
+      });
+  };
+
+  const handleSetExerciseGoal = () => {
+    const goalData = {
+      ...newExerciseGoal,
+      userId: clientDetails.id,
+      setBy: trainerId
+    };
+
+    fetch('http://localhost:8080/api/exercise-progress/goal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(goalData)
+    })
+      .then(res => res.json())
+      .then(() => {
+        setExerciseGoalFormOpen(false);
+        setNewExerciseGoal({
+          exerciseName: '',
+          targetWeight: '',
+          targetReps: '',
+          targetDuration: '',
+          targetDistance: '',
+          notes: '',
+          goalDate: new Date().toISOString().slice(0, 10)
+        });
+        // Refresh exercise progress data
+        return fetch(`http://localhost:8080/api/exercise-progress/${clientDetails.id}`);
+      })
+      .then(res => res.json())
+      .then(data => setExerciseProgress(data));
+  };
+
+  const handleAddExerciseProgress = () => {
+    const progressData = {
+      ...newExerciseProgress,
+      userId: clientDetails.id,
+      enteredBy: trainerId,
+      exerciseName: selectedExercise
+    };
+
+    fetch('http://localhost:8080/api/exercise-progress/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(progressData)
+    })
+      .then(res => res.json())
+      .then(() => {
+        setExerciseProgressFormOpen(false);
+        setNewExerciseProgress({
+          exerciseName: '',
+          weight: '',
+          reps: '',
+          duration: '',
+          distance: '',
+          notes: '',
+          entryDate: new Date().toISOString().slice(0, 10)
+        });
+        // Refresh exercise progress data
+        return fetch(`http://localhost:8080/api/exercise-progress/${clientDetails.id}`);
+      })
+      .then(res => res.json())
+      .then(data => setExerciseProgress(data));
   };
 
   return (
