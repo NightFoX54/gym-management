@@ -435,4 +435,19 @@ public class TrainerController {
                 .body(Map.of("error", "Failed to fetch trainer rating details: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/{trainerId}/clients/{clientId}/sessions")
+    public ResponseEntity<?> getClientSessionDetails(@PathVariable Long trainerId, @PathVariable Long clientId) {
+        try {
+            Map<String, Object> sessionDetails = trainerService.getClientSessionDetails(trainerId, clientId);
+            return ResponseEntity.ok(sessionDetails);
+        } catch (IllegalArgumentException e) {
+            // This is for "not found" cases
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
 }
