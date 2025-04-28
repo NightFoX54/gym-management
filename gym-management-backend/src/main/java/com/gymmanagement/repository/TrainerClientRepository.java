@@ -14,4 +14,5 @@ public interface TrainerClientRepository extends JpaRepository<TrainerClient, Lo
     List<TrainerClient> findByTrainerId(Long trainerId);
     List<TrainerClient> findByClientId(Long clientId);
     Optional<TrainerClient> findByTrainerAndClient(User trainer, User client);
+    Optional<TrainerClient> findById(Long clientId);
 }

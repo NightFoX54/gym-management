@@ -25,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -508,5 +510,73 @@ public class TrainerService {
         trainerRatingDetails.put("recentReviews", recentReviews);
         
         return trainerRatingDetails;
+    }
+
+    public Map<String, Object> getClientSessionDetails(Long trainerId, Long clientId) {
+        Map<String, Object> sessionDetails = new HashMap<>();
+        
+        // First verify that this is a valid trainer-client relationship and get the actual client ID
+        TrainerClient trainerClient = clientRepository.findById(clientId)
+            .orElseThrow(() -> new RuntimeException("Client not found"));
+        Long finalClientId = trainerClient.getClient().getId();
+        
+        // Get all sessions for this client
+        List<TrainerSession> allSessions = sessionRepository.findByTrainerIdAndClientId(trainerId, finalClientId);
+        
+        LocalDate today = LocalDate.now();
+        
+        // Split sessions into past and upcoming
+        List<TrainerSession> pastSessions = allSessions.stream()
+            .filter(session -> session.getSessionDate().isBefore(today) || 
+                   (session.getSessionDate().equals(today) && session.getSessionTime().isBefore(LocalTime.now())))
+            .sorted((s1, s2) -> s2.getSessionDate().compareTo(s1.getSessionDate()))
+            .collect(Collectors.toList());
+        
+        List<TrainerSession> upcomingSessions = allSessions.stream()
+            .filter(session -> session.getSessionDate().isAfter(today) || 
+                   (session.getSessionDate().equals(today) && session.getSessionTime().isAfter(LocalTime.now())))
+            .sorted(Comparator.comparing(TrainerSession::getSessionDate)
+                             .thenComparing(TrainerSession::getSessionTime))
+            .collect(Collectors.toList());
+        
+        // Get remaining sessions from trainer_clients table
+        int remainingPurchasedSessions = trainerClient.getRemainingSessions();
+        
+        // Add the count of upcoming sessions to remaining sessions
+        int totalRemainingSessions = remainingPurchasedSessions + upcomingSessions.size();
+        
+        // Convert sessions to response format
+        List<Map<String, Object>> pastSessionsResponse = pastSessions.stream()
+            .map(session -> {
+                Map<String, Object> sessionMap = new HashMap<>();
+                sessionMap.put("id", session.getId());
+                sessionMap.put("date", session.getSessionDate());
+                sessionMap.put("time", session.getSessionTime().toString());
+                sessionMap.put("type", session.getSessionType());
+                return sessionMap;
+            })
+            .collect(Collectors.toList());
+        
+        List<Map<String, Object>> upcomingSessionsResponse = upcomingSessions.stream()
+            .map(session -> {
+                Map<String, Object> sessionMap = new HashMap<>();
+                sessionMap.put("id", session.getId());
+                sessionMap.put("date", session.getSessionDate());
+                sessionMap.put("time", session.getSessionTime().toString());
+                sessionMap.put("type", session.getSessionType());
+                sessionMap.put("status", "Confirmed"); // You can add actual status logic here
+                return sessionMap;
+            })
+            .collect(Collectors.toList());
+        
+        // Build the response
+        sessionDetails.put("remainingSessions", totalRemainingSessions);
+        sessionDetails.put("remainingPurchasedSessions", remainingPurchasedSessions);
+        sessionDetails.put("upcomingSessionsCount", upcomingSessions.size());
+        sessionDetails.put("completedSessions", pastSessions.size());
+        sessionDetails.put("pastSessions", pastSessionsResponse);
+        sessionDetails.put("upcomingSessions", upcomingSessionsResponse);
+        
+        return sessionDetails;
     }
 }
