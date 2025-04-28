@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 28 Nis 2025, 16:18:02
+-- Üretim Zamanı: 28 Nis 2025, 23:22:50
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -99,6 +99,15 @@ CREATE TABLE `exercise_progress` (
   `entered_by` bigint NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Tablo döküm verisi `exercise_progress`
+--
+
+INSERT INTO `exercise_progress` (`id`, `user_id`, `exercise_name`, `entry_date`, `weight`, `reps`, `duration`, `distance`, `notes`, `entered_by`) VALUES
+(5, 13, 'bench', '2025-04-28', 135, 3, NULL, NULL, 'deneme', 3),
+(6, 2, 'deneme', '2025-04-28', 135, 2, NULL, NULL, 'asd', 3),
+(7, 13, 'bench', '2025-04-28', 140, 2, NULL, NULL, '', 13);
+
 -- --------------------------------------------------------
 
 --
@@ -118,6 +127,14 @@ CREATE TABLE `exercise_progress_goals` (
   `notes` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `achieved` bit(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `exercise_progress_goals`
+--
+
+INSERT INTO `exercise_progress_goals` (`id`, `user_id`, `exercise_name`, `set_by`, `goal_date`, `target_weight`, `target_reps`, `target_duration`, `target_distance`, `notes`, `achieved`) VALUES
+(4, 13, 'bench', 3, '2025-04-28', 150, 2, NULL, NULL, 'deneme\n', NULL),
+(5, 2, 'deneme', 3, '2025-04-28', 150, 3, NULL, NULL, 'asd\n', NULL);
 
 -- --------------------------------------------------------
 
@@ -829,6 +846,23 @@ INSERT INTO `trainer_settings` (`id`, `trainer_id`, `bio`, `specialization`, `ne
 -- --------------------------------------------------------
 
 --
+-- Tablo için tablo yapısı `training_sessions`
+--
+
+CREATE TABLE `training_sessions` (
+  `id` bigint NOT NULL,
+  `created_at` date NOT NULL,
+  `date` date NOT NULL,
+  `duration` int NOT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `client_id` bigint NOT NULL,
+  `trainer_id` bigint NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Tablo için tablo yapısı `users`
 --
 
@@ -885,7 +919,7 @@ CREATE TABLE `user_progress_goals` (
 --
 
 INSERT INTO `user_progress_goals` (`id`, `user_id`, `set_by`, `goal_date`, `target_weight`, `target_body_fat`, `notes`) VALUES
-(1, 1, 3, '2025-04-28', 90, 17, '');
+(3, 13, 13, '2025-04-28', 85, 17, '');
 
 -- --------------------------------------------------------
 
@@ -909,9 +943,9 @@ CREATE TABLE `user_statistics` (
 --
 
 INSERT INTO `user_statistics` (`id`, `user_id`, `entered_by`, `entry_date`, `weight`, `body_fat`, `height`, `notes`) VALUES
-(1, 1, 3, '2025-04-28', 105, 22, 190, 'başlangıç'),
-(2, 1, 3, '2025-04-28', 102, 21, 190, ''),
-(4, 1, 3, '2025-04-28', 100, 17, 190, '');
+(6, 13, 3, '2025-04-28', 120, 25, 190, ''),
+(7, 13, 3, '2025-04-28', 110, 22, 190, ''),
+(8, 13, 13, '2025-04-28', 100, 20, 190, 'asdd');
 
 -- --------------------------------------------------------
 
@@ -1258,6 +1292,14 @@ ALTER TABLE `trainer_settings`
   ADD KEY `trainer_settings_ibfk_1` (`trainer_id`);
 
 --
+-- Tablo için indeksler `training_sessions`
+--
+ALTER TABLE `training_sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `FKp4xjk0kbwk8va2rk54p0iu58j` (`client_id`),
+  ADD KEY `FKaa4sw1ln6wc10nb0ba4rxjeei` (`trainer_id`);
+
+--
 -- Tablo için indeksler `users`
 --
 ALTER TABLE `users`
@@ -1328,13 +1370,13 @@ ALTER TABLE `contact_forms`
 -- Tablo için AUTO_INCREMENT değeri `exercise_progress`
 --
 ALTER TABLE `exercise_progress`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `exercise_progress_goals`
 --
 ALTER TABLE `exercise_progress_goals`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `expenses`
@@ -1511,6 +1553,12 @@ ALTER TABLE `trainer_settings`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- Tablo için AUTO_INCREMENT değeri `training_sessions`
+--
+ALTER TABLE `training_sessions`
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `users`
 --
 ALTER TABLE `users`
@@ -1520,13 +1568,13 @@ ALTER TABLE `users`
 -- Tablo için AUTO_INCREMENT değeri `user_progress_goals`
 --
 ALTER TABLE `user_progress_goals`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `user_statistics`
 --
 ALTER TABLE `user_statistics`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `workouts`
@@ -1726,6 +1774,13 @@ ALTER TABLE `trainer_session_reschedule_request`
 --
 ALTER TABLE `trainer_settings`
   ADD CONSTRAINT `trainer_settings_ibfk_1` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
+
+--
+-- Tablo kısıtlamaları `training_sessions`
+--
+ALTER TABLE `training_sessions`
+  ADD CONSTRAINT `FKaa4sw1ln6wc10nb0ba4rxjeei` FOREIGN KEY (`trainer_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `FKp4xjk0kbwk8va2rk54p0iu58j` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`);
 
 --
 -- Tablo kısıtlamaları `user_progress_goals`
