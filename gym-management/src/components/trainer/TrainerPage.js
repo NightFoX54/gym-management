@@ -191,11 +191,54 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     }
   };
 
+  // Add this state variable with the other state declarations
+  const [clientProgress, setClientProgress] = useState({
+    weeklyStats: {
+      workoutsCompleted: 0,
+      totalClients: 0,
+      averageRating: 0,
+      totalHours: 0
+    },
+    topPerformers: [],
+    recentAchievements: []
+  });
+  const [progressLoading, setProgressLoading] = useState(true);
+
+  // Add this function with the other fetch functions
+  const fetchClientProgress = async () => {
+    setProgressLoading(true);
+    try {
+      // Get trainer ID from localStorage
+      const userStr = localStorage.getItem('user');
+      let trainerId;
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        trainerId = user.id;
+      }
+      if (!trainerId) {
+        showAlert('User ID not found. Please log in again.', 'error');
+        setProgressLoading(false);
+        return;
+      }
+      
+      const response = await axios.get(`http://localhost:8080/api/trainer/${trainerId}/client-progress`);
+      if (response.status === 200) {
+        setClientProgress(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching client progress:', error);
+      showAlert('Failed to load client progress data', 'error');
+    } finally {
+      setProgressLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTrainerData();
     fetchTodaySessions();
     fetchTrainerRatings();
-    fetchClients(); // Add this new function call
+    fetchClients();
+    fetchClientProgress(); // Add this line
   }, []);
 
   // Get user info from localStorage
@@ -1191,26 +1234,7 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
     ),
   };
 
-  // Add mock data for progress charts
-  const clientProgress = {
-    weeklyStats: {
-      workoutsCompleted: 45,
-      totalClients: 52,
-      averageRating: 4.8,
-      totalHours: 86
-    },
-    topPerformers: [
-      { name: 'Edin Dzeko', progress: 92, achievement: 'Weight Goal Reached' },
-      { name: 'Lionel Messi', progress: 88, achievement: 'Monthly Attendance' },
-      { name: 'Mike Tyson', progress: 85, achievement: 'Strength Milestone' }
-    ],
-    recentAchievements: [
-      { client: 'Bruce Lee', type: 'Weight Loss', value: '-5kg' },
-      { client: 'Conor McGregor', type: 'Strength Gain', value: '+15kg bench' },
-      { client: 'Jon Jones', type: 'Attendance', value: '15 days streak' }
-    ]
-  };
-
+  // Update the renderProgressSection function to handle loading state
   const renderProgressSection = () => (
     <Grid item xs={12} md={6}>
       <motion.div whileHover={{ y: -5 }} transition={{ duration: 0.3 }}>
@@ -1235,138 +1259,146 @@ const TrainerPage = ({ isDarkMode, setIsDarkMode }) => {
               <TrendingUp /> Client Progress Overview
             </Typography>
 
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ 
-                      fontWeight: 600,
-                      color: isDarkMode ? '#fff' : '#333',
-                      borderBottom: '2px solid #ff4757'
-                    }}>
-                      Client
-                    </TableCell>
-                    <TableCell align="center" sx={{ 
-                      fontWeight: 600,
-                      color: isDarkMode ? '#fff' : '#333',
-                      borderBottom: '2px solid #ff4757'
-                    }}>
-                      Progress
-                    </TableCell>
-                    <TableCell align="right" sx={{ 
-                      fontWeight: 600,
-                      color: isDarkMode ? '#fff' : '#333',
-                      borderBottom: '2px solid #ff4757'
-                    }}>
-                      Achievement
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {clientProgress.topPerformers.map((performer, index) => (
-                    <TableRow key={index} sx={{
-                      '&:hover': {
-                        bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
-                      },
-                    }}>
-                      <TableCell sx={{ 
-                        color: isDarkMode ? '#fff' : 'inherit',
-                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                      }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ width: 32, height: 32, bgcolor: '#ff4757' }}>
-                            {performer.name[0]}
-                          </Avatar>
-                          {performer.name}
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center" sx={{ 
-                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                      }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={performer.progress}
-                            sx={{
-                              width: '100%',
-                              height: 6,
-                              borderRadius: 3,
-                              bgcolor: 'rgba(255,71,87,0.1)',
-                              '& .MuiLinearProgress-bar': {
-                                bgcolor: '#ff4757',
-                              }
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ 
-                            color: '#ff4757',
-                            minWidth: '45px'
+            {progressLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress size={30} sx={{ color: '#ff4757' }} />
+              </Box>
+            ) : (
+              <>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ 
+                          fontWeight: 600,
+                          color: isDarkMode ? '#fff' : '#333',
+                          borderBottom: '2px solid #ff4757'
+                        }}>
+                          Client
+                        </TableCell>
+                        <TableCell align="center" sx={{ 
+                          fontWeight: 600,
+                          color: isDarkMode ? '#fff' : '#333',
+                          borderBottom: '2px solid #ff4757'
+                        }}>
+                          Progress
+                        </TableCell>
+                        <TableCell align="right" sx={{ 
+                          fontWeight: 600,
+                          color: isDarkMode ? '#fff' : '#333',
+                          borderBottom: '2px solid #ff4757'
+                        }}>
+                          Achievement
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {clientProgress.topPerformers.map((performer, index) => (
+                        <TableRow key={index} sx={{
+                          '&:hover': {
+                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                          },
+                        }}>
+                          <TableCell sx={{ 
+                            color: isDarkMode ? '#fff' : 'inherit',
+                            borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
                           }}>
-                            {performer.progress}%
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="right" sx={{ 
-                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                      }}>
-                        <Chip
-                          size="small"
-                          label={performer.achievement}
-                          sx={{
-                            bgcolor: isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.1)',
-                            color: '#ff4757',
-                            fontWeight: 500
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar sx={{ width: 32, height: 32, bgcolor: '#ff4757' }}>
+                                {performer.name[0]}
+                              </Avatar>
+                              {performer.name}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="center" sx={{ 
+                            borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={performer.progress}
+                                sx={{
+                                  width: '100%',
+                                  height: 6,
+                                  borderRadius: 3,
+                                  bgcolor: 'rgba(255,71,87,0.1)',
+                                  '& .MuiLinearProgress-bar': {
+                                    bgcolor: '#ff4757',
+                                  }
+                                }}
+                              />
+                              <Typography variant="body2" sx={{ 
+                                color: '#ff4757',
+                                minWidth: '45px'
+                              }}>
+                                {performer.progress}%
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right" sx={{ 
+                            borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                          }}>
+                            <Chip
+                              size="small"
+                              label={performer.achievement}
+                              sx={{
+                                bgcolor: isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.1)',
+                                color: '#ff4757',
+                                fontWeight: 500
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-            <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: 2 }} />
 
-            <Typography variant="subtitle2" sx={{ mb: 2, color: isDarkMode ? '#fff' : '#666' }}>
-              Recent Achievements
-            </Typography>
-            <TableContainer>
-              <Table size="small">
-                <TableBody>
-                  {clientProgress.recentAchievements.map((achievement, index) => (
-                    <TableRow key={index} sx={{
-                      '&:hover': {
-                        bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
-                      },
-                    }}>
-                      <TableCell sx={{ 
-                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                        color: isDarkMode ? '#fff' : 'inherit',  // Added color for dark mode
-                      }}>
-                        {achievement.client}
-                      </TableCell>
-                      <TableCell sx={{ 
-                        color: isDarkMode ? '#fff' : '#ff4757',  // Updated color for dark mode
-                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                      }}>
-                        {achievement.type}
-                      </TableCell>
-                      <TableCell align="right" sx={{ 
-                        borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                      }}>
-                        <Chip
-                          size="small"
-                          label={achievement.value}
-                          sx={{
-                            bgcolor: isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.1)',
-                            color: '#ff4757'
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                <Typography variant="subtitle2" sx={{ mb: 2, color: isDarkMode ? '#fff' : '#666' }}>
+                  Recent Achievements
+                </Typography>
+                <TableContainer>
+                  <Table size="small">
+                    <TableBody>
+                      {clientProgress.recentAchievements.map((achievement, index) => (
+                        <TableRow key={index} sx={{
+                          '&:hover': {
+                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,71,87,0.05)',
+                          },
+                        }}>
+                          <TableCell sx={{ 
+                            borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                            color: isDarkMode ? '#fff' : 'inherit',
+                          }}>
+                            {achievement.client}
+                          </TableCell>
+                          <TableCell sx={{ 
+                            color: isDarkMode ? '#fff' : '#ff4757',
+                            borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                          }}>
+                            {achievement.type}
+                          </TableCell>
+                          <TableCell align="right" sx={{ 
+                            borderBottom: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                          }}>
+                            <Chip
+                              size="small"
+                              label={achievement.value}
+                              sx={{
+                                bgcolor: isDarkMode ? 'rgba(255,71,87,0.2)' : 'rgba(255,71,87,0.1)',
+                                color: '#ff4757'
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </>
+            )}
           </Box>
         </Paper>
       </motion.div>

@@ -188,7 +188,6 @@ const TrainerNavbar = React.forwardRef(({ isDarkMode, setIsDarkMode }, ref) => {
     { text: 'Clients', icon: <People />, path: '/trainer/clients' },
     { text: 'Schedule', icon: <EventNote />, path: '/trainer/schedule' },
     { text: 'Workouts', icon: <FitnessCenter />, path: '/trainer/workouts' },
-    { text: 'Progress Reports', icon: <Assessment />, path: '/trainer/reports' },
     { text: 'Settings', icon: <Settings />, path: '/trainer/settings' },
   ];
 

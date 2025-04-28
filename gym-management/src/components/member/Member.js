@@ -36,6 +36,7 @@ import "../../styles/Member.css";
 import "../../styles/PageTransitions.css";
 import "../../styles/Navbar.css";
 import { logout } from '../../utils/auth';
+import { Grid, Typography } from "@mui/material";
 
 const Member = ({ isDarkMode, setIsDarkMode }) => {
   // Get user info from localStorage
@@ -1004,6 +1005,17 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <FaUsers className="card-icon-member" />
               <h3>Workout Programs</h3>
               <p>Create and browse personalized workout plans</p>
+            </div>
+
+
+            
+            <div
+              className="dashboard-card-member stagger-10"
+              onClick={() => navigate("/member/progress-tracking")}
+            >
+              <FaChartLine className="card-icon-member" />
+              <h3>Progress Tracking</h3>
+              <p>Track your fitness progress, set goals, and monitor achievements</p>
             </div>
           </div>
 

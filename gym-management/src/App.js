@@ -37,6 +37,7 @@ import { Toaster } from 'react-hot-toast';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ResetPassword from './components/ResetPassword';
+import ProgressTracking from './components/member/ProgressTracking';
 
 const Root = ({ isDarkMode, setIsDarkMode }) => {
   if (!isAuthenticated()) {
@@ -370,6 +371,11 @@ function App() {
           <Route path="/member/workout-programs" element={
             <ProtectedRoute requiredRole="MEMBER">
               <WorkoutPrograms isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+            </ProtectedRoute>
+          } />
+          <Route path="/member/progress-tracking" element={
+            <ProtectedRoute requiredRole="MEMBER">
+              <ProgressTracking isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
             </ProtectedRoute>
           } />
           <Route path="/reset-password" element={<ResetPassword isDarkMode={isDarkMode} />} />
