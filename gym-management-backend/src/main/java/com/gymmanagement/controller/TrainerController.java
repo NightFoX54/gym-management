@@ -450,4 +450,15 @@ public class TrainerController {
                 .body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/{trainerId}/client-progress")
+    public ResponseEntity<?> getClientProgressOverview(@PathVariable Long trainerId) {
+        try {
+            Map<String, Object> progressData = trainerService.getClientProgressOverview(trainerId);
+            return ResponseEntity.ok(progressData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to fetch client progress: " + e.getMessage()));
+        }
+    }
 }
