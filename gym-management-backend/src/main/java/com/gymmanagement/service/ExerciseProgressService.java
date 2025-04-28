@@ -4,8 +4,10 @@ import com.gymmanagement.dto.ExerciseProgressDTO;
 import com.gymmanagement.dto.ExerciseProgressGoalDTO;
 import com.gymmanagement.model.ExerciseProgress;
 import com.gymmanagement.model.ExerciseProgressGoals;
+import com.gymmanagement.model.User;
 import com.gymmanagement.repository.ExerciseProgressRepository;
 import com.gymmanagement.repository.ExerciseProgressGoalsRepository;
+import com.gymmanagement.repository.TrainerClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,9 +25,13 @@ public class ExerciseProgressService {
     @Autowired
     private ExerciseProgressGoalsRepository goalsRepository;
 
+    @Autowired
+    private TrainerClientRepository trainerClientRepository;
+
     public ExerciseProgressGoalDTO setGoal(ExerciseProgressGoalDTO dto) {
+        User user = trainerClientRepository.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")).getClient();
         ExerciseProgressGoals goal = new ExerciseProgressGoals();
-        goal.setUserId(dto.getUserId());
+        goal.setUserId(user.getId());
         goal.setExerciseName(dto.getExerciseName());
         goal.setSetBy(dto.getSetBy());
         goal.setGoalDate(dto.getGoalDate());
@@ -41,8 +47,9 @@ public class ExerciseProgressService {
     }
 
     public ExerciseProgressDTO addProgress(ExerciseProgressDTO dto) {
+        User user = trainerClientRepository.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")).getClient();
         ExerciseProgress progress = new ExerciseProgress();
-        progress.setUserId(dto.getUserId());
+        progress.setUserId(user.getId());
         progress.setExerciseName(dto.getExerciseName());
         progress.setEntryDate(dto.getEntryDate());
         progress.setWeight(dto.getWeight());
@@ -58,10 +65,11 @@ public class ExerciseProgressService {
     }
 
     public Map<String, Object> getExerciseProgress(Long userId) {
+        User user = trainerClientRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found")).getClient();
         Map<String, Object> response = new HashMap<>();
 
         // Get all goals for the user
-        List<ExerciseProgressGoals> goals = goalsRepository.findByUserId(userId);
+        List<ExerciseProgressGoals> goals = goalsRepository.findByUserId(user.getId());
         List<ExerciseProgressGoalDTO> goalDTOs = goals.stream().map(goal -> {
             ExerciseProgressGoalDTO dto = new ExerciseProgressGoalDTO();
             dto.setId(goal.getId());
@@ -78,7 +86,7 @@ public class ExerciseProgressService {
         }).collect(Collectors.toList());
 
         // Get all progress entries for the user
-        List<ExerciseProgress> progressEntries = progressRepository.findByUserId(userId);
+        List<ExerciseProgress> progressEntries = progressRepository.findByUserId(user.getId());
         List<ExerciseProgressDTO> progressDTOs = progressEntries.stream().map(progress -> {
             ExerciseProgressDTO dto = new ExerciseProgressDTO();
             dto.setId(progress.getId());

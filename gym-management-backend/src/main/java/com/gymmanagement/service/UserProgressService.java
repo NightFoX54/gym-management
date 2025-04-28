@@ -3,6 +3,10 @@ package com.gymmanagement.service;
 import com.gymmanagement.dto.*;
 import com.gymmanagement.model.UserProgressGoals;
 import com.gymmanagement.model.UserStatistics;
+import com.gymmanagement.model.User;
+import com.gymmanagement.model.TrainerClient;
+import com.gymmanagement.repository.TrainerClientRepository;
+import com.gymmanagement.repository.UserRepository;
 import com.gymmanagement.repository.UserProgressGoalsRepository;
 import com.gymmanagement.repository.UserStatisticsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +23,20 @@ public class UserProgressService {
     private UserProgressGoalsRepository goalRepository;
 
     @Autowired
+    private TrainerClientRepository trainerClientRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private UserStatisticsRepository statisticsRepository;
 
     public UserProgressResponseDTO getUserProgress(Long userId) {
         UserProgressResponseDTO response = new UserProgressResponseDTO();
+        User user = trainerClientRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found")).getClient();
 
         // Get latest goal (or null)
-        Optional<UserProgressGoals> goalOpt = goalRepository.findByUserId(userId)
+        Optional<UserProgressGoals> goalOpt = goalRepository.findByUserId(user.getId())
                 .stream().sorted((a, b) -> b.getGoalDate().compareTo(a.getGoalDate())).findFirst();
 
         goalOpt.ifPresent(goal -> {
@@ -41,7 +52,7 @@ public class UserProgressService {
         });
 
         // Get all statistics, sorted by date ascending
-        List<UserStatistics> stats = statisticsRepository.findByUserIdOrderByEntryDateAsc(userId);
+        List<UserStatistics> stats = statisticsRepository.findByUserIdOrderByEntryDateAsc(user.getId());
         List<UserStatisticsDTO> statsDTOs = stats.stream().map(stat -> {
             UserStatisticsDTO dto = new UserStatisticsDTO();
             dto.setId(stat.getId());
@@ -61,7 +72,8 @@ public class UserProgressService {
 
     public UserProgressGoalDTO setGoal(UserProgressGoalDTO dto) {
         // Find the latest goal for the user
-        List<UserProgressGoals> goals = goalRepository.findByUserId(dto.getUserId());
+        User user = trainerClientRepository.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")).getClient();
+        List<UserProgressGoals> goals = goalRepository.findByUserId(user.getId());
         UserProgressGoals goal;
         if (!goals.isEmpty()) {
             // Update the latest goal (by date)
@@ -74,7 +86,7 @@ public class UserProgressService {
         } else {
             // Insert new goal
             goal = new UserProgressGoals();
-            goal.setUserId(dto.getUserId());
+            goal.setUserId(user.getId());
             goal.setSetBy(dto.getSetBy());
             goal.setGoalDate(dto.getGoalDate());
             goal.setTargetWeight(dto.getTargetWeight());
@@ -87,8 +99,9 @@ public class UserProgressService {
     }
 
     public UserStatisticsDTO addStatistics(UserStatisticsDTO dto) {
+        User user = trainerClientRepository.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found")).getClient();
         UserStatistics stat = new UserStatistics();
-        stat.setUserId(dto.getUserId());
+        stat.setUserId(user.getId());
         stat.setEnteredBy(dto.getEnteredBy());
         stat.setEntryDate(dto.getEntryDate());
         stat.setWeight(dto.getWeight());

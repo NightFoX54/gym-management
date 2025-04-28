@@ -4,21 +4,8 @@ import com.gymmanagement.dto.TrainerClientResponse;
 import com.gymmanagement.dto.TrainerRequestResponse;
 import com.gymmanagement.dto.TrainerSessionRequest;
 import com.gymmanagement.dto.TrainerSessionResponse;
-import com.gymmanagement.model.FreePtUse;
-import com.gymmanagement.model.PersonalTrainingRating;
-import com.gymmanagement.model.TrainerClient;
-import com.gymmanagement.model.TrainerRegistrationRequest;
-import com.gymmanagement.model.TrainerSession;
-import com.gymmanagement.model.TrainerSessionRescheduleRequest;
-import com.gymmanagement.model.User;
-import com.gymmanagement.repository.TrainerClientRepository;
-import com.gymmanagement.repository.TrainerRegistrationRequestRepository;
-import com.gymmanagement.repository.TrainerSessionRepository;
-import com.gymmanagement.repository.UserRepository;
-import com.gymmanagement.repository.TrainerSessionRequestRepository;
-import com.gymmanagement.repository.TrainerSessionRescheduleRequestRepository;
-import com.gymmanagement.repository.FreePtUseRepository;
-import com.gymmanagement.repository.PersonalTrainingRatingRepository;
+import com.gymmanagement.model.*;
+import com.gymmanagement.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +47,18 @@ public class TrainerService {
     
     @Autowired
     private PersonalTrainingRatingRepository ratingRepository;
+    
+    @Autowired
+    private UserProgressGoalsRepository userProgressGoalsRepository;
+    
+    @Autowired
+    private UserStatisticsRepository userStatisticsRepository;
+    
+    @Autowired
+    private ExerciseProgressGoalsRepository exerciseProgressGoalsRepository;
+    
+    @Autowired
+    private ExerciseProgressRepository exerciseProgressRepository;
     
     public List<TrainerClientResponse> getTrainerClients(Long trainerId) {
         List<TrainerClient> clients = clientRepository.findByTrainerId(trainerId);
@@ -578,5 +577,170 @@ public class TrainerService {
         sessionDetails.put("upcomingSessions", upcomingSessionsResponse);
         
         return sessionDetails;
+    }
+
+    public Map<String, Object> getClientProgressOverview(Long trainerId) {
+        Map<String, Object> response = new HashMap<>();
+        
+        // Get all clients for this trainer
+        List<TrainerClient> clients = clientRepository.findByTrainerId(trainerId);
+        List<Long> clientIds = clients.stream()
+            .map(client -> client.getClient().getId())
+            .collect(Collectors.toList());
+        
+        // Get latest statistics for each client
+        List<Map<String, Object>> topPerformers = new ArrayList<>();
+        for (TrainerClient client : clients) {
+            Long clientId = client.getClient().getId();
+            
+            // Get latest weight statistics
+            List<UserStatistics> stats = userStatisticsRepository.findByUserIdOrderByEntryDateAsc(clientId);
+            if (!stats.isEmpty()) {
+                UserStatistics latestStat = stats.get(stats.size() - 1);
+                UserStatistics firstStat = stats.get(0);
+                
+                // Get latest goal
+                List<UserProgressGoals> goals = userProgressGoalsRepository.findByUserId(clientId);
+                UserProgressGoals latestGoal = goals.stream()
+                    .max(Comparator.comparing(UserProgressGoals::getGoalDate))
+                    .orElse(null);
+                
+                if (latestGoal != null && latestStat != null && firstStat != null) {
+                    double totalProgress = 0;
+                    String achievement = "";
+                    
+                    // Calculate weight progress
+                    if (latestGoal.getTargetWeight() != null && firstStat.getWeight() != null) {
+                        double totalWeightToLose = firstStat.getWeight() - latestGoal.getTargetWeight();
+                        double weightLost = firstStat.getWeight() - latestStat.getWeight();
+                        if (totalWeightToLose > 0) {
+                            totalProgress = (weightLost / totalWeightToLose) * 100;
+                            achievement = String.format("%.1f kg lost", weightLost);
+                        }
+                    }
+                    
+                    // Get exercise progress
+                    List<ExerciseProgressGoals> exerciseGoals = exerciseProgressGoalsRepository.findByUserId(clientId);
+                    List<ExerciseProgress> exerciseProgress = exerciseProgressRepository.findByUserId(clientId);
+                    
+                    // Calculate exercise achievement if no significant weight progress
+                    if (totalProgress < 10 && !exerciseGoals.isEmpty() && !exerciseProgress.isEmpty()) {
+                        ExerciseProgressGoals latestExerciseGoal = exerciseGoals.get(exerciseGoals.size() - 1);
+                        ExerciseProgress latestExerciseProgress = exerciseProgress.get(exerciseProgress.size() - 1);
+                        
+                        if (latestExerciseGoal.getTargetReps() != null && latestExerciseProgress.getReps() != null) {
+                            double repsProgress = (latestExerciseProgress.getReps() * 100.0) / latestExerciseGoal.getTargetReps();
+                            totalProgress = Math.max(totalProgress, repsProgress);
+                            achievement = String.format("%d reps achieved", latestExerciseProgress.getReps());
+                        }
+                    }
+                    
+                    if (totalProgress > 0) {
+                        Map<String, Object> performer = new HashMap<>();
+                        performer.put("name", client.getClient().getFirstName() + " " + client.getClient().getLastName());
+                        performer.put("progress", Math.min(100, Math.round(totalProgress)));
+                        performer.put("achievement", achievement);
+                        topPerformers.add(performer);
+                    }
+                }
+            }
+        }
+        
+        // Sort by progress and take top 3
+        topPerformers.sort((a, b) -> ((Integer) b.get("progress")).compareTo((Integer) a.get("progress")));
+        if (topPerformers.size() > 3) {
+            topPerformers = topPerformers.subList(0, 3);
+        }
+        
+        // Get recent achievements
+        List<Map<String, Object>> recentAchievements = new ArrayList<>();
+        for (Long clientId : clientIds) {
+            // Check weight achievements
+            List<UserStatistics> stats = userStatisticsRepository.findByUserIdOrderByEntryDateAsc(clientId);
+            if (stats.size() >= 2) {
+                UserStatistics latest = stats.get(stats.size() - 1);
+                UserStatistics previous = stats.get(stats.size() - 2);
+                
+                if (latest.getWeight() != null && previous.getWeight() != null) {
+                    double weightChange = previous.getWeight() - latest.getWeight();
+                    if (Math.abs(weightChange) >= 1.0) { // Significant change (1 kg or more)
+                        User client = userRepository.findById(clientId).orElse(null);
+                        if (client != null) {
+                            Map<String, Object> achievement = new HashMap<>();
+                            achievement.put("client", client.getFirstName() + " " + client.getLastName());
+                            achievement.put("type", weightChange > 0 ? "Weight Loss" : "Weight Gain");
+                            if (weightChange > 0) {
+                                achievement.put("value", String.format("%+.1f kg", weightChange*-1));
+                            } else {
+                                achievement.put("value", String.format("%+.1f kg", weightChange*-1));
+                            }
+                            recentAchievements.add(achievement);
+                        }
+                    }
+                }
+            }
+            
+            // Check exercise achievements
+            List<ExerciseProgress> exerciseProgress = exerciseProgressRepository.findByUserId(clientId);
+            if (!exerciseProgress.isEmpty()) {
+                ExerciseProgress latest = exerciseProgress.get(exerciseProgress.size() - 1);
+                User client = userRepository.findById(clientId).orElse(null);
+                
+                if (client != null) {
+                    Map<String, Object> achievement = new HashMap<>();
+                    achievement.put("client", client.getFirstName() + " " + client.getLastName());
+                    achievement.put("type", latest.getExerciseName());
+                    if (latest.getWeight() != null && latest.getReps() != null) {
+                        achievement.put("value", latest.getWeight() + " kg" + " " + latest.getReps() + " reps");
+                    } else if (latest.getWeight() != null) {
+                        achievement.put("value", latest.getWeight() + " kg");
+                    } else if (latest.getReps() != null) {
+                        achievement.put("value", latest.getReps() + " reps");
+                    } else if (latest.getDistance() != null) {
+                        achievement.put("value", latest.getDistance() + " km");
+                    }
+                    
+                    recentAchievements.add(achievement);
+                }
+            }
+        }
+        
+        // Take only the 3 most recent achievements
+        if (recentAchievements.size() > 3) {
+            recentAchievements = recentAchievements.subList(0, 3);
+        }
+        
+        // Calculate weekly stats
+        int totalClients = clients.size();
+        int workoutsCompleted = 0;
+        double averageRating = 0;
+        int totalHours = 0;
+        
+        // Get sessions from the past week
+        LocalDate weekAgo = LocalDate.now().minusWeeks(1);
+        for (TrainerClient client : clients) {
+            List<TrainerSession> sessions = sessionRepository.findByTrainerIdAndClientId(trainerId, client.getClient().getId());
+            workoutsCompleted += sessions.stream()
+                .filter(s -> !s.getSessionDate().isBefore(weekAgo))
+                .count();
+        }
+        
+        // Get average rating
+        Map<Long, Double> ratings = getTrainerRatings();
+        if (ratings.containsKey(trainerId)) {
+            averageRating = ratings.get(trainerId);
+        }
+        
+        Map<String, Object> weeklyStats = new HashMap<>();
+        weeklyStats.put("workoutsCompleted", workoutsCompleted);
+        weeklyStats.put("totalClients", totalClients);
+        weeklyStats.put("averageRating", averageRating);
+        weeklyStats.put("totalHours", workoutsCompleted * 1); // Assuming 1 hour per session
+        
+        response.put("weeklyStats", weeklyStats);
+        response.put("topPerformers", topPerformers);
+        response.put("recentAchievements", recentAchievements);
+        
+        return response;
     }
 }
