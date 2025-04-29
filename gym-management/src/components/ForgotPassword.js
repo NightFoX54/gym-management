@@ -61,7 +61,7 @@ function ForgotPassword({ isDarkMode = false, setIsDarkMode = () => {} }) {
       <div className="forgot-password-card">
         <div className="card-header">
           <button 
-            className="back-button"
+            className="back-button-trainingplan" style={{ marginRight: '10px' }}
             onClick={() => navigate('/login')}
           >
             <FaArrowLeft />

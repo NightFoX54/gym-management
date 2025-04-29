@@ -280,7 +280,7 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
   return (
     <div className={`progress-tracking-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="progress-header">
-        <button className="back-button" onClick={() => navigate('/member')}>
+        <button className="back-button-trainingplan" onClick={() => navigate('/member')}>
           <FaArrowLeft />
           <span>Back to Dashboard</span>
         </button>
@@ -301,6 +301,17 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
             value={activeTab} 
             onChange={(e, newValue) => setActiveTab(newValue)}
             centered
+            sx={{
+              '& .MuiTab-root': {
+                color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                '&.Mui-selected': {
+                  color: isDarkMode ? '#ff4757' : '#ff4757'
+                }
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: isDarkMode ? '#ff4757' : '#ff4757'
+              }
+            }}
           >
             <Tab 
               icon={<FaWeight />} 
@@ -337,8 +348,22 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
             ) : (
               <Grid container spacing={3} sx={{ mt: 2 }}>
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ p: 2.5, bgcolor: 'rgba(255,255,255,0.08)', borderRadius: '10px', border: '1px solid', borderColor: 'rgba(255,255,255,0.12)' }}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ color: '#ff6b81', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    p: 2.5, 
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#ffffff',
+                    borderRadius: '10px',
+                    border: '1px solid',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.12)' : '#e0e0e0',
+                    height: '100%'
+                  }}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ 
+                      color: isDarkMode ? '#ff6b81' : '#ff4757', 
+                      fontWeight: 600, 
+                      fontSize: '1rem', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1 
+                    }}>
                       <FaChartLine /> Weight Progress
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
@@ -372,20 +397,20 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Box>
-                        <Typography variant="caption" color="rgba(255,255,255,0.7)">Starting</Typography>
-                        <Typography variant="body2" sx={{ color: '#fff', fontWeight: 600 }}>
+                        <Typography variant="caption" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>Starting</Typography>
+                        <Typography variant="body2" sx={{ color: isDarkMode ? '#fff' : '#333333', fontWeight: 600 }}>
                           {progressData.statisticsHistory.length > 0 ? progressData.statisticsHistory[0].weight : '-'} kg
                         </Typography>
                       </Box>
                       <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="caption" color="rgba(255,255,255,0.7)">Current</Typography>
-                        <Typography variant="body2" sx={{ color: '#ff4757', fontWeight: 600 }}>
+                        <Typography variant="caption" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>Current</Typography>
+                        <Typography variant="body2" sx={{ color: isDarkMode ? '#fff' : '#333333', fontWeight: 600 }}>
                           {progressData.statisticsHistory.length > 0 ? progressData.statisticsHistory[progressData.statisticsHistory.length - 1].weight : '-'} kg
                         </Typography>
                       </Box>
                       <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="caption" color="rgba(255,255,255,0.7)">Target</Typography>
-                        <Typography variant="body2" sx={{ color: '#fff', fontWeight: 600 }}>
+                        <Typography variant="caption" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>Target</Typography>
+                        <Typography variant="body2" sx={{ color: isDarkMode ? '#fff' : '#333333', fontWeight: 600 }}>
                           {progressData.goal.targetWeight} kg
                         </Typography>
                       </Box>
@@ -395,8 +420,8 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                       <Box>
-                        <Typography variant="body2" color="rgba(255,255,255,0.7)">Total Loss</Typography>
-                        <Typography variant="body1" sx={{ color: '#fff', fontWeight: 600 }}>
+                        <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>Total Loss</Typography>
+                        <Typography variant="body1" sx={{ color: isDarkMode ? '#fff' : '#333333', fontWeight: 600 }}>
                           {(() => {
                             const stats = progressData.statisticsHistory;
                             if (!stats || stats.length === 0) return '-';
@@ -407,8 +432,8 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="body2" color="rgba(255,255,255,0.7)">Still To Go</Typography>
-                        <Typography variant="body1" sx={{ color: '#fff', fontWeight: 600 }}>
+                        <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>Still To Go</Typography>
+                        <Typography variant="body1" sx={{ color: isDarkMode ? '#fff' : '#333333', fontWeight: 600 }}>
                           {(() => {
                             const stats = progressData.statisticsHistory;
                             if (!stats || stats.length === 0) return '-';
@@ -431,30 +456,59 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ p: 2.5, bgcolor: 'rgba(255,255,255,0.08)', borderRadius: '10px', border: '1px solid', borderColor: 'rgba(255,255,255,0.12)' }}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ color: '#ff6b81', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ 
+                    p: 2.5, 
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#ffffff',
+                    borderRadius: '10px',
+                    border: '1px solid',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.12)' : '#e0e0e0',
+                    height: '100%'
+                  }}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ 
+                      color: isDarkMode ? '#ff6b81' : '#ff4757', 
+                      fontWeight: 600, 
+                      fontSize: '1rem', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1 
+                    }}>
                       <FaWeight /> Progress History
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                     <Timeline position="right" sx={{ p: 0 }}>
                       {progressData.statisticsHistory && progressData.statisticsHistory.length > 0 ? progressData.statisticsHistory.map((progress, index) => (
                         <TimelineItem key={index}>
-                          <TimelineOppositeContent sx={{ flex: 0.2, color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
+                          <TimelineOppositeContent sx={{ 
+                            flex: 0.2, 
+                            color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary', 
+                            fontSize: '0.8rem' 
+                          }}>
                             {progress.entryDate}
                           </TimelineOppositeContent>
                           <TimelineSeparator>
-                            <TimelineDot sx={{ bgcolor: '#ff4757', boxShadow: '0 0 0 4px rgba(255,71,87,0.2)' }}>
+                            <TimelineDot sx={{ 
+                              bgcolor: isDarkMode ? '#ff4757' : '#ff4757', 
+                              boxShadow: isDarkMode ? '0 0 0 4px rgba(255,71,87,0.2)' : '0 0 0 4px rgba(255,71,87,0.2)' 
+                            }}>
                               <FaWeight />
                             </TimelineDot>
                             {index < progressData.statisticsHistory.length - 1 && (
-                              <TimelineConnector sx={{ bgcolor: isDarkMode ? 'rgba(255,71,87,0.4)' : 'rgba(255,71,87,0.3)', height: 40 }} />
+                              <TimelineConnector sx={{ 
+                                bgcolor: isDarkMode ? 'rgba(255,71,87,0.4)' : 'rgba(255,71,87,0.3)', 
+                                height: 40 
+                              }} />
                             )}
                           </TimelineSeparator>
                           <TimelineContent sx={{ py: '10px', px: 2 }}>
-                            <Typography variant="subtitle2" sx={{ color: '#fff', fontWeight: 600 }}>
+                            <Typography variant="subtitle2" sx={{ 
+                              color: isDarkMode ? '#fff' : '#333333', 
+                              fontWeight: 600 
+                            }}>
                               {progress.weight} kg
                             </Typography>
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>
+                            <Typography variant="body2" sx={{ 
+                              color: isDarkMode ? 'rgba(255,255,255,0.75)' : 'text.secondary' 
+                            }}>
                               {progress.notes}
                             </Typography>
                           </TimelineContent>
@@ -563,19 +617,19 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                 <Grid item xs={12} md={6}>
                   <Box sx={{ 
                     p: 2.5, 
-                    bgcolor: 'rgba(255,255,255,0.08)',
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#ffffff',
                     borderRadius: '10px',
-                    height: '100%',
                     border: '1px solid',
-                    borderColor: 'rgba(255,255,255,0.12)',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.12)' : '#e0e0e0',
+                    height: '100%'
                   }}>
                     <Typography variant="subtitle1" gutterBottom sx={{ 
-                      color: '#ff6b81',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
+                      color: isDarkMode ? '#ff6b81' : '#ff4757', 
+                      fontWeight: 600, 
+                      fontSize: '1rem', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1 
                     }}>
                       <FaDumbbell /> Exercise Goals
                     </Typography>
@@ -586,45 +640,50 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                         {exerciseProgress.goals.map((goal, index) => (
                           <Box key={index} sx={{ 
                             p: 2, 
-                            bgcolor: 'rgba(255,255,255,0.05)',
+                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f8f9fa',
                             borderRadius: '8px',
-                            border: '1px solid rgba(255,255,255,0.1)'
+                            border: '1px solid',
+                            borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e0e0e0'
                           }}>
-                            <Typography variant="subtitle2" sx={{ color: '#ff4757', mb: 1 }}>
+                            <Typography variant="subtitle2" sx={{ color: isDarkMode ? '#ff4757' : '#ff4757', mb: 1 }}>
                               {goal.exerciseName}
                             </Typography>
                             <Grid container spacing={1}>
                               {goal.targetWeight && (
                                 <Grid item xs={6}>
-                                  <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                  <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
                                     Target Weight: {goal.targetWeight} kg
                                   </Typography>
                                 </Grid>
                               )}
                               {goal.targetReps && (
                                 <Grid item xs={6}>
-                                  <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                  <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
                                     Target Reps: {goal.targetReps}
                                   </Typography>
                                 </Grid>
                               )}
                               {goal.targetDuration && (
                                 <Grid item xs={6}>
-                                  <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                  <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
                                     Target Duration: {goal.targetDuration} min
                                   </Typography>
                                 </Grid>
                               )}
                               {goal.targetDistance && (
                                 <Grid item xs={6}>
-                                  <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                                  <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
                                     Target Distance: {goal.targetDistance} km
                                   </Typography>
                                 </Grid>
                               )}
                             </Grid>
                             {goal.notes && (
-                              <Typography variant="body2" color="rgba(255,255,255,0.5)" sx={{ mt: 1, fontSize: '0.8rem' }}>
+                              <Typography variant="body2" sx={{ 
+                                color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary',
+                                mt: 1, 
+                                fontSize: '0.8rem' 
+                              }}>
                                 {goal.notes}
                               </Typography>
                             )}
@@ -632,7 +691,10 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                         ))}
                       </Stack>
                     ) : (
-                      <Typography variant="body2" color="rgba(255,255,255,0.5)" align="center">
+                      <Typography variant="body2" sx={{ 
+                        color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary',
+                        textAlign: 'center' 
+                      }}>
                         No exercise goals set yet
                       </Typography>
                     )}
@@ -651,19 +713,19 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                 <Grid item xs={12} md={6}>
                   <Box sx={{ 
                     p: 2.5, 
-                    bgcolor: 'rgba(255,255,255,0.08)',
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.08)' : '#ffffff',
                     borderRadius: '10px',
-                    height: '100%',
                     border: '1px solid',
-                    borderColor: 'rgba(255,255,255,0.12)',
+                    borderColor: isDarkMode ? 'rgba(255,255,255,0.12)' : '#e0e0e0',
+                    height: '100%'
                   }}>
                     <Typography variant="subtitle1" gutterBottom sx={{ 
-                      color: '#ff6b81',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
+                      color: isDarkMode ? '#ff6b81' : '#ff4757', 
+                      fontWeight: 600, 
+                      fontSize: '1rem', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1 
                     }}>
                       <FaRunning /> Exercise Progress
                     </Typography>
@@ -672,11 +734,19 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                     {exerciseProgress?.goals?.length > 0 ? (
                       <>
                         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                          <InputLabel>Select Exercise</InputLabel>
+                          <InputLabel sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary' }}>
+                            Select Exercise
+                          </InputLabel>
                           <Select
                             value={selectedExercise || ''}
                             onChange={(e) => setSelectedExercise(e.target.value)}
                             label="Select Exercise"
+                            sx={{
+                              color: isDarkMode ? '#fff' : '#333333',
+                              '& .MuiOutlinedInput-notchedOutline': {
+                                borderColor: isDarkMode ? 'rgba(255,255,255,0.12)' : '#e0e0e0'
+                              }
+                            }}
                           >
                             {exerciseProgress.goals.map((goal, index) => (
                               <MenuItem key={index} value={goal.exerciseName}>
@@ -687,79 +757,85 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
                         </FormControl>
 
                         {selectedExercise && (
-                          <>
-                            <Timeline position="right" sx={{ p: 0 }}>
-                              {exerciseProgress.progress
-                                .filter(p => p.exerciseName === selectedExercise)
-                                .map((progress, index) => (
-                                  <TimelineItem key={index}>
-                                    <TimelineOppositeContent sx={{ flex: 0.2, color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem' }}>
-                                      {progress.entryDate}
-                                    </TimelineOppositeContent>
-                                    <TimelineSeparator>
-                                      <TimelineDot sx={{ bgcolor: '#ff4757' }}>
-                                        <FaDumbbell />
-                                      </TimelineDot>
-                                      {index < exerciseProgress.progress.length - 1 && (
-                                        <TimelineConnector sx={{ bgcolor: 'rgba(255,71,87,0.3)' }} />
-                                      )}
-                                    </TimelineSeparator>
-                                    <TimelineContent>
-                                      <Box sx={{ p: 1 }}>
-                                        <Grid container spacing={1}>
-                                          {progress.weight && (
-                                            <Grid item xs={6}>
-                                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                                Weight: {progress.weight} kg
-                                              </Typography>
-                                            </Grid>
-                                          )}
-                                          {progress.reps && (
-                                            <Grid item xs={6}>
-                                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                                Reps: {progress.reps}
-                                              </Typography>
-                                            </Grid>
-                                          )}
-                                          {progress.duration && (
-                                            <Grid item xs={6}>
-                                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                                Duration: {progress.duration} min
-                                              </Typography>
-                                            </Grid>
-                                          )}
-                                          {progress.distance && (
-                                            <Grid item xs={6}>
-                                              <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                                                Distance: {progress.distance} km
-                                              </Typography>
-                                            </Grid>
-                                          )}
-                                        </Grid>
-                                        {progress.notes && (
-                                          <Typography variant="body2" color="rgba(255,255,255,0.5)" sx={{ mt: 1, fontSize: '0.8rem' }}>
-                                            {progress.notes}
-                                          </Typography>
+                          <Timeline position="right" sx={{ p: 0 }}>
+                            {exerciseProgress.progress
+                              .filter(p => p.exerciseName === selectedExercise)
+                              .map((progress, index) => (
+                                <TimelineItem key={index}>
+                                  <TimelineOppositeContent sx={{ 
+                                    flex: 0.2, 
+                                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'text.secondary',
+                                    fontSize: '0.8rem' 
+                                  }}>
+                                    {progress.entryDate}
+                                  </TimelineOppositeContent>
+                                  <TimelineSeparator>
+                                    <TimelineDot sx={{ 
+                                      bgcolor: isDarkMode ? '#ff4757' : '#ff4757',
+                                      boxShadow: '0 0 0 4px rgba(255,71,87,0.2)'
+                                    }}>
+                                      <FaDumbbell />
+                                    </TimelineDot>
+                                    {index < exerciseProgress.progress.length - 1 && (
+                                      <TimelineConnector sx={{ 
+                                        bgcolor: isDarkMode ? 'rgba(255,71,87,0.4)' : 'rgba(255,71,87,0.3)',
+                                        height: 40 
+                                      }} />
+                                    )}
+                                  </TimelineSeparator>
+                                  <TimelineContent>
+                                    <Box sx={{ p: 1 }}>
+                                      <Grid container spacing={1}>
+                                        {progress.weight && (
+                                          <Grid item xs={6}>
+                                            <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
+                                              Weight: {progress.weight} kg
+                                            </Typography>
+                                          </Grid>
                                         )}
-                                      </Box>
-                                    </TimelineContent>
-                                  </TimelineItem>
-                                ))}
-                            </Timeline>
-
-                            <Button 
-                              variant="contained" 
-                              fullWidth 
-                              sx={{ mt: 2 }}
-                              onClick={() => setExerciseProgressFormOpen(true)}
-                            >
-                              Add Progress Entry
-                            </Button>
-                          </>
+                                        {progress.reps && (
+                                          <Grid item xs={6}>
+                                            <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
+                                              Reps: {progress.reps}
+                                            </Typography>
+                                          </Grid>
+                                        )}
+                                        {progress.duration && (
+                                          <Grid item xs={6}>
+                                            <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
+                                              Duration: {progress.duration} min
+                                            </Typography>
+                                          </Grid>
+                                        )}
+                                        {progress.distance && (
+                                          <Grid item xs={6}>
+                                            <Typography variant="body2" color={isDarkMode ? "rgba(255,255,255,0.7)" : "text.secondary"}>
+                                              Distance: {progress.distance} km
+                                            </Typography>
+                                          </Grid>
+                                        )}
+                                      </Grid>
+                                      {progress.notes && (
+                                        <Typography variant="body2" sx={{ 
+                                          color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary',
+                                          mt: 1, 
+                                          fontSize: '0.8rem' 
+                                        }}>
+                                          {progress.notes}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  </TimelineContent>
+                                </TimelineItem>
+                              ))}
+                          </Timeline>
                         )}
                       </>
                     ) : (
-                      <Typography variant="body2" color="rgba(255,255,255,0.5)" align="center">
+                      <Typography variant="body2" sx={{ 
+                        color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'text.secondary',
+                        textAlign: 'center' 
+                      }}>
                         Set an exercise goal to start tracking progress
                       </Typography>
                     )}

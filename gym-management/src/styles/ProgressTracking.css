@@ -248,11 +248,14 @@
 }
 
 .back-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(255,71,87,0.1) !important;
+  color: #ff4757 !important;
+  transform: translateX(-5px);
 }
 
 .dark-mode .back-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255,71,87,0.15) !important;
+  color: #ff4757 !important;
 }
 
 .dark-mode-toggle {

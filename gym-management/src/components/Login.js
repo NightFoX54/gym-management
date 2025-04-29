@@ -75,7 +75,7 @@ function Login({ isDarkMode = false, setIsDarkMode = () => {} }) {
       <div className="login-box">
         <div className="card-header">
           <button 
-            className="back-button"
+            className="back-button-trainingplan" style={{ marginRight: '10px' }}
             onClick={handleBackClick}
           >
             <FaArrowLeft />

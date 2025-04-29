@@ -29,6 +29,7 @@ import {
   FaIdCard,
   FaEyeSlash,
   FaEye,
+  FaComments,
 } from "react-icons/fa";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
@@ -1007,6 +1008,14 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <p>Create and browse personalized workout plans</p>
             </div>
 
+            <div
+              className="dashboard-card-member stagger-10"
+              onClick={() => navigate("/member/forum")}
+            >
+              <FaComments className="card-icon-member" />
+              <h3>Forum</h3>
+              <p>Join discussions, share experiences, and connect with other members</p>
+            </div>
 
             
             <div

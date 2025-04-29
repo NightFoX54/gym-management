@@ -38,6 +38,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ResetPassword from './components/ResetPassword';
 import ProgressTracking from './components/member/ProgressTracking';
+import Forum from './components/member/Forum';
+import ForumThread from './components/member/ForumThread';
 
 const Root = ({ isDarkMode, setIsDarkMode }) => {
   if (!isAuthenticated()) {
@@ -376,6 +378,16 @@ function App() {
           <Route path="/member/progress-tracking" element={
             <ProtectedRoute requiredRole="MEMBER">
               <ProgressTracking isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+            </ProtectedRoute>
+          } />
+          <Route path="/member/forum" element={
+            <ProtectedRoute requiredRole="MEMBER">
+              <Forum isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+            </ProtectedRoute>
+          } />
+          <Route path="/member/forum/thread/:threadId" element={
+            <ProtectedRoute requiredRole="MEMBER">
+              <ForumThread isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
             </ProtectedRoute>
           } />
           <Route path="/reset-password" element={<ResetPassword isDarkMode={isDarkMode} />} />
