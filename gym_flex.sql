@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 28 Nis 2025, 23:22:50
+-- Üretim Zamanı: 29 Nis 2025, 17:00:09
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -20,6 +20,21 @@ SET time_zone = "+00:00";
 --
 -- Veritabanı: `gym_flex`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `id` int NOT NULL,
+  `sender_id` bigint NOT NULL,
+  `receiver_id` bigint NOT NULL,
+  `chat_message` text COLLATE utf8mb4_general_ci NOT NULL,
+  `replied_to` int DEFAULT NULL,
+  `sent_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -181,6 +196,72 @@ INSERT INTO `expenses_categories` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Tablo için tablo yapısı `forum_likes`
+--
+
+CREATE TABLE `forum_likes` (
+  `id` int NOT NULL,
+  `post_id` int NOT NULL,
+  `user_id` bigint NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `forum_likes`
+--
+
+INSERT INTO `forum_likes` (`id`, `post_id`, `user_id`, `created_at`) VALUES
+(2, 8, 13, '2025-04-29 14:46:25');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `forum_posts`
+--
+
+CREATE TABLE `forum_posts` (
+  `id` int NOT NULL,
+  `thread_id` int NOT NULL,
+  `user_id` bigint NOT NULL,
+  `content` text COLLATE utf8mb4_general_ci NOT NULL,
+  `quoted_post_id` int DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `forum_posts`
+--
+
+INSERT INTO `forum_posts` (`id`, `thread_id`, `user_id`, `content`, `quoted_post_id`, `created_at`) VALUES
+(3, 2, 13, 'deneme', NULL, '2025-04-29 14:38:54'),
+(8, 1, 13, 'deneme3', NULL, '2025-04-29 14:42:41'),
+(9, 1, 13, 'deneme4', 8, '2025-04-29 14:46:23');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `forum_threads`
+--
+
+CREATE TABLE `forum_threads` (
+  `id` int NOT NULL,
+  `user_id` bigint NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` text COLLATE utf8mb4_general_ci,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `forum_threads`
+--
+
+INSERT INTO `forum_threads` (`id`, `user_id`, `title`, `description`, `created_at`) VALUES
+(1, 13, 'deneme', 'deneme', '2025-04-29 14:26:11'),
+(2, 13, 'deneme1', 'deneme2', '2025-04-29 14:32:22');
+
+-- --------------------------------------------------------
+
+--
 -- Tablo için tablo yapısı `free_pt_use`
 --
 
@@ -198,6 +279,31 @@ CREATE TABLE `free_pt_use` (
 
 INSERT INTO `free_pt_use` (`id`, `member_id`, `session_id`, `session_request_id`, `use_time`) VALUES
 (3, 13, NULL, 6, '2025-04-10 01:38:59');
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `friends`
+--
+
+CREATE TABLE `friends` (
+  `id` int NOT NULL,
+  `user1_id` bigint NOT NULL,
+  `user2_id` bigint NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tablo için tablo yapısı `friend_requests`
+--
+
+CREATE TABLE `friend_requests` (
+  `id` int NOT NULL,
+  `sender_id` bigint NOT NULL,
+  `receiver_id` bigint NOT NULL,
+  `date` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -887,7 +993,7 @@ INSERT INTO `users` (`id`, `first_name`, `last_name`, `profile_photo_path`, `ema
 (2, 'Member', 'User', '	/uploads/images/default-avatar.jpg	', 'member@gymflex.com', '0539 783 7419', 'MEMBER', '2025-03-15 01:50:43', '$2a$10$cUtC6MRZ9DT8DoOtCb.C6uPZS5XRO8WcaRuZ3b/ihEIkW8j.2Wkgi'),
 (3, 'Trainer', 'User', '	/uploads/images/default-avatar.jpg	', 'trainer@gymflex.com', '0555 444 3322', 'TRAINER', '2025-03-15 01:50:43', '$2a$10$lCA4owT8/KaSBzK02o5mYOXOYBmAzCekRRHdtiJMllCxt1fBA2mVu'),
 (13, 'Berkay', 'Arıkan', '/uploads/e2145a25-9c1c-4316-8fef-c82042f649ed.jpeg', 'berkayyy5445@gmail.com', '0539 783 7419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$jy/b.Y3WgjB34MLw.my6le4mzZ5NIKrH7dx0ERwAS6iegYei8JyJO'),
-(14, 'Berkay', 'Arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '0555 999 8877', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$wHy72hXdOg6nxTrDyceFSezZm17bqSfxcMA3/Pr.Er.atZ9zbipqO'),
+(14, 'Berkay', 'Arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '0555 999 8877', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$uUqtVHe7ER9sGPHfb/zwpuOTKzXEuJ2tCS.TPMwLqmuOcqj2BAJcG'),
 (15, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay112233@gmail.com', '0555 888 7766', 'MEMBER', '2025-03-16 17:24:37', '$2a$10$n2PRSvHodVMZ0U/anqrMDe76V/Yai2fL/qdvv8xJhBKWCDUB7G12S'),
 (16, 'berkay', 'arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay123123@gmail.com', '0555 777 6655', 'MEMBER', '2025-03-16 17:26:01', '$2a$10$/Z7JudNXYosrwAR7J2w9rOBR5xXJ7B/jOsh9Us7oyBJo85MTP79ou'),
 (27, 'berkay', 'arıkan', '/uploads/images/default-avatar.jpg', 'deneme@gmail.com', '0555 666 5544', 'MEMBER', '2025-04-08 12:08:41', '$2a$10$G9D3YfWSzKzQK2vnn.Eugug9hTa9ydWdoBwlKUqXIc9wI2GwKlsya'),
@@ -1053,6 +1159,15 @@ INSERT INTO `workout_levels` (`id`, `name`) VALUES
 --
 
 --
+-- Tablo için indeksler `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sender_id` (`sender_id`),
+  ADD KEY `receiver_id` (`receiver_id`),
+  ADD KEY `replied_to` (`replied_to`);
+
+--
 -- Tablo için indeksler `club_visits`
 --
 ALTER TABLE `club_visits`
@@ -1095,6 +1210,30 @@ ALTER TABLE `expenses_categories`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Tablo için indeksler `forum_likes`
+--
+ALTER TABLE `forum_likes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `post_id` (`post_id`,`user_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Tablo için indeksler `forum_posts`
+--
+ALTER TABLE `forum_posts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `thread_id` (`thread_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `quoted_post_id` (`quoted_post_id`);
+
+--
+-- Tablo için indeksler `forum_threads`
+--
+ALTER TABLE `forum_threads`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Tablo için indeksler `free_pt_use`
 --
 ALTER TABLE `free_pt_use`
@@ -1102,6 +1241,22 @@ ALTER TABLE `free_pt_use`
   ADD KEY `member_id` (`member_id`),
   ADD KEY `session_id` (`session_id`),
   ADD KEY `session_request_id` (`session_request_id`);
+
+--
+-- Tablo için indeksler `friends`
+--
+ALTER TABLE `friends`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user1_id` (`user1_id`),
+  ADD KEY `user2_id` (`user2_id`);
+
+--
+-- Tablo için indeksler `friend_requests`
+--
+ALTER TABLE `friend_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sender_id` (`sender_id`),
+  ADD KEY `receiver_id` (`receiver_id`);
 
 --
 -- Tablo için indeksler `general_prices`
@@ -1355,6 +1510,12 @@ ALTER TABLE `workout_levels`
 --
 
 --
+-- Tablo için AUTO_INCREMENT değeri `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `club_visits`
 --
 ALTER TABLE `club_visits`
@@ -1391,10 +1552,40 @@ ALTER TABLE `expenses_categories`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- Tablo için AUTO_INCREMENT değeri `forum_likes`
+--
+ALTER TABLE `forum_likes`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `forum_posts`
+--
+ALTER TABLE `forum_posts`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `forum_threads`
+--
+ALTER TABLE `forum_threads`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `free_pt_use`
 --
 ALTER TABLE `free_pt_use`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `friends`
+--
+ALTER TABLE `friends`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- Tablo için AUTO_INCREMENT değeri `friend_requests`
+--
+ALTER TABLE `friend_requests`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `general_prices`
@@ -1605,6 +1796,14 @@ ALTER TABLE `workout_levels`
 --
 
 --
+-- Tablo kısıtlamaları `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD CONSTRAINT `chat_messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chat_messages_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `chat_messages_ibfk_3` FOREIGN KEY (`replied_to`) REFERENCES `chat_messages` (`id`) ON DELETE SET NULL;
+
+--
 -- Tablo kısıtlamaları `club_visits`
 --
 ALTER TABLE `club_visits`
@@ -1631,12 +1830,47 @@ ALTER TABLE `expenses`
   ADD CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`expenses_category_id`) REFERENCES `expenses_categories` (`id`);
 
 --
+-- Tablo kısıtlamaları `forum_likes`
+--
+ALTER TABLE `forum_likes`
+  ADD CONSTRAINT `forum_likes_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `forum_posts` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `forum_likes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Tablo kısıtlamaları `forum_posts`
+--
+ALTER TABLE `forum_posts`
+  ADD CONSTRAINT `forum_posts_ibfk_1` FOREIGN KEY (`thread_id`) REFERENCES `forum_threads` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `forum_posts_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `forum_posts_ibfk_3` FOREIGN KEY (`quoted_post_id`) REFERENCES `forum_posts` (`id`) ON DELETE SET NULL;
+
+--
+-- Tablo kısıtlamaları `forum_threads`
+--
+ALTER TABLE `forum_threads`
+  ADD CONSTRAINT `forum_threads_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Tablo kısıtlamaları `free_pt_use`
 --
 ALTER TABLE `free_pt_use`
   ADD CONSTRAINT `free_pt_use_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `free_pt_use_ibfk_2` FOREIGN KEY (`session_id`) REFERENCES `trainer_sessions` (`id`),
   ADD CONSTRAINT `free_pt_use_ibfk_3` FOREIGN KEY (`session_request_id`) REFERENCES `trainer_session_requests` (`id`);
+
+--
+-- Tablo kısıtlamaları `friends`
+--
+ALTER TABLE `friends`
+  ADD CONSTRAINT `friends_ibfk_1` FOREIGN KEY (`user1_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `friends_ibfk_2` FOREIGN KEY (`user2_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Tablo kısıtlamaları `friend_requests`
+--
+ALTER TABLE `friend_requests`
+  ADD CONSTRAINT `friend_requests_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `friend_requests_ibfk_2` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Tablo kısıtlamaları `group_classes_sale`
