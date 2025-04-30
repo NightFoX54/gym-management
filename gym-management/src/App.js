@@ -40,6 +40,7 @@ import ResetPassword from './components/ResetPassword';
 import ProgressTracking from './components/member/ProgressTracking';
 import Forum from './components/member/Forum';
 import ForumThread from './components/member/ForumThread';
+import Friends from './components/member/Friends';
 
 const Root = ({ isDarkMode, setIsDarkMode }) => {
   if (!isAuthenticated()) {
@@ -272,7 +273,11 @@ function App() {
           <Route path="/signup" element={<Signup isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
           <Route path="/contact" element={<Contact isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
           <Route path="/services" element={<Services isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
-          <Route path="/market" element={<Market isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
+          <Route path="/market" element={
+            <ProtectedRoute requiredRole="MEMBER">
+              <Market isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+            </ProtectedRoute>
+          } />
           <Route path="/services/personal-training" element={<PersonalTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
           <Route path="/services/group-classes" element={<GroupClasses isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
           <Route path="/services/strength-training" element={<StrengthTraining isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />} />
@@ -388,6 +393,11 @@ function App() {
           <Route path="/member/forum/thread/:threadId" element={
             <ProtectedRoute requiredRole="MEMBER">
               <ForumThread isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+            </ProtectedRoute>
+          } />
+          <Route path="/member/friends" element={
+            <ProtectedRoute requiredRole="MEMBER">
+              <Friends isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
             </ProtectedRoute>
           } />
           <Route path="/reset-password" element={<ResetPassword isDarkMode={isDarkMode} />} />
