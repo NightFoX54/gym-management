@@ -15,4 +15,8 @@ public class ForumThreadDTO {
     private LocalDateTime lastPostAt;
     private Integer totalPosts;
     private Integer totalLikes;
+    private boolean areFriends;
+    private boolean hasRequest;
+    private boolean receivedRequest;
+    private Long requestId;
 } 

@@ -17,18 +17,18 @@ public class ForumPost {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "thread_id", nullable = false)
     private ForumThread thread;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "quoted_post_id")
     private ForumPost quotedPost;
     

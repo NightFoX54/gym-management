@@ -21,4 +21,8 @@ public class ForumPostDTO {
     private boolean isLikedByCurrentUser;
     private boolean canEdit;
     private boolean canDelete;
+    private boolean areFriends;
+    private boolean hasRequest;
+    private boolean receivedRequest;
+    private Long requestId;
 } 
