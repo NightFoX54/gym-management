@@ -40,6 +40,7 @@ import {
   SportsTennis,
 } from '@mui/icons-material';
 import { FaArrowLeft, FaTag, FaMoon, FaSun, FaCreditCard, FaLock } from 'react-icons/fa';
+import withChatAndNotifications from './member/withChatAndNotifications';
 
 const Market = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -533,7 +534,7 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
     >
       <div className="member-page-header">
         <div className="header-left">
-          <button className="back-button" onClick={() => navigate('/member')}>
+          <button className="back-button-trainingplan" onClick={() => navigate('/member')}>
             <FaArrowLeft /> Back to Dashboard
           </button>
           <h1>Fitness Market</h1>
@@ -1429,4 +1430,4 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default Market;
+export default withChatAndNotifications(Market);

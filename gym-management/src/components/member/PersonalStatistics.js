@@ -4,6 +4,7 @@ import '../../styles/PersonalStatistics.css';
 import '../../styles/Navbar.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const PersonalStatistics = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -121,4 +122,4 @@ const PersonalStatistics = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default PersonalStatistics; 
+export default withChatAndNotifications(PersonalStatistics); 

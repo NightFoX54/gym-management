@@ -3,6 +3,7 @@ import { FaDumbbell, FaRunning, FaSwimmer, FaPrayingHands, FaArrowLeft, FaClock,
 import { useNavigate } from 'react-router-dom';
 import '../../styles/TrainingPrograms.css';
 import axios from 'axios';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const TrainingPrograms = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -351,7 +352,7 @@ const TrainingPrograms = ({ isDarkMode, setIsDarkMode }) => {
   return (
     <div className={`training-programs-container ${isDarkMode ? 'dark-mode' : ''}`}>
       <div className="header-container">
-        <button className="back-button" onClick={() => navigate("/member")}>
+        <button className="back-button-trainingplan" onClick={() => navigate("/member")}>
           <FaArrowLeft /> Back to Dashboard
         </button>
         <h1 className="header-title">Group Classes</h1>
@@ -573,4 +574,4 @@ const TrainingPrograms = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default TrainingPrograms; 
+export default withChatAndNotifications(TrainingPrograms); 

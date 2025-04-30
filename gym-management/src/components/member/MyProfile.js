@@ -4,6 +4,7 @@ import '../../styles/MyProfile.css';
 import '../../styles/Navbar.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   const [profile, setProfile] = useState({
@@ -944,4 +945,4 @@ const MyProfile = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default MyProfile; 
+export default withChatAndNotifications(MyProfile); 

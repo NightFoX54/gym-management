@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaUser, FaBell, FaLock, FaArrowLeft, FaSave, FaSun, FaMoon, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/Settings.css';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const Settings = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -233,4 +234,4 @@ const Settings = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default Settings;
+export default withChatAndNotifications(Settings);

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaSun, FaMoon, FaHeart, FaQuoteRight, FaEdit, FaTrash, FaReply, FaUserPlus } from 'react-icons/fa';
+import { FaArrowLeft, FaSun, FaMoon, FaHeart, FaQuoteRight, FaEdit, FaTrash, FaReply, FaUserPlus, FaTimes, FaUserMinus, FaCheck, FaSyncAlt } from 'react-icons/fa';
 import '../../styles/ForumThread.css';
 import { toast } from 'react-hot-toast';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [newPost, setNewPost] = useState({ content: '' });
     const [showReplyModal, setShowReplyModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -20,9 +22,41 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
     const [showEditThreadModal, setShowEditThreadModal] = useState(false);
     const [editThreadData, setEditThreadData] = useState({ title: '', description: '' });
     const [showAddFriendTooltip, setShowAddFriendTooltip] = useState(null);
+    const [lastRefreshTime, setLastRefreshTime] = useState(null);
 
     // Get user info from localStorage
     const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+
+    const fetchData = async (isInitialLoad = false) => {
+        try {
+            if (isInitialLoad) {
+                setIsLoading(true);
+            } else {
+                setIsRefreshing(true);
+            }
+            await Promise.all([
+                fetchThreadDetails(),
+                fetchPosts()
+            ]);
+            setLastRefreshTime(new Date());
+        } catch (error) {
+            console.error('Error fetching thread data:', error);
+        } finally {
+            setIsLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        // Initial fetch
+        fetchData(true);
+
+        // Set up auto-refresh interval
+        const refreshInterval = setInterval(() => fetchData(false), 10000); // 10 seconds
+
+        // Cleanup interval on component unmount
+        return () => clearInterval(refreshInterval);
+    }, [threadId, currentPage]); // Re-run effect when threadId or page changes
 
     useEffect(() => {
         const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -32,10 +66,7 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-
-        fetchThreadDetails();
-        fetchPosts();
-    }, [setIsDarkMode, threadId, currentPage]);
+    }, [setIsDarkMode]);
 
     const toggleDarkMode = () => {
         const newDarkMode = !isDarkMode;
@@ -50,7 +81,7 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
 
     const fetchThreadDetails = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/api/forum/threads/${threadId}`);
+            const response = await fetch(`http://localhost:8080/api/forum/threads/${threadId}?currentUserId=${userInfo.id}`);
             if (!response.ok) {
                 throw new Error('Thread not found');
             }
@@ -71,8 +102,6 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
             setTotalPages(data.totalPages);
         } catch (error) {
             console.error('Error fetching posts:', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -227,8 +256,126 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
         }
     };
 
-    const handleAddFriend = (userId, userName) => {
-        toast.success(`Friend request sent to ${userName}!`);
+    const handleAddFriend = async (userId, userName) => {
+        try {
+            const response = await fetch('http://localhost:8080/api/friends/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    senderId: userInfo.id,
+                    receiverId: userId
+                })
+            });
+
+            if (response.ok) {
+                toast.success(`Friend request sent to ${userName}!`);
+                fetchThreadDetails();
+                fetchPosts();
+            } else {
+                const error = await response.text();
+                toast.error(error);
+            }
+        } catch (error) {
+            console.error('Error sending friend request:', error);
+            toast.error('Failed to send friend request');
+        }
+    };
+
+    const handleCancelRequest = async (userId, userName) => {
+        try {
+            const response = await fetch('http://localhost:8080/api/friends/request/cancel', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    senderId: userInfo.id,
+                    receiverId: userId
+                })
+            });
+
+            if (response.ok) {
+                toast.success(`Friend request to ${userName} cancelled`);
+                fetchThreadDetails();
+                fetchPosts();
+            } else {
+                const error = await response.text();
+                toast.error(error);
+            }
+        } catch (error) {
+            console.error('Error cancelling friend request:', error);
+            toast.error('Failed to cancel friend request');
+        }
+    };
+
+    const handleRemoveFriend = async (userId, userName) => {
+        if (!window.confirm(`Are you sure you want to remove ${userName} from your friends?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/friends/${userInfo.id}/remove/${userId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                toast.success(`${userName} removed from friends`);
+                fetchThreadDetails();
+                fetchPosts();
+            } else {
+                const error = await response.text();
+                toast.error(error);
+            }
+        } catch (error) {
+            console.error('Error removing friend:', error);
+            toast.error('Failed to remove friend');
+        }
+    };
+
+    const handleRejectRequest = async (requestId, userName) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/friends/request/${requestId}/reject?receiverId=${userInfo.id}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                toast.success(`Friend request from ${userName} rejected`);
+                fetchThreadDetails();
+                fetchPosts();
+            } else {
+                const error = await response.text();
+                toast.error(error);
+            }
+        } catch (error) {
+            console.error('Error rejecting friend request:', error);
+            toast.error('Failed to reject friend request');
+        }
+    };
+
+    const handleAcceptRequest = async (requestId, userName) => {
+        try {
+            const response = await fetch(`http://localhost:8080/api/friends/request/${requestId}/accept?receiverId=${userInfo.id}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                toast.success(`Friend request from ${userName} accepted`);
+                fetchThreadDetails();
+                fetchPosts();
+            } else {
+                const error = await response.text();
+                toast.error(error);
+            }
+        } catch (error) {
+            console.error('Error accepting friend request:', error);
+            toast.error('Failed to accept friend request');
+        }
+    };
+
+    const handleManualRefresh = () => {
+        fetchData(false);
     };
 
     if (isLoading) {
@@ -243,14 +390,30 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
                     <span>Back to Forum</span>
                 </button>
 
-                <button 
-                    className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
-                    onClick={toggleDarkMode}
-                >
-                    <FaSun className="toggle-icon-forum sun-forum" />
-                    <div className="toggle-circle-forum"></div>
-                    <FaMoon className="toggle-icon-forum moon-forum" />
-                </button>
+                <div className="header-actions">
+                    <button 
+                        className={`refresh-button-forum ${isRefreshing ? 'loading' : ''}`}
+                        onClick={handleManualRefresh}
+                        title="Refresh data"
+                        disabled={isRefreshing}
+                    >
+                        <FaSyncAlt />
+                        {lastRefreshTime && (
+                            <span className="last-refresh">
+                                Last updated: {lastRefreshTime.toLocaleTimeString()}
+                            </span>
+                        )}
+                    </button>
+
+                    <button 
+                        className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
+                        onClick={toggleDarkMode}
+                    >
+                        <FaSun className="toggle-icon-forum sun-forum" />
+                        <div className="toggle-circle-forum"></div>
+                        <FaMoon className="toggle-icon-forum moon-forum" />
+                    </button>
+                </div>
             </div>
 
             {thread && (
@@ -285,17 +448,89 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
                                 <div className="author-info-forum">
                                     <span className="author-name-forum">{thread.userName}</span>
                                     {thread.userId !== userInfo.id && (
-                                        <button 
-                                            className="add-friend-button-forum"
-                                            onClick={() => handleAddFriend(thread.userId, thread.userName)}
-                                            onMouseEnter={() => setShowAddFriendTooltip(`thread-${thread.userId}`)}
-                                            onMouseLeave={() => setShowAddFriendTooltip(null)}
-                                        >
-                                            <FaUserPlus />
-                                            {showAddFriendTooltip === `thread-${thread.userId}` && (
-                                                <span className="tooltip">Add Friend</span>
+                                        <div className="friend-actions-forum">
+                                            {!thread.areFriends && !thread.hasRequest && (
+                                                <button 
+                                                    className="add-friend-button-forum"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleAddFriend(thread.userId, thread.userName);
+                                                    }}
+                                                    onMouseEnter={() => setShowAddFriendTooltip(`thread-${thread.userId}`)}
+                                                    onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                >
+                                                    <FaUserPlus />
+                                                    {showAddFriendTooltip === `thread-${thread.userId}` && (
+                                                        <span className="tooltip">Add Friend</span>
+                                                    )}
+                                                </button>
                                             )}
-                                        </button>
+                                            {!thread.areFriends && thread.hasRequest && (
+                                                thread.receivedRequest ? (
+                                                    <div className="friend-request-actions-forum">
+                                                        <button 
+                                                            className="accept-request-button-forum"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleAcceptRequest(thread.requestId, thread.userName);
+                                                            }}
+                                                            onMouseEnter={() => setShowAddFriendTooltip(`thread-accept-${thread.userId}`)}
+                                                            onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                        >
+                                                            <FaCheck />
+                                                            {showAddFriendTooltip === `thread-accept-${thread.userId}` && (
+                                                                <span className="tooltip">Accept Request</span>
+                                                            )}
+                                                        </button>
+                                                        <button 
+                                                            className="reject-request-button-forum"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRejectRequest(thread.requestId, thread.userName);
+                                                            }}
+                                                            onMouseEnter={() => setShowAddFriendTooltip(`thread-reject-${thread.userId}`)}
+                                                            onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                        >
+                                                            <FaTimes />
+                                                            {showAddFriendTooltip === `thread-reject-${thread.userId}` && (
+                                                                <span className="tooltip">Reject Request</span>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button 
+                                                        className="cancel-request-button-forum"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCancelRequest(thread.userId, thread.userName);
+                                                        }}
+                                                        onMouseEnter={() => setShowAddFriendTooltip(`thread-${thread.userId}`)}
+                                                        onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                    >
+                                                        <FaTimes />
+                                                        {showAddFriendTooltip === `thread-${thread.userId}` && (
+                                                            <span className="tooltip">Cancel Request</span>
+                                                        )}
+                                                    </button>
+                                                )
+                                            )}
+                                            {thread.areFriends && (
+                                                <button 
+                                                    className="remove-friend-button-forum"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRemoveFriend(thread.userId, thread.userName);
+                                                    }}
+                                                    onMouseEnter={() => setShowAddFriendTooltip(`thread-${thread.userId}`)}
+                                                    onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                >
+                                                    <FaUserMinus />
+                                                    {showAddFriendTooltip === `thread-${thread.userId}` && (
+                                                        <span className="tooltip">Remove Friend</span>
+                                                    )}
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -333,17 +568,74 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
                                     <div className="author-info-forum">
                                         <span className="author-name-forum">{post.userName}</span>
                                         {post.userId !== userInfo.id && (
-                                            <button 
-                                                className="add-friend-button-forum"
-                                                onClick={() => handleAddFriend(post.userId, post.userName)}
-                                                onMouseEnter={() => setShowAddFriendTooltip(`post-${post.id}`)}
-                                                onMouseLeave={() => setShowAddFriendTooltip(null)}
-                                            >
-                                                <FaUserPlus />
-                                                {showAddFriendTooltip === `post-${post.id}` && (
-                                                    <span className="tooltip">Add Friend</span>
+                                            <div className="friend-actions-forum">
+                                                {!post.areFriends && !post.hasRequest && (
+                                                    <button 
+                                                        className="add-friend-button-forum"
+                                                        onClick={() => handleAddFriend(post.userId, post.userName)}
+                                                        onMouseEnter={() => setShowAddFriendTooltip(`post-${post.id}`)}
+                                                        onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                    >
+                                                        <FaUserPlus />
+                                                        {showAddFriendTooltip === `post-${post.id}` && (
+                                                            <span className="tooltip">Add Friend</span>
+                                                        )}
+                                                    </button>
                                                 )}
-                                            </button>
+                                                {!post.areFriends && post.hasRequest && (
+                                                    post.receivedRequest ? (
+                                                        <div className="friend-request-actions-forum">
+                                                            <button 
+                                                                className="accept-request-button-forum"
+                                                                onClick={() => handleAcceptRequest(post.requestId, post.userName)}
+                                                                onMouseEnter={() => setShowAddFriendTooltip(`post-accept-${post.id}`)}
+                                                                onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                            >
+                                                                <FaCheck />
+                                                                {showAddFriendTooltip === `post-accept-${post.id}` && (
+                                                                    <span className="tooltip">Accept Request</span>
+                                                                )}
+                                                            </button>
+                                                            <button 
+                                                                className="reject-request-button-forum"
+                                                                onClick={() => handleRejectRequest(post.requestId, post.userName)}
+                                                                onMouseEnter={() => setShowAddFriendTooltip(`post-reject-${post.id}`)}
+                                                                onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                            >
+                                                                <FaTimes />
+                                                                {showAddFriendTooltip === `post-reject-${post.id}` && (
+                                                                    <span className="tooltip">Reject Request</span>
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button 
+                                                            className="cancel-request-button-forum"
+                                                            onClick={() => handleCancelRequest(post.userId, post.userName)}
+                                                            onMouseEnter={() => setShowAddFriendTooltip(`post-${post.id}`)}
+                                                            onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                        >
+                                                            <FaTimes />
+                                                            {showAddFriendTooltip === `post-${post.id}` && (
+                                                                <span className="tooltip">Cancel Request</span>
+                                                            )}
+                                                        </button>
+                                                    )
+                                                )}
+                                                {post.areFriends && (
+                                                    <button 
+                                                        className="remove-friend-button-forum"
+                                                        onClick={() => handleRemoveFriend(post.userId, post.userName)}
+                                                        onMouseEnter={() => setShowAddFriendTooltip(`post-${post.id}`)}
+                                                        onMouseLeave={() => setShowAddFriendTooltip(null)}
+                                                    >
+                                                        <FaUserMinus />
+                                                        {showAddFriendTooltip === `post-${post.id}` && (
+                                                            <span className="tooltip">Remove Friend</span>
+                                                        )}
+                                                    </button>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -550,4 +842,4 @@ const ForumThread = ({ isDarkMode, setIsDarkMode }) => {
     );
 };
 
-export default ForumThread; 
+export default withChatAndNotifications(ForumThread); 

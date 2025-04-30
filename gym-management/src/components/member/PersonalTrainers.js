@@ -27,6 +27,7 @@ import {
 } from 'react-icons/fa';
 import '../../styles/PersonalTrainers.css';
 import axios from 'axios';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -1444,4 +1445,4 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default PersonalTrainers; 
+export default withChatAndNotifications(PersonalTrainers); 

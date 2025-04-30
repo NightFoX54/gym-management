@@ -38,6 +38,7 @@ import "../../styles/PageTransitions.css";
 import "../../styles/Navbar.css";
 import { logout } from '../../utils/auth';
 import { Grid, Typography } from "@mui/material";
+import withChatAndNotifications from './withChatAndNotifications';
 
 const Member = ({ isDarkMode, setIsDarkMode }) => {
   // Get user info from localStorage
@@ -132,6 +133,9 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
   // Add new state for password change success modal
   const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false);
+
+  // Add friend request count
+  const [friendRequestCount, setFriendRequestCount] = useState(0);
 
   // Add styles directly in component
   const styles = {
@@ -394,6 +398,36 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
 
     checkDefaultPassword();
   }, [userInfo.email]);
+
+  // Add function to fetch friend request count
+  const fetchFriendRequestCount = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/friends/requests/${userInfo.id}`, {
+        headers: {
+          'Authorization': `Bearer ${userInfo.token}`
+        }
+      });
+      
+      if (response.ok) {
+        const requests = await response.json();
+        setFriendRequestCount(requests.length);
+      }
+    } catch (error) {
+      console.error('Error fetching friend requests:', error);
+    }
+  };
+
+  // Add useEffect for friend request count auto-refresh
+  useEffect(() => {
+    // Initial fetch
+    fetchFriendRequestCount();
+
+    // Set up auto-refresh interval
+    const refreshInterval = setInterval(fetchFriendRequestCount, 10000); // 10 seconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(refreshInterval);
+  }, [userInfo.id]);
 
   const handleLogoutMember = () => {
     logout();
@@ -970,19 +1004,10 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <p>Choose the suitable program among our already prepared programs by our trainers</p>
             </div>
             
-            {/*
-            <div
-              className="dashboard-card-member stagger-7"
-              onClick={() => navigate("/member/settings")}
-            >
-              <FaCog className="card-icon-member" />
-              <h3>Settings</h3>
-              <p>Manage your account preferences</p>
-            </div>
-            */}
+            
 
             <div
-              className="dashboard-card-member stagger-8"
+              className="dashboard-card-member stagger-7"
               onClick={() => navigate("/market")}
             >
               <FaShoppingCart className="card-icon-member" />
@@ -991,7 +1016,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
             </div>
 
             <div
-              className="dashboard-card-member stagger-9"
+              className="dashboard-card-member stagger-8"
               onClick={() => navigate("/member/personal-trainers")}
             >
               <FaUserFriends className="card-icon-member" />
@@ -1000,7 +1025,7 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
             </div>
 
             <div
-              className="dashboard-card-member stagger-10"
+              className="dashboard-card-member stagger-9"
               onClick={() => navigate("/member/workout-programs")}
             >
               <FaUsers className="card-icon-member" />
@@ -1025,6 +1050,21 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
               <FaChartLine className="card-icon-member" />
               <h3>Progress Tracking</h3>
               <p>Track your fitness progress, set goals, and monitor achievements</p>
+            </div>
+
+            <div
+              className="dashboard-card-member stagger-11"
+              onClick={() => handleCardClickMember('/member/friends')}
+              style={{ position: 'relative' }}
+            >
+              <FaUserFriends className="card-icon-member" />
+              {friendRequestCount > 0 && (
+                <div className="friend-request-badge">
+                  {friendRequestCount}
+                </div>
+              )}
+              <h3>Friends</h3>
+              <p>Manage your friends and friend requests</p>
             </div>
           </div>
 
@@ -1264,4 +1304,4 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default Member;
+export default withChatAndNotifications(Member);

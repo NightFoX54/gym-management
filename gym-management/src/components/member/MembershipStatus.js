@@ -4,6 +4,7 @@ import '../../styles/MembershipStatus.css';
 import '../../styles/Navbar.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   // Get user info from localStorage
@@ -752,4 +753,4 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default MembershipStatus; 
+export default withChatAndNotifications(MembershipStatus); 

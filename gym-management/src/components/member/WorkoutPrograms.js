@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/WorkoutPrograms.css';
 import { toast } from 'react-hot-toast';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -1695,4 +1696,4 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default WorkoutPrograms; 
+export default withChatAndNotifications(WorkoutPrograms); 

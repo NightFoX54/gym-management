@@ -41,6 +41,7 @@ import {
   FaRunning
 } from 'react-icons/fa';
 import '../../styles/ProgressTracking.css';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -971,4 +972,4 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default ProgressTracking; 
+export default withChatAndNotifications(ProgressTracking); 

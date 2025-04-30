@@ -3,6 +3,7 @@ import { FaArrowLeft, FaMoon, FaSun, FaChevronLeft, FaChevronRight, FaBell, FaCa
 import { useNavigate } from 'react-router-dom';
 import '../../styles/WeeklySchedule.css';
 import axios from 'axios';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const WeeklySchedule = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -336,4 +337,4 @@ const WeeklySchedule = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default WeeklySchedule; 
+export default withChatAndNotifications(WeeklySchedule); 

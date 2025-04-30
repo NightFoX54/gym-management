@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/TrainingPlan.css';
 import '../../styles/PageTransitions.css';
 import { toast } from 'react-toastify';
+import withChatAndNotifications from './withChatAndNotifications';
 
 const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -325,4 +326,4 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
   );
 };
 
-export default TrainingPlan; 
+export default withChatAndNotifications(TrainingPlan); 
