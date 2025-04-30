@@ -17,4 +17,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     // Check if phone number exists
     boolean existsByPhoneNumber(String phoneNumber);
+    
+    // Search users by first name or last name
+    List<User> findByFirstNameContainingOrLastNameContaining(String firstName, String lastName);
 } 

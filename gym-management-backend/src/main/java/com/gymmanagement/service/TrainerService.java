@@ -4,6 +4,9 @@ import com.gymmanagement.dto.TrainerClientResponse;
 import com.gymmanagement.dto.TrainerRequestResponse;
 import com.gymmanagement.dto.TrainerSessionRequest;
 import com.gymmanagement.dto.TrainerSessionResponse;
+import com.gymmanagement.model.Notification;
+import com.gymmanagement.model.Notification.NotificationType;
+import com.gymmanagement.repository.NotificationRepository;
 import com.gymmanagement.model.*;
 import com.gymmanagement.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +29,9 @@ public class TrainerService {
 
     @Autowired
     private TrainerClientRepository clientRepository;
-    
+
+    @Autowired
+    private NotificationRepository notificationRepository;
     @Autowired
     private TrainerRegistrationRequestRepository requestRepository;
     
@@ -124,6 +129,13 @@ public class TrainerService {
         
         TrainerClient savedClient = clientRepository.save(newClient);
         
+        // Create a notification for the client
+        Notification notification = new Notification();
+        notification.setUser(request.getClient());
+        notification.setNotificationType(NotificationType.trainer_request);
+        notification.setMessage("Your personal training request to " + request.getTrainer().getFirstName() + " " + request.getTrainer().getLastName() + " has been approved.");
+        notificationRepository.save(notification);
+
         // Also create an initial session based on the requested meeting date/time
         if (request.getRequestedMeetingDate() != null && request.getRequestedMeetingTime() != null) {
             System.out.println("Creating initial session for client " + request.getClient().getId() + 
@@ -166,6 +178,13 @@ public class TrainerService {
                 .orElseThrow(() -> new RuntimeException("Request not found with id: " + requestId));
         
         requestRepository.delete(request);
+
+        // Create a notification for the client
+        Notification notification = new Notification();
+        notification.setUser(request.getClient());
+        notification.setNotificationType(NotificationType.trainer_request);
+        notification.setMessage("Your personal training request to " + request.getTrainer().getFirstName() + " " + request.getTrainer().getLastName() + " has been rejected.");
+        notificationRepository.save(notification);
     }
     
     @Transactional
@@ -289,6 +308,13 @@ public class TrainerService {
         
         TrainerSession savedSession = sessionRepository.save(session);
         
+        // Create a notification for the client
+        Notification notification = new Notification();
+        notification.setUser(request.getClient());
+        notification.setNotificationType(NotificationType.trainer_request);
+        notification.setMessage("Your session request to " + request.getTrainer().getFirstName() + " " + request.getTrainer().getLastName() + " has been approved.");
+        notificationRepository.save(notification);
+        
         // Check if this session is using a free PT session
         List<FreePtUse> freePtUses = freePtUseRepository.findBySessionRequestId(request.getId());
         
@@ -342,6 +368,15 @@ public class TrainerService {
         session.setSessionTime(request.getNewSessionTime());
         
         sessionRepository.save(session);
+        
+        // Create a notification for the client
+        Notification notification = new Notification();
+        User client = session.getClient(); // Get client from session instead
+        notification.setUser(client);
+        notification.setNotificationType(NotificationType.trainer_request);
+        User trainer = session.getTrainer(); // Get trainer from session instead
+        notification.setMessage("Your reschedule request to " + trainer.getFirstName() + " " + trainer.getLastName() + " has been approved.");
+        notificationRepository.save(notification);
         
         // Delete the request
         rescheduleRequestRepository.deleteById(requestId);
@@ -417,6 +452,13 @@ public class TrainerService {
         
         // Delete the request
         sessionRequestRepository.deleteById(request.getId());
+
+        // Create a notification for the client
+        Notification notification = new Notification();
+        notification.setUser(request.getClient());
+        notification.setNotificationType(NotificationType.trainer_request);
+        notification.setMessage("Your session request to " + request.getTrainer().getFirstName() + " " + request.getTrainer().getLastName() + " has been rejected.");
+        notificationRepository.save(notification);
     }
 
     @Transactional
@@ -427,6 +469,15 @@ public class TrainerService {
         
         // Simply delete the request - no need to adjust any other records
         rescheduleRequestRepository.deleteById(requestId);
+
+        // Create a notification for the client
+        Notification notification = new Notification();
+        User client = request.getSession().getClient(); // Get client from session
+        notification.setUser(client);
+        notification.setNotificationType(NotificationType.trainer_request);
+        User trainer = request.getSession().getTrainer(); // Get trainer from session
+        notification.setMessage("Your reschedule request to " + trainer.getFirstName() + " " + trainer.getLastName() + " has been rejected.");
+        notificationRepository.save(notification);
     }
 
     // Keep existing method as is - it returns ratings for all trainers
