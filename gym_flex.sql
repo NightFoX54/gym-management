@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Anamakine: 127.0.0.1
--- Üretim Zamanı: 29 Nis 2025, 17:00:09
+-- Üretim Zamanı: 30 Nis 2025, 19:16:45
 -- Sunucu sürümü: 8.0.40
 -- PHP Sürümü: 8.2.12
 
@@ -33,8 +33,22 @@ CREATE TABLE `chat_messages` (
   `receiver_id` bigint NOT NULL,
   `chat_message` text COLLATE utf8mb4_general_ci NOT NULL,
   `replied_to` int DEFAULT NULL,
-  `sent_at` datetime DEFAULT CURRENT_TIMESTAMP
+  `sent_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `isRead` tinyint(1) NOT NULL DEFAULT '0',
+  `is_read` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `chat_messages`
+--
+
+INSERT INTO `chat_messages` (`id`, `sender_id`, `receiver_id`, `chat_message`, `replied_to`, `sent_at`, `isRead`, `is_read`) VALUES
+(1, 13, 2, 'deneme', NULL, '2025-04-30 13:15:17', 0, 1),
+(2, 13, 2, 'deneme', 1, '2025-04-30 13:17:12', 0, 1),
+(3, 2, 13, 'deneme', NULL, '2025-04-30 13:22:54', 0, 1),
+(4, 13, 2, 'deneme', NULL, '2025-04-30 13:25:43', 0, 1),
+(5, 2, 13, 'deneme', NULL, '2025-04-30 13:39:17', 0, 1),
+(6, 2, 13, 'deneme123', NULL, '2025-04-30 13:51:34', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -211,7 +225,9 @@ CREATE TABLE `forum_likes` (
 --
 
 INSERT INTO `forum_likes` (`id`, `post_id`, `user_id`, `created_at`) VALUES
-(2, 8, 13, '2025-04-29 14:46:25');
+(2, 8, 13, '2025-04-29 14:46:25'),
+(3, 9, 2, '2025-04-30 13:30:06'),
+(32, 8, 14, '2025-04-30 19:22:58');
 
 -- --------------------------------------------------------
 
@@ -235,7 +251,8 @@ CREATE TABLE `forum_posts` (
 INSERT INTO `forum_posts` (`id`, `thread_id`, `user_id`, `content`, `quoted_post_id`, `created_at`) VALUES
 (3, 2, 13, 'deneme', NULL, '2025-04-29 14:38:54'),
 (8, 1, 13, 'deneme3', NULL, '2025-04-29 14:42:41'),
-(9, 1, 13, 'deneme4', 8, '2025-04-29 14:46:23');
+(9, 1, 13, 'deneme4', 8, '2025-04-29 14:46:23'),
+(10, 1, 14, 'deneme5', 9, '2025-04-30 19:26:29');
 
 -- --------------------------------------------------------
 
@@ -278,7 +295,7 @@ CREATE TABLE `free_pt_use` (
 --
 
 INSERT INTO `free_pt_use` (`id`, `member_id`, `session_id`, `session_request_id`, `use_time`) VALUES
-(3, 13, NULL, 6, '2025-04-10 01:38:59');
+(4, 13, NULL, 8, '2025-04-30 19:03:03');
 
 -- --------------------------------------------------------
 
@@ -287,7 +304,7 @@ INSERT INTO `free_pt_use` (`id`, `member_id`, `session_id`, `session_request_id`
 --
 
 CREATE TABLE `friends` (
-  `id` int NOT NULL,
+  `id` bigint NOT NULL,
   `user1_id` bigint NOT NULL,
   `user2_id` bigint NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -299,11 +316,18 @@ CREATE TABLE `friends` (
 --
 
 CREATE TABLE `friend_requests` (
-  `id` int NOT NULL,
+  `id` bigint NOT NULL,
   `sender_id` bigint NOT NULL,
   `receiver_id` bigint NOT NULL,
   `date` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `friend_requests`
+--
+
+INSERT INTO `friend_requests` (`id`, `sender_id`, `receiver_id`, `date`) VALUES
+(11, 13, 65, '2025-04-29 19:18:24');
 
 -- --------------------------------------------------------
 
@@ -704,6 +728,35 @@ INSERT INTO `member_training_plans` (`id`, `user_id`, `workout_id`, `day_of_week
 -- --------------------------------------------------------
 
 --
+-- Tablo için tablo yapısı `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `notification_type` enum('trainer_request','forum','friend_request') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `forum_thread_id` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `message` text COLLATE utf8mb4_general_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Tablo döküm verisi `notifications`
+--
+
+INSERT INTO `notifications` (`id`, `user_id`, `notification_type`, `forum_thread_id`, `created_at`, `message`) VALUES
+(1, 14, 'trainer_request', NULL, '2025-04-30 16:01:07', 'Your personal training request to Trainer User has been rejected.'),
+(20, 13, 'forum', 1, '2025-04-30 16:26:29', 'You have a new post in your forum thread.'),
+(21, 13, 'friend_request', NULL, '2025-04-30 16:31:19', 'You have a new friend request from Berkay Arıkan'),
+(23, 13, 'friend_request', NULL, '2025-04-30 16:31:45', 'You have a new friend request from Member User'),
+(24, 14, 'friend_request', NULL, '2025-04-30 16:31:57', 'Your friend request to Berkay Arıkan has been accepted.'),
+(26, 13, 'friend_request', NULL, '2025-04-30 16:32:27', 'You have been removed from Berkay Arıkan\'s friends list.'),
+(28, 13, 'friend_request', NULL, '2025-04-30 16:33:44', 'Your friend request to Member User has been accepted.'),
+(29, 13, 'friend_request', NULL, '2025-04-30 16:33:47', 'You have been removed from Member User\'s friends list.');
+
+-- --------------------------------------------------------
+
+--
 -- Tablo için tablo yapısı `password_reset_tokens`
 --
 
@@ -851,7 +904,7 @@ CREATE TABLE `trainer_registration_requests` (
 --
 
 INSERT INTO `trainer_registration_requests` (`id`, `trainer_id`, `client_id`, `request_message`, `requested_meeting_date`, `requested_meeting_time`, `is_modified_by_trainer`) VALUES
-(9, 3, 14, 'I\'d like to book a training session', '2025-04-13', '15:42:00', 0);
+(10, 3, 14, 'I\'d like to book a training session', '2025-05-01', '10:03:00', 0);
 
 -- --------------------------------------------------------
 
@@ -880,7 +933,8 @@ INSERT INTO `trainer_sessions` (`id`, `trainer_id`, `client_id`, `session_date`,
 (4, 3, 13, '2025-04-08', '11:28:00', 'Automatically created from registration request #3', 'Initial Consultation'),
 (5, 3, 13, '2025-04-08', '11:28:00', 'Automatically created from registration request #3', 'Initial Consultation'),
 (6, 3, 13, '2025-04-09', '05:42:00', '', 'Personal Training'),
-(7, 3, 13, '2025-04-15', '05:43:00', '', 'Personal Training');
+(7, 3, 13, '2025-04-15', '05:43:00', '', 'Personal Training'),
+(12, 3, 13, '2025-05-30', '16:40:00', '', 'Regular Session');
 
 -- --------------------------------------------------------
 
@@ -902,8 +956,8 @@ CREATE TABLE `trainer_session_requests` (
 --
 
 INSERT INTO `trainer_session_requests` (`id`, `trainer_id`, `client_id`, `request_message`, `requested_meeting_date`, `requested_meeting_time`) VALUES
-(5, 3, 13, '', '2025-04-18', '16:32:00'),
-(6, 3, 13, '', '2025-04-18', '16:40:00');
+(7, 3, 13, '', '2025-05-01', '22:04:00'),
+(8, 3, 13, '', '2025-05-10', '00:05:00');
 
 -- --------------------------------------------------------
 
@@ -923,7 +977,7 @@ CREATE TABLE `trainer_session_reschedule_request` (
 --
 
 INSERT INTO `trainer_session_reschedule_request` (`id`, `session_id`, `new_session_date`, `new_session_time`) VALUES
-(6, 7, '2025-04-15', '05:43:00');
+(7, 12, '2025-05-22', '18:41:00');
 
 -- --------------------------------------------------------
 
@@ -990,7 +1044,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `profile_photo_path`, `email`, `phone_number`, `role`, `registration_date`, `password`) VALUES
 (1, 'Admin', 'User', '	/uploads/images/default-avatar.jpg	', 'admin@gymflex.com', NULL, 'ADMIN', '2025-03-15 01:50:43', '$2a$10$iZe2uBOqAzOxwqsNL80SIe90LOhfnGyhQ70Ht3tzjh4wIk5RTNr/S'),
-(2, 'Member', 'User', '	/uploads/images/default-avatar.jpg	', 'member@gymflex.com', '0539 783 7419', 'MEMBER', '2025-03-15 01:50:43', '$2a$10$cUtC6MRZ9DT8DoOtCb.C6uPZS5XRO8WcaRuZ3b/ihEIkW8j.2Wkgi'),
+(2, 'Member', 'User', '	/uploads/images/default-avatar.jpg	', 'member@gymflex.com', '0539 783 7419', 'MEMBER', '2025-03-15 01:50:43', '$2a$10$FHSXUOTmMFaSyrGfSZ.Gk.8ztEvcSWFMrE6iubSRm3x3hrlY55C0S'),
 (3, 'Trainer', 'User', '	/uploads/images/default-avatar.jpg	', 'trainer@gymflex.com', '0555 444 3322', 'TRAINER', '2025-03-15 01:50:43', '$2a$10$lCA4owT8/KaSBzK02o5mYOXOYBmAzCekRRHdtiJMllCxt1fBA2mVu'),
 (13, 'Berkay', 'Arıkan', '/uploads/e2145a25-9c1c-4316-8fef-c82042f649ed.jpeg', 'berkayyy5445@gmail.com', '0539 783 7419', 'MEMBER', '2025-03-16 17:04:35', '$2a$10$jy/b.Y3WgjB34MLw.my6le4mzZ5NIKrH7dx0ERwAS6iegYei8JyJO'),
 (14, 'Berkay', 'Arıkan', '	/uploads/images/default-avatar.jpg	', 'berkay222@gmail.com', '0555 999 8877', 'MEMBER', '2025-03-16 17:21:45', '$2a$10$uUqtVHe7ER9sGPHfb/zwpuOTKzXEuJ2tCS.TPMwLqmuOcqj2BAJcG'),
@@ -1365,6 +1419,14 @@ ALTER TABLE `member_training_plans`
   ADD KEY `workout_id` (`workout_id`);
 
 --
+-- Tablo için indeksler `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_notifications_user` (`user_id`),
+  ADD KEY `fk_notifications_forum_thread` (`forum_thread_id`);
+
+--
 -- Tablo için indeksler `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
@@ -1513,7 +1575,7 @@ ALTER TABLE `workout_levels`
 -- Tablo için AUTO_INCREMENT değeri `chat_messages`
 --
 ALTER TABLE `chat_messages`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `club_visits`
@@ -1555,13 +1617,13 @@ ALTER TABLE `expenses_categories`
 -- Tablo için AUTO_INCREMENT değeri `forum_likes`
 --
 ALTER TABLE `forum_likes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `forum_posts`
 --
 ALTER TABLE `forum_posts`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `forum_threads`
@@ -1573,19 +1635,19 @@ ALTER TABLE `forum_threads`
 -- Tablo için AUTO_INCREMENT değeri `free_pt_use`
 --
 ALTER TABLE `free_pt_use`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `friends`
 --
 ALTER TABLE `friends`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `friend_requests`
 --
 ALTER TABLE `friend_requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `general_prices`
@@ -1678,6 +1740,12 @@ ALTER TABLE `member_training_plans`
   MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 
 --
+-- Tablo için AUTO_INCREMENT değeri `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
 -- Tablo için AUTO_INCREMENT değeri `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
@@ -1717,25 +1785,25 @@ ALTER TABLE `trainer_employee_details`
 -- Tablo için AUTO_INCREMENT değeri `trainer_registration_requests`
 --
 ALTER TABLE `trainer_registration_requests`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_sessions`
 --
 ALTER TABLE `trainer_sessions`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_session_requests`
 --
 ALTER TABLE `trainer_session_requests`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_session_reschedule_request`
 --
 ALTER TABLE `trainer_session_reschedule_request`
-  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Tablo için AUTO_INCREMENT değeri `trainer_settings`
@@ -1937,6 +2005,13 @@ ALTER TABLE `membership_renewals`
 ALTER TABLE `member_training_plans`
   ADD CONSTRAINT `member_training_plans_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `member_training_plans_ibfk_2` FOREIGN KEY (`workout_id`) REFERENCES `workouts` (`id`);
+
+--
+-- Tablo kısıtlamaları `notifications`
+--
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `fk_notifications_forum_thread` FOREIGN KEY (`forum_thread_id`) REFERENCES `forum_threads` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Tablo kısıtlamaları `password_reset_tokens`
