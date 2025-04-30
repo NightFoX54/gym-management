@@ -4,6 +4,7 @@ import com.gymmanagement.dto.ForumPostDTO;
 import com.gymmanagement.dto.ForumThreadDTO;
 import com.gymmanagement.model.*;
 import com.gymmanagement.repository.*;
+import com.gymmanagement.model.Notification.NotificationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,16 +35,56 @@ public class ForumController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private FriendsRepository friendsRepository;
+
+    @Autowired
+    private FriendRequestRepository friendRequestRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
     // Get latest threads with pagination
     @GetMapping("/threads")
     public ResponseEntity<Page<ForumThreadDTO>> getLatestThreads(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long currentUserId) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<ForumThread> threads = threadRepository.findAllOrderByLatestPost(pageable);
         
-        return ResponseEntity.ok(threads.map(this::convertToThreadDTO));
+        Page<ForumThreadDTO> threadDTOs = threads.map(thread -> {
+            ForumThreadDTO dto = convertToThreadDTO(thread);
+            
+            if (currentUserId != null) {
+                User currentUser = userRepository.findById(currentUserId).orElse(null);
+                User threadUser = thread.getUser();
+                
+                if (currentUser != null && threadUser != null) {
+                    boolean areFriends = friendsRepository.areFriends(currentUser, threadUser);
+                    boolean hasRequest = friendRequestRepository.existsBetweenUsers(currentUser, threadUser);
+                    
+                    dto.setAreFriends(areFriends);
+                    dto.setHasRequest(hasRequest);
+                    
+                    if (hasRequest) {
+                        FriendRequest request = friendRequestRepository.findBySenderAndReceiver(currentUser, threadUser);
+                        if (request == null) {
+                            request = friendRequestRepository.findBySenderAndReceiver(threadUser, currentUser);
+                            if (request != null) {
+                                dto.setReceivedRequest(true);
+                                dto.setRequestId(request.getId());
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return dto;
+        });
+        
+        return ResponseEntity.ok(threadDTOs);
     }
 
     // Get hot threads (most active in last week)
@@ -59,7 +100,8 @@ public class ForumController {
 
     // Get top contributors
     @GetMapping("/top-contributors")
-    public ResponseEntity<List<Map<String, Object>>> getTopContributors() {
+    public ResponseEntity<List<Map<String, Object>>> getTopContributors(
+            @RequestParam(required = false) Long currentUserId) {
         List<Object[]> contributors = postRepository.findTopContributors(PageRequest.of(0, 5));
         
         List<Map<String, Object>> result = contributors.stream()
@@ -71,6 +113,28 @@ public class ForumController {
                     map.put("userName", user.getName());
                     map.put("profilePhoto", user.getProfilePhotoPath());
                     map.put("postCount", postCount);
+
+                    if (currentUserId != null) {
+                        User currentUser = userRepository.findById(currentUserId).orElse(null);
+                        if (currentUser != null && !currentUser.getId().equals(user.getId())) {
+                            boolean areFriends = friendsRepository.areFriends(currentUser, user);
+                            boolean hasRequest = friendRequestRepository.existsBetweenUsers(currentUser, user);
+                            map.put("areFriends", areFriends);
+                            map.put("hasRequest", hasRequest);
+                            
+                            if (hasRequest) {
+                                FriendRequest request = friendRequestRepository.findBySenderAndReceiver(currentUser, user);
+                                if (request == null) {
+                                    request = friendRequestRepository.findBySenderAndReceiver(user, currentUser);
+                                    if (request != null) {
+                                        map.put("receivedRequest", true);
+                                        map.put("requestId", request.getId());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     return map;
                 })
                 .collect(Collectors.toList());
@@ -153,13 +217,29 @@ public class ForumController {
         if (quotedPostId != null) {
             Optional<ForumPost> quotedPostOpt = postRepository.findById(quotedPostId);
             quotedPostOpt.ifPresent(post::setQuotedPost);
+            // Create a notification for the user who quoted the post
+            Notification notification = new Notification();
+            notification.setUser(quotedPostOpt.get().getUser());
+            notification.setNotificationType(NotificationType.forum);
+            notification.setMessage("You have been quoted in a forum post.");
+            notification.setForumThreadId(post.getThread().getId());
+            notificationRepository.save(notification);
         }
         
         ForumPost savedPost = postRepository.save(post);
+
+        // Create a notification for the user who created the post
+        Notification notification = new Notification();
+        notification.setUser(threadOpt.get().getUser());
+        notification.setNotificationType(NotificationType.forum);
+        notification.setMessage("You have a new post in your forum thread.");
+        notification.setForumThreadId(post.getThread().getId());
+        notificationRepository.save(notification);
         return ResponseEntity.ok(convertToPostDTO(savedPost, userId));
     }
 
     // Toggle like on a post
+    @Transactional
     @PostMapping("/posts/{postId}/toggle-like")
     public ResponseEntity<Map<String, Object>> toggleLike(
             @PathVariable Integer postId,
@@ -176,6 +256,10 @@ public class ForumController {
         User user = userOpt.get();
         
         boolean wasLiked = likeRepository.existsByUserAndPost(user, post);
+
+        // Create a notification for the user who liked the post
+        
+
         if (wasLiked) {
             likeRepository.deleteByUserAndPost(user, post);
         } else {
@@ -183,6 +267,17 @@ public class ForumController {
             like.setPost(post);
             like.setUser(user);
             likeRepository.save(like);
+            if(user != post.getUser()){
+                List<Notification> notifications = notificationRepository.findByUserAndForumThreadId(post.getUser(), post.getThread().getId());
+                if(notifications.isEmpty()){
+                    Notification notification = new Notification();
+                    notification.setUser(post.getUser());
+                    notification.setNotificationType(NotificationType.forum);
+                    notification.setMessage("You have new likes on your post in the forum.");
+                    notification.setForumThreadId(post.getThread().getId());
+                    notificationRepository.save(notification);
+                }
+            }
         }
         
         Map<String, Object> response = new HashMap<>();
@@ -237,13 +332,42 @@ public class ForumController {
 
     // Get thread details
     @GetMapping("/threads/{threadId}")
-    public ResponseEntity<ForumThreadDTO> getThreadDetails(@PathVariable Integer threadId) {
+    public ResponseEntity<ForumThreadDTO> getThreadDetails(
+            @PathVariable Integer threadId,
+            @RequestParam(required = false) Long currentUserId) {
         Optional<ForumThread> threadOpt = threadRepository.findById(threadId);
         if (!threadOpt.isPresent()) {
             return ResponseEntity.notFound().build();
         }
         
-        return ResponseEntity.ok(convertToThreadDTO(threadOpt.get()));
+        ForumThread thread = threadOpt.get();
+        ForumThreadDTO dto = convertToThreadDTO(thread);
+        
+        if (currentUserId != null) {
+            User currentUser = userRepository.findById(currentUserId).orElse(null);
+            User threadUser = thread.getUser();
+            
+            if (currentUser != null && threadUser != null) {
+                boolean areFriends = friendsRepository.areFriends(currentUser, threadUser);
+                boolean hasRequest = friendRequestRepository.existsBetweenUsers(currentUser, threadUser);
+                
+                dto.setAreFriends(areFriends);
+                dto.setHasRequest(hasRequest);
+                
+                if (hasRequest) {
+                    FriendRequest request = friendRequestRepository.findBySenderAndReceiver(currentUser, threadUser);
+                    if (request == null) {
+                        request = friendRequestRepository.findBySenderAndReceiver(threadUser, currentUser);
+                        if (request != null) {
+                            dto.setReceivedRequest(true);
+                            dto.setRequestId(request.getId());
+                        }
+                    }
+                }
+            }
+        }
+        
+        return ResponseEntity.ok(dto);
     }
 
     // Edit thread
@@ -359,6 +483,29 @@ public class ForumController {
         
         dto.setCanEdit(post.getUser().getId().equals(currentUserId));
         dto.setCanDelete(post.getUser().getId().equals(currentUserId));
+
+        // Add friendship status
+        User currentUser = userRepository.findById(currentUserId).orElse(null);
+        User postUser = post.getUser();
+        
+        if (currentUser != null && postUser != null && !currentUser.getId().equals(postUser.getId())) {
+            boolean areFriends = friendsRepository.areFriends(currentUser, postUser);
+            boolean hasRequest = friendRequestRepository.existsBetweenUsers(currentUser, postUser);
+            
+            dto.setAreFriends(areFriends);
+            dto.setHasRequest(hasRequest);
+            
+            if (hasRequest) {
+                FriendRequest request = friendRequestRepository.findBySenderAndReceiver(currentUser, postUser);
+                if (request == null) {
+                    request = friendRequestRepository.findBySenderAndReceiver(postUser, currentUser);
+                    if (request != null) {
+                        dto.setReceivedRequest(true);
+                        dto.setRequestId(request.getId());
+                    }
+                }
+            }
+        }
         
         return dto;
     }
