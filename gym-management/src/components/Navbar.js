@@ -108,16 +108,18 @@ function Navbar({ isDarkMode, setIsDarkMode }) {
           <motion.i 
             className="fas fa-sun toggle-icon-main" 
             animate={{ 
-              opacity: isDarkMode ? 0.5 : 1,
-              scale: isDarkMode ? 0.8 : 1 
+              opacity: isDarkMode ? 0.7 : 1,
+              scale: isDarkMode ? 0.8 : 1,
+              textShadow: isDarkMode ? "0px 0px 2px rgba(255,255,255,0.3)" : "0px 0px 4px rgba(255,255,255,0.7)"
             }}
           />
           <div className="toggle-circle-main" />
           <motion.i 
             className="fas fa-moon toggle-icon-main"
             animate={{ 
-              opacity: isDarkMode ? 1 : 0.5,
-              scale: isDarkMode ? 1 : 0.8 
+              opacity: isDarkMode ? 1 : 0.7,
+              scale: isDarkMode ? 1 : 0.8,
+              textShadow: isDarkMode ? "0px 0px 4px rgba(255,255,255,0.7)" : "0px 0px 2px rgba(255,255,255,0.3)"
             }}
           />
         </motion.button>
