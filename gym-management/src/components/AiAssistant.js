@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/AiAssistant.css';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import frontBodyDiagramImage from '../assets/images/front-body-diagram.png';
 import backBodyDiagramImage from '../assets/images/back-body-diagram.png';
+import { generateGeminiResponse, resetConversation } from '../services/geminiService';
 
 // Simplified muscle groups with descriptions and services
 const muscleGroups = {
@@ -152,24 +153,37 @@ const muscleGroups = {
   ]
 };
 
+// Small change to default messages to explain API key setup
 const defaultMessages = [
   {
     sender: 'ai',
-    text: "Hello! I'm your GymFlex AI Assistant. I can help you find the perfect services for your fitness goals. Toggle between front and back body views, then click on a muscle group or tell me what you'd like to work on!"
+    text: "Hello! I'm your GymFlex AI Assistant powered by Google Gemini. I can help you find the perfect services for your fitness goals. Toggle between front and back body views, click on a muscle group, or ask me any fitness-related questions!"
   }
 ];
 
+// Update ServiceCard component to use the new theme color
 const ServiceCard = ({ service }) => (
-  <div className="service-card">
+  <motion.div 
+    className="service-card"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    whileHover={{ 
+      scale: 1.03, 
+      boxShadow: "0 10px 20px rgba(255, 71, 87, 0.15)" 
+    }}
+  >
     <h4>{service.name}</h4>
     <p>{service.description}</p>
-    <a 
+    <motion.a 
       href={`/services/${service.name.toLowerCase().replace(/\s+/g, '-')}`} 
       className="service-link"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
     >
       Learn More
-    </a>
-  </div>
+    </motion.a>
+  </motion.div>
 );
 
 const findMuscleFromText = (text, currentView) => {
@@ -255,9 +269,21 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
   const [showBackView, setShowBackView] = useState(false);
   const [selectedMuscle, setSelectedMuscle] = useState(null);
   const [selectedButtons, setSelectedButtons] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const chatControls = useAnimation();
   
+  // Reset conversation and API error when component is opened
+  useEffect(() => {
+    if (isOpen) {
+      resetConversation();
+      setApiError(null);
+      chatControls.start("visible");
+    }
+  }, [isOpen, chatControls]);
+
   useEffect(() => {
     if (messagesEndRef.current && chatContainerRef.current) {
       const userMessages = messages.filter(msg => msg.sender === 'user');
@@ -276,13 +302,27 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
     }
   }, [messages]);
 
+  // Message animation variants
+  const messageVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } }
+  };
+  
+  // Thinking animation variants for the loading dots
+  const thinkingVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    exit: { opacity: 0, transition: { duration: 0.2 } }
+  };
+
   const toggleBodyView = () => {
     setShowBackView(!showBackView);
     setSelectedMuscle(null);
     setSelectedButtons([]);
   };
 
-  const handleMuscleClick = (muscleId, buttonId = null) => {
+  const handleMuscleClick = async (muscleId, buttonId = null) => {
     setSelectedMuscle(muscleId);
     
     // If clicked from legend, select both sides
@@ -307,58 +347,172 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
         text: `I want to work on my ${muscleData.name}.`
       };
       
-      const aiResponse = {
+      setMessages(prev => [...prev, userMessage]);
+      
+      setIsLoading(true);
+      setApiError(null);
+      
+      // First show thinking indicator
+      const thinkingMessage = {
         sender: 'ai',
-        text: `Great choice! ${muscleData.description} Here are some recommended services for ${muscleData.name.toLowerCase()} development:`
-      };
-
-      const serviceCardsMessage = {
-        sender: 'ai',
-        isServiceCards: true,
-        services: muscleData.services
+        text: `Analyzing the best training strategies for ${muscleData.name}...`,
+        isThinking: true
       };
       
-      setMessages([...messages, userMessage, aiResponse, serviceCardsMessage]);
+      setMessages(prev => [...prev, thinkingMessage]);
+      
+      try {
+        const prompt = `I want to work on my ${muscleData.name}. Can you tell me about some effective exercises and give me some training tips?`;
+        
+        console.log('Generating response for muscle:', muscleData.name);
+        
+        // Make the API call without retries to avoid duplicate entries in conversation history
+        const aiResponseText = await generateGeminiResponse(prompt, muscleData, {
+          temperature: 0.7,
+          maxTokens: 600,
+          topP: 0.92
+        });
+        
+        // Remove thinking message
+        setMessages(prev => prev.filter(msg => !msg.isThinking));
+        
+        const aiResponse = {
+          sender: 'ai',
+          text: aiResponseText
+        };
+        
+        setMessages(prev => [...prev, aiResponse]);
+        
+        // Add service cards after AI response
+        const serviceCardsMessage = {
+          sender: 'ai',
+          isServiceCards: true,
+          services: muscleData.services
+        };
+        
+        setMessages(prev => [...prev, serviceCardsMessage]);
+      } catch (error) {
+        console.error("Error getting AI response:", error);
+        setApiError(error.message);
+        
+        // Remove thinking message
+        setMessages(prev => prev.filter(msg => !msg.isThinking));
+        
+        // Use a fallback response when API fails
+        const errorMessage = {
+          sender: 'ai',
+          text: `I couldn't get specific information about ${muscleData.name} training at the moment. ${error.message}`
+        };
+        
+        setMessages(prev => [...prev, errorMessage]);
+        
+        // Still show service cards even if AI fails
+        const serviceCardsMessage = {
+          sender: 'ai',
+          isServiceCards: true,
+          services: muscleData.services
+        };
+        
+        setMessages(prev => [...prev, serviceCardsMessage]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || isLoading) return;
     
     const userMessage = {
       sender: 'user',
       text: inputText
     };
-    setMessages([...messages, userMessage]);
+    
+    // Store user input before clearing
+    const userInput = inputText;
+    setInputText(''); // Clear input immediately for better UX
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    setIsLoading(true);
+    setApiError(null);
     
     const currentView = showBackView ? muscleGroups.back : muscleGroups.front;
-    const matchedMuscle = findMuscleFromText(inputText, currentView);
+    const matchedMuscle = findMuscleFromText(userInput, currentView);
     
-    setTimeout(() => {
+    // Add thinking message with custom text based on query type
+    let thinkingText = 'Thinking...';
+    if (matchedMuscle) {
+      thinkingText = `Analyzing information about ${matchedMuscle.name}...`;
+    } else if (userInput.toLowerCase().includes('exercise') || userInput.toLowerCase().includes('workout')) {
+      thinkingText = 'Finding the best exercises for you...';
+    } else if (userInput.toLowerCase().includes('diet') || userInput.toLowerCase().includes('nutrition')) {
+      thinkingText = 'Researching nutrition information...';
+    }
+    
+    const thinkingMessage = {
+      sender: 'ai',
+      text: thinkingText,
+      isThinking: true
+    };
+    
+    setMessages(prev => [...prev, thinkingMessage]);
+    
+    try {
+      // Make a single API call to avoid duplicate entries in conversation history
+      const aiResponseText = await generateGeminiResponse(userInput, matchedMuscle, {
+        temperature: matchedMuscle ? 0.7 : 0.8,
+        maxTokens: 800
+      });
+      
+      // Remove thinking message
+      setMessages(prev => prev.filter(msg => !msg.isThinking));
+      
+      const aiResponse = {
+        sender: 'ai',
+        text: aiResponseText
+      };
+      
+      setMessages(prev => [...prev, aiResponse]);
+      
+      // If a muscle was matched, also show relevant services
       if (matchedMuscle) {
-        const aiResponse = {
-          sender: 'ai',
-          text: generateAIResponse(inputText, matchedMuscle)
-        };
-
         const serviceCardsMessage = {
           sender: 'ai',
           isServiceCards: true,
           services: matchedMuscle.services
         };
         
-        setMessages(prev => [...prev, aiResponse, serviceCardsMessage]);
-      } else {
-        const aiResponse = {
-          sender: 'ai',
-          text: "I understand you're interested in working out. Could you please specify which muscle group you'd like to focus on? You can either tell me the muscle name or click on the body diagram."
-        };
-        setMessages(prev => [...prev, aiResponse]);
+        setMessages(prev => [...prev, serviceCardsMessage]);
       }
-    }, 500);
-    
-    setInputText('');
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      setApiError(error.message);
+      
+      // Remove thinking message
+      setMessages(prev => prev.filter(msg => !msg.isThinking));
+      
+      const errorMessage = {
+        sender: 'ai',
+        text: error.message || "I'm sorry, I couldn't process your request. Please try again later."
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      
+      // Still show services if we matched a muscle
+      if (matchedMuscle) {
+        const serviceCardsMessage = {
+          sender: 'ai',
+          isServiceCards: true,
+          services: matchedMuscle.services
+        };
+        
+        setMessages(prev => [...prev, serviceCardsMessage]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderBodyPartButtons = () => {
@@ -499,68 +653,238 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          <div className="ai-assistant-header">
+          <motion.div 
+            className="ai-assistant-header"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            style={{
+              background: `linear-gradient(135deg, #ff4757 0%, #ff6b81 100%)`
+            }}
+          >
             <h2>GymFlex AI Assistant</h2>
-            <button className="close-button" onClick={onClose}>×</button>
-          </div>
+            <div className="header-controls">
+              {apiError && (
+                <motion.span 
+                  className="api-error-indicator" 
+                  title={apiError}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                >
+                  ⚠️ API Error
+                </motion.span>
+              )}
+              <motion.button 
+                className="close-button" 
+                onClick={onClose}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                ×
+              </motion.button>
+            </div>
+          </motion.div>
+          
+          {/* Show API error message if there is one */}
+          <AnimatePresence>
+            {apiError && (
+              <motion.div 
+                className="api-error-message"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <p>
+                  <strong>API Error:</strong> {apiError}
+                </p>
+                <p className="api-error-help">
+                  Make sure you have set the REACT_APP_GEMINI_API_KEY in your .env file and restart the application.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           <div className="ai-assistant-content">
-            <div className="chat-section">
-              <div className="chat-messages" ref={chatContainerRef}>
-                {messages.map((msg, index) => (
-                  <div key={index} className={`message ${msg.sender}`}>
-                    {msg.isServiceCards ? (
-                      <div className="service-cards-container">
-                        {msg.services.map((service, serviceIndex) => (
-                          <ServiceCard key={serviceIndex} service={service} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="message-bubble">
-                        {msg.text}
-                      </div>
-                    )}
-                  </div>
-                ))}
+            <motion.div 
+              className="chat-section"
+              initial="hidden"
+              animate={chatControls}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+              }}
+            >
+              <motion.div 
+                className="chat-messages" 
+                ref={chatContainerRef}
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: { opacity: 1 }
+                }}
+              >
+                <AnimatePresence initial={false}>
+                  {messages.map((msg, index) => (
+                    <motion.div 
+                      key={index} 
+                      className={`message ${msg.sender}`}
+                      layout
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      variants={messageVariants}
+                      transition={{ 
+                        type: 'spring', 
+                        stiffness: 500, 
+                        damping: 30, 
+                        delay: msg.isServiceCards ? 0.2 : 0 
+                      }}
+                    >
+                      {msg.isServiceCards ? (
+                        <motion.div 
+                          className="service-cards-container"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
+                        >
+                          {msg.services.map((service, serviceIndex) => (
+                            <ServiceCard key={serviceIndex} service={service} />
+                          ))}
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          className="message-bubble"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {msg.text}
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                
+                <AnimatePresence>
+                  {isLoading && (
+                    <motion.div 
+                      className="message ai"
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      variants={thinkingVariants}
+                    >
+                      <motion.div className="message-bubble loading">
+                        <motion.span 
+                          animate={{ scale: [1, 1.5, 1] }} 
+                          transition={{ repeat: Infinity, duration: 1 }}
+                        >.</motion.span>
+                        <motion.span 
+                          animate={{ scale: [1, 1.5, 1] }} 
+                          transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
+                        >.</motion.span>
+                        <motion.span 
+                          animate={{ scale: [1, 1.5, 1] }} 
+                          transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
+                        >.</motion.span>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
                 <div ref={messagesEndRef} />
-              </div>
+              </motion.div>
               
-              <form className="chat-input" onSubmit={handleSendMessage}>
-                <input
+              <motion.form 
+                className="chat-input" 
+                onSubmit={handleSendMessage}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <motion.input
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Ask about specific muscle groups..."
+                  disabled={isLoading}
+                  whileFocus={{ boxShadow: "0 0 0 2px rgba(80, 80, 230, 0.4)" }}
                 />
-                <button type="submit">Send</button>
-              </form>
-            </div>
+                <motion.button 
+                  type="submit" 
+                  disabled={isLoading || !inputText.trim()}
+                  whileHover={{ scale: 1.05, backgroundColor: "#4a4aff" }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {isLoading ? (
+                    <motion.i 
+                      className="fas fa-spinner fa-spin"
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    />
+                  ) : (
+                    'Send'
+                  )}
+                </motion.button>
+              </motion.form>
+            </motion.div>
             
-            <div className="body-selector-section">
+            <motion.div 
+              className="body-selector-section"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
               <div className="body-view-toggle">
-                <h3>{showBackView ? "Back View" : "Front View"}</h3>
-                <button 
+                <motion.h3
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  {showBackView ? "Back View" : "Front View"}
+                </motion.h3>
+                <motion.button 
                   className="toggle-view-button" 
                   onClick={toggleBodyView}
                   aria-label={showBackView ? "Switch to front view" : "Switch to back view"}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {showBackView ? "View Front Body" : "View Back Body"}
-                  <i className={`fas fa-sync-alt ${showBackView ? "rotate-left" : "rotate-right"}`}></i>
-                </button>
+                  <motion.i 
+                    className={`fas fa-sync-alt ${showBackView ? "rotate-left" : "rotate-right"}`}
+                    animate={{ rotate: showBackView ? 0 : 360 }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </motion.button>
               </div>
               
               <div className="body-parts-container">
-                <div className="body-parts-legend">
+                <motion.div 
+                  className="body-parts-legend"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6, staggerChildren: 0.05, delayChildren: 0.7 }}
+                >
                   {(showBackView ? muscleGroups.back : muscleGroups.front).map((muscle) => (
-                    <div 
+                    <motion.div 
                       key={muscle.id}
                       className={`legend-item ${selectedMuscle === muscle.id ? 'selected' : ''}`}
                       onClick={() => handleMuscleClick(muscle.id)}
+                      whileHover={{ scale: 1.05, backgroundColor: isDarkMode ? "#3a3a3a" : "#f0f0f0" }}
+                      whileTap={{ scale: 0.95 }}
+                      animate={{ 
+                        backgroundColor: selectedMuscle === muscle.id 
+                          ? (isDarkMode ? "#4a4a4a" : "#e0e0e0") 
+                          : "transparent"
+                      }}
                     >
                       {muscle.name}
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
 
                 <div className="body-diagram-container">
                   <AnimatePresence mode="wait">
@@ -570,19 +894,22 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
                       initial={{ opacity: 0, rotateY: showBackView ? -90 : 90 }}
                       animate={{ opacity: 1, rotateY: 0 }}
                       exit={{ opacity: 0, rotateY: showBackView ? 90 : -90 }}
-                      transition={{ duration: 0.5 }}
+                      transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
                     >
-                      <img 
+                      <motion.img 
                         src={showBackView ? backBodyDiagramImage : frontBodyDiagramImage} 
                         alt={showBackView ? "Back body diagram" : "Front body diagram"} 
-                        className="body-diagram-image" 
+                        className="body-diagram-image"
+                        initial={{ scale: 0.9 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.3, delay: 0.3 }}
                       />
                       {renderBodyPartButtons()}
                     </motion.div>
                   </AnimatePresence>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </motion.div>
       )}
@@ -590,4 +917,4 @@ const AiAssistant = ({ isOpen, onClose, isDarkMode }) => {
   );
 };
 
-export default AiAssistant; 
+export default AiAssistant;
