@@ -133,7 +133,7 @@ function Services({ isDarkMode, setIsDarkMode }) {
 
         <div className="services-grid">
           {services.map(service => (
-            <div key={service.id} className="service-card">
+            <div key={service.id} className="service-card-services">
               <div className="service-icon">
                 <i className={service.icon}></i>
               </div>
