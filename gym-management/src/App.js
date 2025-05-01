@@ -41,6 +41,7 @@ import ProgressTracking from './components/member/ProgressTracking';
 import Forum from './components/member/Forum';
 import ForumThread from './components/member/ForumThread';
 import Friends from './components/member/Friends';
+import { motion } from 'framer-motion';
 
 const Root = ({ isDarkMode, setIsDarkMode }) => {
   if (!isAuthenticated()) {
@@ -69,54 +70,256 @@ function Home({ isDarkMode, setIsDarkMode = () => {} }) {
     });
   };
 
+  const testimonials = [
+    {
+      id: 1,
+      name: "Alex Johnson",
+      role: "Member since 2021",
+      image: "https://randomuser.me/api/portraits/men/32.jpg",
+      quote: "GymFlex completely transformed my fitness journey. The trainers are exceptional, and the 24/7 access fits perfectly with my busy schedule.",
+      rating: 5
+    },
+    {
+      id: 2,
+      name: "Sophia Williams",
+      role: "Fitness Enthusiast",
+      image: "https://randomuser.me/api/portraits/women/44.jpg",
+      quote: "I've been to many gyms before, but none compare to the community and equipment quality at GymFlex. It's become my second home.",
+      rating: 5
+    },
+    {
+      id: 3,
+      name: "Marcus Chen",
+      role: "Professional Athlete",
+      image: "https://randomuser.me/api/portraits/men/51.jpg",
+      quote: "The personal trainers here know exactly how to push you to your limits while keeping workouts enjoyable. Incredible transformation in just 3 months!",
+      rating: 5
+    },
+    {
+      id: 4,
+      name: "Olivia Garcia",
+      role: "Yoga Practitioner",
+      image: "https://randomuser.me/api/portraits/women/29.jpg",
+      quote: "The variety of classes and the flexibility of the schedules make GymFlex stand out. I've improved both my physical and mental wellbeing.",
+      rating: 5
+    }
+  ];
+
   return (
     <div className={`App ${isDarkMode ? 'dark-mode' : ''}`}>
-      <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+      <div className="hero-wrapper">
+        <Navbar isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
-      <div className="hero-section">
-        <ImageCarousel />
-        <div className="hero-content">
-          <h1>Welcome to GymFlex</h1>
-          <p>Transform Your Life Through Fitness</p>
-          <button className="cta-button" onClick={() => window.location.href='/signup'}>
-            Join Now
-          </button>
+        <div className="hero-section">
+          <ImageCarousel />
+          <div className="hero-overlay"></div>
+          <div className="hero-content">
+            <div className="hero-text-container">
+              <h5 className="hero-subtitle">SHAPE IT UP!</h5>
+              <h1 className="hero-title">GET FIT DON'T QUIT</h1>
+              <p className="hero-description">
+                Today I will do what others won't, so tomorrow I can accomplish what others can't. We are what we repeatedly do. Excellence then is not an act but a habit.
+              </p>
+              <button 
+                className="join-btn"
+                onClick={() => window.location.href='/signup'}
+              >
+                JOIN US NOW
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <section id="about" className="about-section">
-        <h2>Why Choose Us?</h2>
-        <div className="features">
-          <div className="feature">
-            <i className="fas fa-dumbbell"></i>
-            <h3>Cutting-Edge Equipment</h3>
-            <p>Our gym features the latest fitness technology and premium equipment from top brands, regularly maintained for optimal performance and safety.</p>
+        <motion.div 
+          className="about-header"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2>Why <span className="highlight-text">Choose Us?</span></h2>
+          <p className="about-subtitle">Discover the GymFlex Difference</p>
+        </motion.div>
+        
+        <motion.div 
+          className="features-container"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="features">
+            <motion.div 
+              className="feature"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5 }}
+              whileHover={{ 
+                y: -10,
+                boxShadow: "0 15px 30px rgba(0, 0, 0, 0.1)",
+                transition: { duration: 0.3 }
+              }}
+            >
+              <div className="feature-icon-wrapper">
+                <i className="fas fa-dumbbell"></i>
+              </div>
+              <h3>Cutting-Edge Equipment</h3>
+              <p>Our gym features the latest fitness technology and premium equipment from top brands, regularly maintained for optimal performance and safety.</p>
+              <div className="feature-hover-effect"></div>
+            </motion.div>
+        
+            <motion.div 
+              className="feature"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              whileHover={{ 
+                y: -10,
+                boxShadow: "0 15px 30px rgba(0, 0, 0, 0.1)",
+                transition: { duration: 0.3 }
+              }}
+            >
+              <div className="feature-icon-wrapper">
+                <i className="fas fa-user-friends"></i>
+              </div>
+              <h3>Certified Expert Trainers</h3>
+              <p>Our team of certified personal trainers create customized workout plans tailored to your unique fitness goals and provide ongoing motivation.</p>
+              <div className="feature-hover-effect"></div>
+            </motion.div>
+        
+            <motion.div 
+              className="feature"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              whileHover={{ 
+                y: -10,
+                boxShadow: "0 15px 30px rgba(0, 0, 0, 0.1)",
+                transition: { duration: 0.3 }
+              }}
+            >
+              <div className="feature-icon-wrapper">
+                <i className="fas fa-clock"></i>
+              </div>
+              <h3>24/7 Access</h3>
+              <p>Open all day, every day with secure access for members, allowing you to work out whenever it fits your schedule, even on holidays and weekends.</p>
+              <div className="feature-hover-effect"></div>
+            </motion.div>
+        
+            <motion.div 
+              className="feature"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              whileHover={{ 
+                y: -10,
+                boxShadow: "0 15px 30px rgba(0, 0, 0, 0.1)",
+                transition: { duration: 0.3 }
+              }}
+            >
+              <div className="feature-icon-wrapper">
+                <i className="fas fa-heartbeat"></i>
+              </div>
+              <h3>Diverse Classes</h3>
+              <p>From strength training and HIIT to yoga and group classes, we offer over 100 weekly classes to keep your fitness journey exciting and effective.</p>
+              <div className="feature-hover-effect"></div>
+            </motion.div>
+        
+            <motion.div 
+              className="feature"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              whileHover={{ 
+                y: -10,
+                boxShadow: "0 15px 30px rgba(0, 0, 0, 0.1)",
+                transition: { duration: 0.3 }
+              }}
+            >
+              <div className="feature-icon-wrapper">
+                <i className="fas fa-shower"></i>
+              </div>
+              <h3>Premium Facilities</h3>
+              <p>Enjoy our spacious locker rooms, clean showers, sauna, and relaxation areas designed to enhance your overall gym experience.</p>
+              <div className="feature-hover-effect"></div>
+            </motion.div>
+        
+            <motion.div 
+              className="feature"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              whileHover={{ 
+                y: -10,
+                boxShadow: "0 15px 30px rgba(0, 0, 0, 0.1)",
+                transition: { duration: 0.3 }
+              }}
+            >
+              <div className="feature-icon-wrapper">
+                <i className="fas fa-mobile-alt"></i>
+              </div>
+              <h3>Fitness App & Community</h3>
+              <p>Track your progress, book classes, and connect with trainers through our intuitive fitness app, and join our community of 5000+ active members.</p>
+              <div className="feature-hover-effect"></div>
+            </motion.div>
           </div>
-          <div className="feature">
-            <i className="fas fa-user-friends"></i>
-            <h3>Certified Expert Trainers</h3>
-            <p>Our team of certified personal trainers create customized workout plans tailored to your unique fitness goals and provide ongoing motivation.</p>
-          </div>
-          <div className="feature">
-            <i className="fas fa-clock"></i>
-            <h3>Flexible Hours</h3>
-            <p>Open 24/7 with secure access for members, allowing you to work out whenever it fits your schedule, even on holidays.</p>
-          </div>
-          <div className="feature">
-            <i className="fas fa-heartbeat"></i>
-            <h3>Diverse Workout Options</h3>
-            <p>From strength training and HIIT to yoga and group classes, we offer a wide range of workout options to keep your fitness journey exciting and effective.</p>
-          </div>
-          <div className="feature">
-            <i className="fas fa-shower"></i>
-            <h3>Premium Facilities</h3>
-            <p>Enjoy our spacious locker rooms, clean showers, sauna, and relaxation areas designed to enhance your overall gym experience.</p>
-          </div>
-          <div className="feature">
-            <i className="fas fa-mobile-alt"></i>
-            <h3>Advanced Fitness App</h3>
-            <p>Track your progress, book classes, and connect with trainers through our intuitive fitness app, available for all members at no extra cost.</p>
-          </div>
+        </motion.div>
+      </section>
+
+      <section className="testimonials-section">
+        <div className="testimonials-header">
+          <h2>What Our <span className="highlight-text">Members Say</span></h2>
+          <p className="testimonials-subtitle">Hear from the people who've experienced the GymFlex difference</p>
+        </div>
+
+        <div className="testimonials-container">
+          {testimonials.map(testimonial => (
+            <motion.div 
+              key={testimonial.id} 
+              className="testimonial-card"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.5, delay: testimonial.id * 0.1 }}
+              whileHover={{ 
+                y: -10,
+                boxShadow: "0 25px 50px rgba(0, 0, 0, 0.15)",
+                transition: { duration: 0.3 }
+              }}
+            >
+              <div className="testimonial-rating">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <i key={i} className="fas fa-star"></i>
+                ))}
+              </div>
+              <p className="testimonial-quote">{testimonial.quote}</p>
+              <div className="testimonial-author">
+                <img src={testimonial.image} alt={testimonial.name} className="testimonial-image" />
+                <div>
+                  <h4 className="testimonial-name">{testimonial.name}</h4>
+                  <p className="testimonial-role">{testimonial.role}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="testimonial-cta">
+          <p>Ready to start your fitness journey with us?</p>
+          <button 
+            className="join-now-btn"
+            onClick={() => window.location.href='/signup'}
+          >
+            Join Now
+          </button>
         </div>
       </section>
 
@@ -220,9 +423,6 @@ function App() {
     localStorage.getItem('darkMode') === 'true' || false
   );
   
-  // Add a state to track authentication
-  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
-  
   useEffect(() => {
     localStorage.setItem('darkMode', isDarkMode);
   }, [isDarkMode]);
@@ -230,12 +430,10 @@ function App() {
   // Check authentication when the app loads
   useEffect(() => {
     const user = checkAuth();
-    setIsUserAuthenticated(!!user);
     
     // Optional: You can also recheck periodically
     const intervalId = setInterval(() => {
       const currentUser = checkAuth();
-      setIsUserAuthenticated(!!currentUser);
     }, 60000); // Check every minute
     
     return () => clearInterval(intervalId);
