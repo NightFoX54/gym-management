@@ -29,7 +29,7 @@
   margin: 0 auto;
 }
 
-.service-card {
+.service-card-services {
   background-color: white;
   border-radius: 10px;
   padding: 2rem;
@@ -41,7 +41,7 @@
   text-align: center;
 }
 
-.service-card:hover {
+.service-card-services:hover {
   transform: translateY(-5px);
 }
 
@@ -51,7 +51,7 @@
   margin-bottom: 1.5rem;
 }
 
-.service-card h3 {
+.service-card-services h3 {
   color: #1a1a1a;
   margin-bottom: 1rem;
   font-size: 1.5rem;
@@ -143,7 +143,7 @@
     padding: 1rem;
   }
 
-  .service-card {
+  .service-card-services {
     padding: 1.5rem;
   }
 
@@ -158,12 +158,12 @@
   color: #ffffff;
 }
 
-.dark-mode .service-card {
+.dark-mode .service-card-services {
   background-color: #2d2d2d;
   color: #ffffff;
 }
 
-.dark-mode .service-card h3 {
+.dark-mode .service-card-services h3 {
   color: #ffffff;
 }
 
