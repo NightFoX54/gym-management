@@ -236,12 +236,12 @@ const WeeklySchedule = ({ isDarkMode, setIsDarkMode }) => {
           </button>
 
           <button 
-            className={`dark-mode-toggle-weeklyschedule ${isDarkMode ? 'active' : ''}`} 
+            className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
             onClick={toggleDarkMode}
           >
-            <FaSun className="toggle-icon-weeklyschedule sun-weeklyschedule" />
-            <div className="toggle-circle-weeklyschedule"></div>
-            <FaMoon className="toggle-icon-weeklyschedule moon-weeklyschedule" />
+            <FaSun className="toggle-icon-forum sun-forum" />
+            <div className="toggle-circle-forum"></div>
+            <FaMoon className="toggle-icon-forum moon-forum" />
           </button>
         </div>
 

@@ -68,7 +68,7 @@ const AdminPanel = ({ children, activeTab = 'dashboard', isDarkMode, setIsDarkMo
           <Route path="/employees" element={<EmployeesPanel />} />
           <Route path="/financial" element={<FinancialPanel />} />
           <Route path="/membership" element={<MembershipPanel />} />
-          <Route path="/expenses" element={<ExpensesPanel />} />
+          <Route path="/expenses" element={<ExpensesPanel isDarkMode={isDarkMode} />} />
           <Route path="/contact" element={<ContactPanel />} />
         </Routes>
       </div>

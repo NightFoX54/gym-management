@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/TrainingPrograms.css';
 import axios from 'axios';
 import withChatAndNotifications from './withChatAndNotifications';
+import { motion } from 'framer-motion';
 
 const TrainingPrograms = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -358,12 +359,12 @@ const TrainingPrograms = ({ isDarkMode, setIsDarkMode }) => {
         <h1 className="header-title">Group Classes</h1>
         <div className="header-right">
           <button
-            className={`dark-mode-toggle ${isDarkMode ? "active" : ""}`}
+            className={`dark-mode-toggle-forum ${isDarkMode ? "active" : ""}`}
             onClick={toggleDarkMode}
           >
-            <FaSun className="toggle-icon sun" />
-            <div className="toggle-circle"></div>
-            <FaMoon className="toggle-icon moon" />
+            <FaSun className="toggle-icon-forum sun-forum" />
+            <div className="toggle-circle-forum"></div>
+            <FaMoon className="toggle-icon-forum moon-forum" />
           </button>
         </div>
       </div>

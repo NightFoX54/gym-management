@@ -287,12 +287,12 @@ const ProgressTracking = ({ isDarkMode, setIsDarkMode }) => {
         </button>
 
         <button 
-          className={`dark-mode-toggle ${isDarkMode ? 'active' : ''}`} 
+          className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
           onClick={toggleDarkMode}
         >
-          <FaSun className="toggle-icon sun" />
-          <div className="toggle-circle"></div>
-          <FaMoon className="toggle-icon moon" />
+          <FaSun className="toggle-icon-forum sun-forum" />
+          <div className="toggle-circle-forum"></div>
+          <FaMoon className="toggle-icon-forum moon-forum" />
         </button>
       </div>
 

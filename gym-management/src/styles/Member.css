@@ -1258,3 +1258,63 @@
   background-color: #ff6b6b;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
+
+/* Adding Forum dark mode toggle styles */
+.dark-mode-toggle-forum {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.dark-mode .dark-mode-toggle-forum {
+    background: linear-gradient(145deg, #f1c40f, #f39c12);
+    box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+}
+
+.toggle-icon-forum {
+    font-size: 14px;
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    opacity: 0.8;
+}
+
+.sun-forum {
+    color: #f6e05e;
+    transform: scale(0.8);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.moon-forum {
+    color: #a0aec0;
+    transform: scale(0.8);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toggle-circle-forum {
+    position: absolute;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(145deg, #ffffff, #f5f5f5);
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.dark-mode-toggle-forum.active .toggle-circle-forum {
+    transform: translateX(30px);
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}

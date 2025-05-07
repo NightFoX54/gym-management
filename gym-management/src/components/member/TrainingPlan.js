@@ -5,6 +5,7 @@ import '../../styles/TrainingPlan.css';
 import '../../styles/PageTransitions.css';
 import { toast } from 'react-toastify';
 import withChatAndNotifications from './withChatAndNotifications';
+import { motion } from 'framer-motion';
 
 const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -195,12 +196,12 @@ const TrainingPlan = ({ isDarkMode, setIsDarkMode }) => {
           </button>
 
           <button 
-            className={`dark-mode-toggle-trainingplan ${isDarkMode ? 'active' : ''}`} 
+            className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
             onClick={toggleDarkMode}
           >
-            <FaSun className="toggle-icon-trainingplan sun-trainingplan" />
-            <div className="toggle-circle-trainingplan"></div>
-            <FaMoon className="toggle-icon-trainingplan moon-trainingplan" />
+            <FaSun className="toggle-icon-forum sun-forum" />
+            <div className="toggle-circle-forum"></div>
+            <FaMoon className="toggle-icon-forum moon-forum" />
           </button>
         </div>
 

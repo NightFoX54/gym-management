@@ -2,9 +2,38 @@ import React, { useState, useEffect } from 'react';
 import '../../styles/AdminPanels.css';
 import { format, parseISO } from 'date-fns';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button as AntButton } from 'antd';
+import { 
+  TextField, 
+  InputAdornment, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  MenuItem, 
+  Select, 
+  FormControl, 
+  InputLabel, 
+  FormHelperText,
+  IconButton,
+  Divider,
+  Box,
+  createTheme,
+  ThemeProvider,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Paper,
+  Stack,
+  ButtonGroup,
+  Chip,
+  Button as MuiButton,
+  ButtonBase
+} from '@mui/material';
+import { Search, Close, Add, CalendarMonth, Category, AttachMoney, FilterAlt, DateRange, RestartAlt } from '@mui/icons-material';
 
-const ExpensesPanel = () => {
+const ExpensesPanel = ({ isDarkMode }) => {
   const [expenses, setExpenses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,6 +50,13 @@ const ExpensesPanel = () => {
     categoryId: '',
     amount: '',
     date: format(new Date(), 'yyyy-MM-dd')
+  });
+
+  // Dark mode teması oluştur
+  const darkTheme = createTheme({
+    palette: {
+      mode: isDarkMode ? 'dark' : 'light',
+    },
   });
 
   // Get filtered expenses based on search query
@@ -256,71 +292,231 @@ const ExpensesPanel = () => {
         <h2>Expenses Management</h2>
         <div className="header-actions">
           <div className="search-container">
-            <input
-              type="text"
+            <TextField
+              fullWidth
               placeholder="Search expenses..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
+              className="search-input-mui"
+              size="small"
+              variant="outlined"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: '20px',
+                  '&::placeholder': {
+                    fontSize: '0.9rem',
+                  },
+                }
+              }}
+              sx={{ 
+                maxWidth: '280px',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '20px',
+                },
+              }}
             />
-            <i className="fas fa-search search-icon"></i>
           </div>
 
           <div className="button-group">
-            <Button 
+            <button 
+              onClick={handleDeleteClick} 
+              className={`delete-button ${isDeleting ? 'active' : ''}`}
+            >
+              <DeleteOutlined />
+            </button>
+            <button 
+              onClick={handleEditClick} 
+              className={`edit-button ${isEditing ? 'active' : ''}`}
+            >
+              ✎
+            </button>
+            <AntButton 
               type="primary" 
               icon={<PlusOutlined />}
               onClick={() => setShowAddForm(true)}
               className="add-button"
             >
               Add Expense
-            </Button>
-            <Button 
-              type={isEditing ? "primary" : "default"} 
-              icon={<EditOutlined />}
-              onClick={handleEditClick}
-              className={isEditing ? "active-button" : ""}
-            >
-              Edit
-            </Button>
-            <Button 
-              type={isDeleting ? "primary" : "default"} 
-              danger={isDeleting}
-              icon={<DeleteOutlined />}
-              onClick={handleDeleteClick}
-              className={isDeleting ? "active-button" : ""}
-            >
-              Delete
-            </Button>
+            </AntButton>
           </div>
         </div>
       </div>
 
-      <div className="filter-section">
-        <h3>Filter by Date Range</h3>
-        <div className="filter-controls">
-          <div className="input-group">
-            <label htmlFor="date-from">From</label>
-            <input
-              id="date-from"
-              type="date"
-              value={filterDateFrom}
-              onChange={(e) => setFilterDateFrom(e.target.value)}
-            />
-          </div>
-          <div className="input-group">
-            <label htmlFor="date-to">To</label>
-            <input
-              id="date-to"
-              type="date"
-              value={filterDateTo}
-              onChange={(e) => setFilterDateTo(e.target.value)}
-            />
-          </div>
-          <button onClick={handleFilterExpenses} className="filter-button">Apply Filter</button>
-          <button onClick={handleResetFilter} className="reset-filter-button">Reset</button>
-        </div>
-      </div>
+      <ThemeProvider theme={createTheme({
+        palette: {
+          mode: isDarkMode ? 'dark' : 'light',
+        },
+      })}>
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            padding: '1.5rem',
+            mb: 3,
+            bgcolor: theme => theme.palette.mode === 'dark' ? '#1f1f1f' : '#f8f9fa',
+            border: '1px solid',
+            borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+            borderRadius: '10px'
+          }}
+        >
+          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+            <DateRange sx={{ mr: 1, color: '#ff4757' }} />
+            <Typography variant="h6" component="h3" sx={{ 
+              fontWeight: 600,
+              color: theme => theme.palette.mode === 'dark' ? '#fff' : '#333',
+              fontSize: '1.1rem'
+            }}>
+              Filter Expenses by Date Range
+            </Typography>
+          </Box>
+
+          <Grid container spacing={3} alignItems="flex-end">
+            <Grid item xs={12} sm={4} md={3}>
+              <TextField
+                id="date-from"
+                label="Start Date"
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => setFilterDateFrom(e.target.value)}
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{
+                  shrink: true,
+                  sx: { 
+                    color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit'
+                  }
+                }}
+                InputProps={{
+                  sx: { 
+                    color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                  },
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarMonth fontSize="small" sx={{ color: '#ff4757' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '.MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.23)'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.23)'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2'
+                  }
+                }}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={4} md={3}>
+              <TextField
+                id="date-to"
+                label="End Date"
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => setFilterDateTo(e.target.value)}
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{
+                  shrink: true,
+                  sx: { 
+                    color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit'
+                  }
+                }}
+                InputProps={{
+                  sx: { 
+                    color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                  },
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CalendarMonth fontSize="small" sx={{ color: '#ff4757' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  '.MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.23)'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.23)'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2'
+                  }
+                }}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={4} md={6}>
+              <Stack direction="row" spacing={2}>
+                <MuiButton 
+                  variant="contained"
+                  onClick={handleFilterExpenses}
+                  sx={{ 
+                    bgcolor: theme => theme.palette.mode === 'dark' ? '#2e7d32' : '#4caf50',
+                    color: '#fff !important',
+                    '&:hover': {
+                      bgcolor: '#ff4757 !important',
+                      boxShadow: '0 4px 12px rgba(255, 71, 87, 0.3)'
+                    },
+                    textTransform: 'none',
+                    minWidth: '120px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                    fontWeight: 500
+                  }}
+                  startIcon={<FilterAlt />}
+                >
+                  Apply Filter
+                </MuiButton>
+                
+                <MuiButton 
+                  variant="outlined"
+                  onClick={handleResetFilter}
+                  sx={{ 
+                    borderColor: theme => theme.palette.mode === 'dark' ? '#d32f2f' : '#f44336',
+                    color: theme => theme.palette.mode === 'dark' ? '#f44336 !important' : '#d32f2f !important',
+                    '&:hover': {
+                      borderColor: '#ff4757 !important',
+                      color: '#ff4757 !important',
+                      bgcolor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 71, 87, 0.08)' : 'rgba(255, 71, 87, 0.05)',
+                      boxShadow: '0 2px 8px rgba(255, 71, 87, 0.15)'
+                    },
+                    textTransform: 'none',
+                    transition: 'all 0.3s ease',
+                    fontWeight: 500
+                  }}
+                  startIcon={<RestartAlt />}
+                >
+                  Reset
+                </MuiButton>
+                
+                {(filterDateFrom && filterDateTo) && (
+                  <Chip 
+                    label={`Filtered: ${format(parseISO(filterDateFrom), 'dd/MM/yyyy')} - ${format(parseISO(filterDateTo), 'dd/MM/yyyy')}`} 
+                    color="info"
+                    sx={{ 
+                      ml: 2,
+                      bgcolor: theme => theme.palette.mode === 'dark' ? 'rgba(23, 125, 220, 0.2)' : 'rgba(25, 118, 210, 0.1)',
+                      borderRadius: '16px',
+                      '& .MuiChip-label': {
+                        color: theme => theme.palette.mode === 'dark' ? '#fff' : '#1976d2',
+                      }
+                    }}
+                    onDelete={handleResetFilter}
+                  />
+                )}
+              </Stack>
+            </Grid>
+          </Grid>
+        </Paper>
+      </ThemeProvider>
 
       <div className={`table-container ${
         isEditing ? 'edit-mode-container' : 
@@ -364,6 +560,11 @@ const ExpensesPanel = () => {
                             categoryId: parseInt(e.target.value)
                           })}
                           className="edit-select"
+                          style={{
+                            backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+                            color: isDarkMode ? '#fff' : 'inherit',
+                            borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : '#ddd'
+                          }}
                         >
                           {categories
                             .filter(category => category.id !== 4)
@@ -385,6 +586,11 @@ const ExpensesPanel = () => {
                             amount: e.target.value
                           })}
                           className="edit-input"
+                          style={{
+                            backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+                            color: isDarkMode ? '#fff' : 'inherit',
+                            borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : '#ddd'
+                          }}
                         />
                       </td>
                       <td>
@@ -396,26 +602,39 @@ const ExpensesPanel = () => {
                             date: e.target.value
                           })}
                           className="edit-input"
+                          style={{
+                            backgroundColor: isDarkMode ? '#2c2c2c' : '#f8f9fa',
+                            color: isDarkMode ? '#fff' : 'inherit',
+                            borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.15)' : '#ddd'
+                          }}
                         />
                       </td>
                       <td>
                         <div className="action-buttons">
-                          <Button 
+                          <AntButton 
                             type="primary" 
                             size="small" 
                             onClick={handleUpdateExpense} 
                             className="save-button"
+                            style={{
+                              backgroundColor: isDarkMode ? '#177ddc' : '#1976d2',
+                              borderColor: isDarkMode ? '#177ddc' : '#1976d2'
+                            }}
                           >
                             <i className="fas fa-save"></i>
-                          </Button>
-                          <Button 
+                          </AntButton>
+                          <AntButton 
                             size="small" 
                             onClick={(e) => handleCancelEdit(e)} 
                             className="cancel-button"
                             danger
+                            style={{
+                              backgroundColor: isDarkMode ? '#a61d24' : '',
+                              borderColor: isDarkMode ? '#a61d24' : ''
+                            }}
                           >
                             <i className="fas fa-times"></i>
-                          </Button>
+                          </AntButton>
                         </div>
                       </td>
                     </>
@@ -426,7 +645,7 @@ const ExpensesPanel = () => {
                       </td>
                       <td>
                         <span className="amount-display">
-                          ₺{parseFloat(expense.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₺{parseFloat(expense.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </td>
                       <td>
@@ -436,27 +655,26 @@ const ExpensesPanel = () => {
                       </td>
                       <td>
                         {isEditing && expense.category && expense.category.id !== 4 && (
-                          <Button
-                            icon={<EditOutlined />}
-                            size="small"
+                          <button 
                             onClick={(e) => {
                               e.stopPropagation();
                               handleSelectExpense(expense);
                             }}
-                            className="icon-button edit-icon"
-                          />
+                            className="edit-button"
+                          >
+                            ✎
+                          </button>
                         )}
                         {isDeleting && (
-                          <Button
-                            icon={<DeleteOutlined />}
-                            size="small"
-                            danger
+                          <button 
                             onClick={(e) => {
                               e.stopPropagation();
                               handleSelectExpense(expense);
                             }}
-                            className="icon-button delete-icon"
-                          />
+                            className="delete-button"
+                          >
+                            <DeleteOutlined />
+                          </button>
                         )}
                       </td>
                     </>
@@ -468,95 +686,398 @@ const ExpensesPanel = () => {
         </table>
       </div>
 
-      {showAddForm && (
-        <div className="modal-overlay">
-          <div className="modal expense-modal">
-            <div className="modal-header">
-              <h3><PlusOutlined /> Add New Expense</h3>
-            </div>
-            <form onSubmit={handleAddExpense}>
-              <div className="modal-content">
-                <div className="form-grid">
-                  <div className="input-group">
-                    <label htmlFor="expense-category">Category</label>
-                    <select
-                      id="expense-category"
-                      className="form-select"
-                      value={newExpense.categoryId}
-                      onChange={(e) => setNewExpense({...newExpense, categoryId: e.target.value})}
-                      required
-                    >
-                      <option value="">Select a category</option>
-                      {categories
-                        .filter(category => category.id !== 4)
-                        .map(category => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))
-                      }
-                    </select>
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="expense-amount">Amount (₺)</label>
-                    <input
+      <div>
+        {showAddForm && (
+          <ThemeProvider theme={createTheme({
+            palette: {
+              mode: isDarkMode ? 'dark' : 'light',
+            },
+          })}>
+            <Dialog 
+              open={showAddForm} 
+              onClose={() => setShowAddForm(false)}
+              maxWidth="sm"
+              fullWidth
+              PaperProps={{
+                sx: {
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                  bgcolor: theme => theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+                  color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                }
+              }}
+            >
+              <DialogTitle sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                background: theme => theme.palette.mode === 'dark' ? '#2c2c2c' : '#f8f9fa',
+                borderBottom: '1px solid',
+                borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                padding: '20px 24px',
+                color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Add fontSize="small" sx={{ color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit' }} />
+                  <span>Add New Expense</span>
+                </Box>
+                <IconButton 
+                  onClick={() => setShowAddForm(false)} 
+                  size="small"
+                  sx={{ color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit' }}
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </DialogTitle>
+              
+                <form onSubmit={handleAddExpense} noValidate>
+                <DialogContent sx={{ 
+                  pt: 4, 
+                  pb: 3, 
+                  px: 3,
+                  bgcolor: theme => theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+                }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, my: 1 }}>
+                    <FormControl fullWidth>
+                      <InputLabel 
+                        id="expense-category-label"
+                        sx={{ color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit' }}
+                      >
+                        Category
+                      </InputLabel>
+                      <Select
+                        labelId="expense-category-label"
+                        id="expense-category"
+                        value={newExpense.categoryId}
+                        onChange={(e) => setNewExpense({...newExpense, categoryId: e.target.value})}
+                        label="Category"
+                        required
+                        startAdornment={
+                          <InputAdornment position="start">
+                            <Category fontSize="small" sx={{ color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit' }} />
+                          </InputAdornment>
+                        }
+                        sx={{ 
+                          minHeight: '56px',
+                          color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                          '.MuiOutlinedInput-notchedOutline': {
+                            borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.23)'
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.23)'
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2'
+                          }
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              bgcolor: theme => theme.palette.mode === 'dark' ? '#2c2c2c' : '#fff',
+                              color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                            }
+                          }
+                        }}
+                        inputProps={{
+                          'aria-label': 'Select category',
+                        }}
+                      >
+                        <MenuItem value="" disabled>Select a category</MenuItem>
+                        {categories
+                          .filter(category => category.id !== 4)
+                          .map(category => (
+                            <MenuItem key={category.id} value={category.id}>
+                              {category.name}
+                            </MenuItem>
+                          ))
+                        }
+                      </Select>
+                      <FormHelperText sx={{ color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'inherit' }}>
+                        Choose the expense category
+                      </FormHelperText>
+                    </FormControl>
+                    
+                    <TextField
                       id="expense-amount"
-                      className="form-input"
+                      label="Amount (₺)"
                       type="number"
                       step="0.01"
                       placeholder="Enter amount"
                       value={newExpense.amount}
                       onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
                       required
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <AttachMoney fontSize="small" sx={{ color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit' }} />
+                          </InputAdornment>
+                        ),
+                        sx: { 
+                          minHeight: '56px', 
+                          color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                        },
+                        inputProps: { 
+                          min: "0", 
+                          step: "0.01",
+                          'aria-label': 'Enter expense amount'
+                        }
+                      }}
+                      sx={{
+                        '.MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.23)'
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.23)'
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2'
+                        },
+                        '.MuiInputLabel-root': {
+                          color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit'
+                        },
+                        '.MuiInputLabel-root.Mui-focused': {
+                          color: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2'
+                        }
+                      }}
+                      InputLabelProps={{
+                        style: { 
+                          color: 'inherit' 
+                        }
+                      }}
+                      helperText="Enter the expense amount"
+                      FormHelperTextProps={{
+                        sx: { 
+                          color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'inherit'
+                        }
+                      }}
                     />
-                  </div>
-                  
-                  <div className="input-group">
-                    <label htmlFor="expense-date">Date</label>
-                    <input
+                    
+                    <TextField
                       id="expense-date"
-                      className="form-input"
+                      label="Date"
                       type="date"
                       value={newExpense.date}
                       onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
                       required
+                      fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <CalendarMonth fontSize="small" sx={{ color: '#ff4757' }} />
+                          </InputAdornment>
+                        ),
+                        sx: { 
+                          minHeight: '56px',
+                          color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                        },
+                        inputProps: {
+                          'aria-label': 'Select expense date'
+                        }
+                      }}
+                      InputLabelProps={{
+                        shrink: true,
+                        style: { 
+                          color: 'inherit' 
+                        }
+                      }}
+                      sx={{
+                        '.MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.23)'
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.23)'
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2'
+                        },
+                        '.MuiInputLabel-root': {
+                          color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit'
+                        },
+                        '.MuiInputLabel-root.Mui-focused': {
+                          color: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2'
+                        }
+                      }}
+                      helperText="Select the expense date"
+                      FormHelperTextProps={{
+                        sx: { 
+                          color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'inherit'
+                        }
+                      }}
                     />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="modal-buttons">
-                <Button onClick={() => setShowAddForm(false)} className="cancel-button">Cancel</Button>
-                <Button type="primary" htmlType="submit" className="add-button">
-                  <PlusOutlined /> Add Expense
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                  </Box>
+                </DialogContent>
+                
+                <Divider sx={{ borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)' }} />
+                
+                <DialogActions sx={{ 
+                  padding: '20px 24px', 
+                  justifyContent: 'space-between',
+                  bgcolor: theme => theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+                }}>
+                  <MuiButton 
+                    onClick={() => setShowAddForm(false)} 
+                    className="cancel-button"
+                    sx={{ 
+                      borderRadius: '8px',
+                      color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit'
+                    }}
+                  >
+                    Cancel
+                  </MuiButton>
+                  <MuiButton 
+                    type="submit" 
+                    variant="contained"
+                    className="add-button"
+                    sx={{ 
+                      borderRadius: '8px',
+                      bgcolor: theme => theme.palette.mode === 'dark' ? '#177ddc' : '#1976d2',
+                      color: '#fff',
+                      '&:hover': {
+                        bgcolor: theme => theme.palette.mode === 'dark' ? '#3c9ae8' : '#1565c0'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Add fontSize="small" />
+                      <span>Add Expense</span>
+                    </Box>
+                  </MuiButton>
+                </DialogActions>
+                </form>
+            </Dialog>
+          </ThemeProvider>
+        )}
+      </div>
       
       {showConfirmDialog && (
-        <div className="modal-overlay">
-          <div className="modal confirm-dialog">
-            <h3>Confirm Delete</h3>
-            <div className="confirmation-content">
-              <div className="warning-icon">⚠️</div>
-              <p>Are you sure you want to delete this expense?</p>
-              <div className="expense-details">
-                <p><strong>Category:</strong> {expenseToDelete?.category?.name}</p>
-                <p><strong>Amount:</strong> ₺{parseFloat(expenseToDelete?.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                <p><strong>Date:</strong> {expenseToDelete?.date ? format(parseISO(expenseToDelete.date), 'dd/MM/yyyy') : 'N/A'}</p>
-              </div>
-              <p className="warning-text">This action cannot be undone!</p>
-            </div>
-            <div className="modal-buttons">
-              <Button onClick={handleDeleteCancel} className="cancel-button">Cancel</Button>
-              <Button type="primary" danger onClick={handleDeleteExpense} className="delete-confirm-button">Delete</Button>
-            </div>
-          </div>
-        </div>
+        <ThemeProvider theme={createTheme({
+          palette: {
+            mode: isDarkMode ? 'dark' : 'light',
+          },
+        })}>
+          <Dialog
+            open={showConfirmDialog}
+            onClose={handleDeleteCancel}
+            maxWidth="sm"
+            fullWidth
+            PaperProps={{
+              sx: {
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                bgcolor: theme => theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+                color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+              }
+            }}
+          >
+            <DialogTitle sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              background: theme => theme.palette.mode === 'dark' ? '#2c2c2c' : '#f8f9fa',
+              borderBottom: '1px solid',
+              borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+              padding: '16px 24px',
+              color: '#e74c3c'
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <span>Confirm Delete</span>
+              </Box>
+              <IconButton 
+                onClick={handleDeleteCancel} 
+                size="small"
+                sx={{ color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit' }}
+              >
+                <Close fontSize="small" />
+              </IconButton>
+            </DialogTitle>
+            
+            <DialogContent sx={{ 
+              pt: 3, 
+              pb: 2,
+              bgcolor: theme => theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+            }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 }}>
+                <Box sx={{ 
+                  fontSize: '3rem', 
+                  color: '#e74c3c',
+                  mb: 1
+                }}>
+                  ⚠️
+                </Box>
+                
+                <Box sx={{ 
+                  fontSize: '1.1rem', 
+                  mb: 1, 
+                  fontWeight: 500,
+                  color: theme => theme.palette.mode === 'dark' ? '#fff' : 'inherit',
+                }}>
+                  Are you sure you want to delete this expense?
+                </Box>
+                
+                <Box sx={{ 
+                  width: '100%', 
+                  p: 2, 
+                  bgcolor: theme => theme.palette.mode === 'dark' ? '#2c2c2c' : '#f8f9fa',
+                  borderRadius: '8px',
+                  border: '1px solid',
+                  borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                  color: theme => theme.palette.mode === 'dark' ? '#ddd' : '#333',
+                }}>
+                  {expenseToDelete && (
+                    <>
+                      <div><strong>Category:</strong> {expenseToDelete.category?.name}</div>
+                      <div><strong>Amount:</strong> ₺{expenseToDelete.amount.toFixed(2)}</div>
+                      <div><strong>Date:</strong> {format(parseISO(expenseToDelete.date), 'dd/MM/yyyy')}</div>
+                    </>
+                  )}
+                </Box>
+                
+                <Box sx={{ 
+                  fontSize: '0.9rem', 
+                  mt: 1,
+                  color: '#e74c3c',
+                  fontWeight: 500
+                }}>
+                  This action cannot be undone.
+                </Box>
+              </Box>
+            </DialogContent>
+            
+            <Divider sx={{ borderColor: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)' }} />
+            
+            <DialogActions sx={{ 
+              justifyContent: 'space-between', 
+              p: 3,
+              bgcolor: theme => theme.palette.mode === 'dark' ? '#1f1f1f' : '#fff',
+            }}>
+              <MuiButton 
+                onClick={handleDeleteCancel} 
+                sx={{ 
+                  borderRadius: '8px',
+                  color: theme => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit',
+                }}
+              >
+                Cancel
+              </MuiButton>
+              <MuiButton 
+                onClick={handleDeleteExpense} 
+                variant="contained" 
+                color="error"
+                sx={{ 
+                  borderRadius: '8px',
+                  bgcolor: theme => theme.palette.mode === 'dark' ? '#a61d24' : '#f44336',
+                  color: '#fff',
+                  '&:hover': {
+                    bgcolor: theme => theme.palette.mode === 'dark' ? '#d32029' : '#d32f2f',
+                  }
+                }}
+              >
+                Delete
+              </MuiButton>
+            </DialogActions>
+          </Dialog>
+        </ThemeProvider>
       )}
 
       <style jsx>{`
@@ -575,23 +1096,21 @@ const ExpensesPanel = () => {
         
         .search-container {
           position: relative;
-          min-width: 250px;
+          min-width: 280px;
+          max-width: 280px;
         }
         
-        .search-input {
+        .search-input-mui {
           width: 100%;
-          padding: 0.6rem 1rem 0.6rem 2.5rem;
-          border: 1px solid #e0e0e0;
-          border-radius: 4px;
-          font-size: 0.9rem;
         }
         
-        .search-icon {
-          position: absolute;
-          left: 0.8rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #777;
+        .search-input-mui .MuiInputBase-root {
+          transition: all 0.2s ease;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        .search-input-mui .MuiInputBase-root:hover {
+          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
         }
         
         .button-group {
@@ -613,22 +1132,43 @@ const ExpensesPanel = () => {
           color: #555;
         }
         
-        .icon-button {
-          padding: 4px 8px;
+        /* Edit and Delete button styles */
+        .edit-button {
+          background-color: #2196f3;
+          color: white;
+          border: none;
+          padding: 0.8rem;
           border-radius: 4px;
-          display: inline-flex;
+          cursor: pointer;
+          font-size: 1rem;
+          display: flex;
           align-items: center;
           justify-content: center;
+          transition: background-color 0.3s;
         }
         
-        .edit-icon:hover {
-          color: #3498db;
-          background-color: rgba(52, 152, 219, 0.1);
+        .edit-button:hover, .edit-button.active {
+          background-color: #1976d2;
         }
         
-        .delete-icon:hover {
-          color: #e74c3c;
-          background-color: rgba(231, 76, 60, 0.1);
+        .delete-button {
+          background-color: #ff4d4f;
+          border-color: #ff4d4f;
+          color: white;
+          border: none;
+          padding: 0.8rem;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.3s;
+        }
+        
+        .delete-button:hover, .delete-button.active {
+          background-color: #ff7875;
+          border-color: #ff7875;
         }
         
         .edit-input, .edit-select {
@@ -639,132 +1179,31 @@ const ExpensesPanel = () => {
           background-color: #f8f9fa;
         }
         
-        .confirmation-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          margin: 1rem 0;
-        }
-        
-        .warning-icon {
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-        }
-        
-        .expense-details {
-          margin: 1rem 0;
-          padding: 1rem;
-          background-color: #f8f9fa;
-          border-radius: 4px;
-          width: 100%;
-        }
-        
-        .expense-details p {
-          margin: 0.5rem 0;
-          text-align: left;
-        }
-        
-        .warning-text {
-          color: #e74c3c;
-          font-weight: 600;
-          margin-top: 1rem;
-        }
-        
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1.2rem;
-          margin-bottom: 1.5rem;
-        }
-        
-        .input-group {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-        
-        .input-group label {
-          font-weight: 500;
-          font-size: 0.95rem;
-          color: #555;
-        }
-        
-        .form-select, .form-input {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #ddd;
-          border-radius: 6px;
-          font-size: 0.95rem;
-          transition: all 0.2s ease;
-        }
-        
-        .form-select:focus, .form-input:focus {
-          border-color: #3498db;
-          box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-          outline: none;
-        }
-        
-        .modal-buttons {
-          display: flex;
-          justify-content: flex-end;
-          gap: 1rem;
-          padding: 1.5rem;
-          border-top: 1px solid #eaeaea;
-          margin-top: 1rem;
-        }
-        
-        @keyframes modalFadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .expense-modal {
-          max-width: 500px;
-          width: 100%;
-          border-radius: 8px;
-          box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
-          animation: modalFadeIn 0.3s ease;
-        }
-        
-        .modal-header {
-          padding: 1.2rem 1.5rem;
-          border-bottom: 1px solid #eaeaea;
-          margin-bottom: 1.5rem;
-        }
-        
-        .modal-header h3 {
-          margin: 0;
-          font-size: 1.3rem;
-          color: #333;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        
-        .modal-content {
-          padding: 0 1.5rem;
-        }
-        
         .dark-mode .panel-container {
           background-color: #1f1f1f;
           color: #fff;
         }
         
-        .dark-mode .search-input {
+        .dark-mode .search-input-mui .MuiInputBase-root {
           background-color: #2c2c2c;
-          border-color: #444;
           color: #fff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         
-        .dark-mode .search-icon {
-          color: #aaa;
+        .dark-mode .search-input-mui .MuiInputBase-root:hover {
+          box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dark-mode .search-input-mui .MuiOutlinedInput-notchedOutline {
+          border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .dark-mode .search-input-mui:hover .MuiOutlinedInput-notchedOutline {
+          border-color: rgba(255, 255, 255, 0.25);
+        }
+        
+        .dark-mode .search-input-mui .MuiInputAdornment-root .MuiSvgIcon-root {
+          color: rgba(255, 255, 255, 0.7);
         }
         
         .dark-mode .category-name {
@@ -779,40 +1218,27 @@ const ExpensesPanel = () => {
           color: #bbb;
         }
         
-        .dark-mode .expense-details {
-          background-color: #2c2c2c;
+        /* Dark mode button styles */
+        .dark-mode .edit-button {
+          background-color: #177ddc;
+          border-color: #177ddc;
         }
         
-        .dark-mode .expense-modal {
-          background-color: #2a2a2a;
-          box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+        .dark-mode .edit-button:hover,
+        .dark-mode .edit-button.active {
+          background-color: #3c9ae8;
+          border-color: #3c9ae8;
         }
         
-        .dark-mode .modal-header {
-          border-bottom-color: #444;
+        .dark-mode .delete-button {
+          background-color: #a61d24;
+          border-color: #a61d24;
         }
         
-        .dark-mode .modal-header h3 {
-          color: #eaeaea;
-        }
-        
-        .dark-mode .input-group label {
-          color: #bbb;
-        }
-        
-        .dark-mode .form-select, .dark-mode .form-input {
-          background-color: #333;
-          border-color: #444;
-          color: #eaeaea;
-        }
-        
-        .dark-mode .form-select:focus, .dark-mode .form-input:focus {
-          border-color: #3498db;
-          box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
-        }
-        
-        .dark-mode .modal-buttons {
-          border-top-color: #444;
+        .dark-mode .delete-button:hover,
+        .dark-mode .delete-button.active {
+          background-color: #d32029;
+          border-color: #d32029;
         }
       `}</style>
     </div>

@@ -730,12 +730,12 @@
 
 .payment-header-membershipstatus svg {
   margin-right: 10px;
-  color: #3498db;
+  color: #ff4757;
   font-size: 20px;
 }
 
 .dark-mode .payment-header-membershipstatus svg {
-  color: #2980b9;
+  color: #ff4757;
 }
 
 .payment-header-membershipstatus h4 {

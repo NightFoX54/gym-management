@@ -884,13 +884,13 @@ const Member = ({ isDarkMode, setIsDarkMode }) => {
         <div className="member-content-member">
           <div className="member-header-member card-animate stagger-1">
             <h1>Member Dashboard</h1>
-            <button
-              className={`dark-mode-toggle-main ${isDarkMode ? "active" : ""}`}
+            <button 
+              className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
               onClick={toggleDarkMode}
             >
-              <i className="fas fa-sun toggle-icon-main" style={{ marginLeft: '2px' }}></i>
-              <div className="toggle-circle-main"></div>
-              <i className="fas fa-moon toggle-icon-main" style={{ marginRight: '2px' }}></i>
+              <FaSun className="toggle-icon-forum sun-forum" />
+              <div className="toggle-circle-forum"></div>
+              <FaMoon className="toggle-icon-forum moon-forum" />
             </button>
           </div>
 

@@ -5,6 +5,7 @@ import '../../styles/Navbar.css';
 import '../../styles/PageTransitions.css';
 import { useNavigate } from 'react-router-dom';
 import withChatAndNotifications from './withChatAndNotifications';
+import { motion } from 'framer-motion';
 
 const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
   // Get user info from localStorage
@@ -487,12 +488,12 @@ const MembershipStatus = ({ isDarkMode, setIsDarkMode }) => {
           </button>
 
           <button 
-            className={`dark-mode-toggle-main ${isDarkMode ? 'active' : ''}`} 
+            className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
             onClick={toggleDarkModeMember}
           >
-            <i className="fas fa-sun toggle-icon-main" style={{ marginLeft: '2px' }}></i>
-            <div className="toggle-circle-main"></div>
-            <i className="fas fa-moon toggle-icon-main" style={{ marginRight: '2px' }}></i>
+            <FaSun className="toggle-icon-forum sun-forum" />
+            <div className="toggle-circle-forum"></div>
+            <FaMoon className="toggle-icon-forum moon-forum" />
           </button>
         </div>
 

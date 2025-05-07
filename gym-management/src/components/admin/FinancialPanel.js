@@ -144,7 +144,7 @@ const FinancialPanel = () => {
 
     // Add date and report info
     doc.setFontSize(11);
-    doc.text(`Report Generated: ${new Date().toLocaleString('tr-TR')}`, 40, 110);
+    doc.text(`Report Generated: ${new Date().toLocaleString('en-US')}`, 40, 110);
     doc.text(`Time Period: ${timeFrame.charAt(0).toUpperCase() + timeFrame.slice(1)}`, 40, 125);
 
     // Add summary section

@@ -560,12 +560,12 @@ const Market = ({ isDarkMode, setIsDarkMode }) => {
         </div>
 
         <button 
-          className={`dark-mode-toggle-trainingplan ${isDarkMode ? 'active' : ''}`} 
+          className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
           onClick={toggleDarkModeMember}
         >
-          <FaSun className="toggle-icon-trainingplan sun-trainingplan" />
-          <div className="toggle-circle-trainingplan"></div>
-          <FaMoon className="toggle-icon-trainingplan moon-trainingplan" />
+          <FaSun className="toggle-icon-forum sun-forum" />
+          <div className="toggle-circle-forum"></div>
+          <FaMoon className="toggle-icon-forum moon-forum" />
         </button>
       </div>
       

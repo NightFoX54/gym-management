@@ -300,12 +300,12 @@ const Friends = ({ isDarkMode, setIsDarkMode }) => {
                     </button>
 
                     <button 
-                        className={`dark-mode-toggle-friendship ${isDarkMode ? 'active' : ''}`} 
+                        className={`dark-mode-toggle-forum ${isDarkMode ? 'active' : ''}`} 
                         onClick={toggleDarkMode}
                     >
-                        <FaSun className="toggle-icon-friendship sun-friendship" />
-                        <div className="toggle-circle-friendship"></div>
-                        <FaMoon className="toggle-icon-friendship moon-friendship" />
+                        <FaSun className="toggle-icon-forum sun-forum" />
+                        <div className="toggle-circle-forum"></div>
+                        <FaMoon className="toggle-icon-forum moon-forum" />
                     </button>
                 </div>
             </div>

@@ -28,6 +28,7 @@ import {
 import '../../styles/PersonalTrainers.css';
 import axios from 'axios';
 import withChatAndNotifications from './withChatAndNotifications';
+import { motion } from 'framer-motion';
 
 const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
   const navigate = useNavigate();
@@ -678,12 +679,12 @@ const PersonalTrainers = ({ isDarkMode, setIsDarkMode }) => {
         </div>
         <h1 className="header-title-pt">Personal Trainers</h1>
         <button
-          className={`dark-mode-toggle-trainingplan ${isDarkMode ? "active" : ""}`}
+          className={`dark-mode-toggle-forum ${isDarkMode ? "active" : ""}`}
           onClick={toggleDarkMode}
         >
-          <FaSun className="toggle-icon-trainingplan sun-trainingplan" />
-          <div className="toggle-circle-trainingplan"></div>
-          <FaMoon className="toggle-icon-trainingplan moon-trainingplan" />
+          <FaSun className="toggle-icon-forum sun-forum" />
+          <div className="toggle-circle-forum"></div>
+          <FaMoon className="toggle-icon-forum moon-forum" />
         </button>
       </div>
       

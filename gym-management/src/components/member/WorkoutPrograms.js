@@ -791,12 +791,12 @@ const WorkoutPrograms = ({ isDarkMode, setIsDarkMode }) => {
         <h1 className="header-title-workout">Workout Programs</h1>
         <div className="header-right-workout">
           <button
-            className={`dark-mode-toggle-workout ${isDarkMode ? "active" : ""}`}
+            className={`dark-mode-toggle-forum ${isDarkMode ? "active" : ""}`}
             onClick={toggleDarkMode}
           >
-            <FaSun className="toggle-icon-workout sun-workout" />
-            <div className="toggle-circle-workout"></div>
-            <FaMoon className="toggle-icon-workout moon-workout" />
+            <FaSun className="toggle-icon-forum sun-forum" />
+            <div className="toggle-circle-forum"></div>
+            <FaMoon className="toggle-icon-forum moon-forum" />
           </button>
         </div>
       </div>
